@@ -93,12 +93,12 @@ function ResumePreviewPanel({ content, documentId, onClose, onDownload, jobTitle
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-[#0d0d24] border border-white/10 rounded-3xl w-full max-w-3xl max-h-[90vh] flex flex-col shadow-2xl">
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-white/5">
+      <div className="bg-gray-900 border border-white/10 rounded-3xl w-full max-w-3xl max-h-[90vh] flex flex-col shadow-2xl">
+        {/* Header — always dark */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-white/10">
           <div>
-            <h3 className="text-base font-semibold text-white">Tailored Resume Preview</h3>
-            <p className="text-xs text-slate-400">For: {content.tailoredFor.title} at {content.tailoredFor.company}</p>
+            <h3 className="text-base font-semibold" style={{ color: '#fff' }}>Tailored Resume Preview</h3>
+            <p className="text-xs" style={{ color: '#94a3b8' }}>For: {content.tailoredFor.title} at {content.tailoredFor.company}</p>
           </div>
           <div className="flex gap-2">
             <button
@@ -119,28 +119,28 @@ function ResumePreviewPanel({ content, documentId, onClose, onDownload, jobTitle
           </div>
         </div>
 
-        {/* Resume content */}
-        <div className="overflow-y-auto flex-1 px-8 py-6 space-y-5 text-sm">
+        {/* Resume content — always WHITE background like a real document */}
+        <div className="resume-preview-panel overflow-y-auto flex-1 px-8 py-6 space-y-5 text-sm rounded-b-3xl" style={{ background: '#fff', color: '#111827' }}>
           {/* Name */}
-          <div className="border-b-2 border-indigo-500/40 pb-3">
-            <h2 className="text-2xl font-bold text-white">{content.name}</h2>
-            <p className="text-slate-400 text-xs mt-0.5">{content.tailoredFor.title} | {content.tailoredFor.company}</p>
+          <div style={{ borderBottom: '2.5px solid #4338ca', paddingBottom: '12px' }}>
+            <h2 className="text-2xl font-bold" style={{ color: '#1e1b4b' }}>{content.name}</h2>
+            <p className="text-xs mt-0.5" style={{ color: '#4b5563' }}>{content.tailoredFor.title} | {content.tailoredFor.company}</p>
           </div>
 
           {/* Summary */}
           {content.summary && (
             <div>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Professional Summary</p>
+              <p className="section-head text-xs font-bold uppercase tracking-wider mb-2" style={{ color: '#1e1b4b', borderBottom: '1px solid #c7d2fe', paddingBottom: '3px' }}>Professional Summary</p>
               {content.summaryBullets?.length > 1 ? (
                 <ul className="space-y-1 ml-3">
                   {content.summaryBullets.map((b, i) => (
-                    <li key={i} className="text-slate-300 leading-relaxed text-xs flex gap-1.5">
-                      <span className="text-indigo-400 mt-0.5">•</span> {b}
+                    <li key={i} className="leading-relaxed text-xs flex gap-1.5" style={{ color: '#374151' }}>
+                      <span style={{ color: '#4338ca' }} className="mt-0.5">•</span> {b}
                     </li>
                   ))}
                 </ul>
               ) : (
-                <p className="text-slate-300 leading-relaxed">{content.summary}</p>
+                <p className="leading-relaxed text-sm" style={{ color: '#374151' }}>{content.summary}</p>
               )}
             </div>
           )}
@@ -148,24 +148,28 @@ function ResumePreviewPanel({ content, documentId, onClose, onDownload, jobTitle
           {/* Skills */}
           {content.skills?.length > 0 && (
             <div>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Technical Skills</p>
+              <p className="section-head text-xs font-bold uppercase tracking-wider mb-2" style={{ color: '#1e1b4b', borderBottom: '1px solid #c7d2fe', paddingBottom: '3px' }}>Technical Skills</p>
               <div className="flex flex-wrap gap-1.5">
                 {content.skills.map((s) => {
                   const isNew = content.addedSkills?.includes(s);
                   const isMatch = content.matchingSkills?.includes(s);
                   return (
                     <span key={s} className={`px-2 py-0.5 rounded-md text-xs border ${
-                      isNew ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30' :
-                      isMatch ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/25' :
-                      'bg-white/5 text-slate-300 border-white/10'
-                    }`}>
+                      isNew ? 'skill-badge-new' :
+                      isMatch ? 'skill-badge-match' :
+                      'skill-badge-default'
+                    }`} style={{
+                      background: isNew ? 'rgba(99,102,241,0.12)' : isMatch ? 'rgba(16,185,129,0.1)' : '#f3f4f6',
+                      color: isNew ? '#4338ca' : isMatch ? '#047857' : '#374151',
+                      borderColor: isNew ? 'rgba(99,102,241,0.25)' : isMatch ? 'rgba(16,185,129,0.2)' : '#e5e7eb',
+                    }}>
                       {s}{isNew ? ' ✦' : ''}
                     </span>
                   );
                 })}
               </div>
               {content.addedSkills?.length > 0 && (
-                <p className="text-xs text-indigo-400 mt-1.5">✦ Added to target this role &nbsp;|&nbsp; <span className="text-emerald-400">Green = matches job requirements</span></p>
+                <p className="text-xs mt-1.5" style={{ color: '#4338ca' }}>✦ Added to target this role &nbsp;|&nbsp; <span style={{ color: '#047857' }}>Green = matches job requirements</span></p>
               )}
             </div>
           )}
@@ -173,14 +177,14 @@ function ResumePreviewPanel({ content, documentId, onClose, onDownload, jobTitle
           {/* Experience */}
           {content.experience?.length > 0 && (
             <div>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Professional Experience</p>
+              <p className="section-head text-xs font-bold uppercase tracking-wider mb-2" style={{ color: '#1e1b4b', borderBottom: '1px solid #c7d2fe', paddingBottom: '3px' }}>Professional Experience</p>
               <div className="space-y-0.5">
                 {content.experience.map((line, i) => {
                   const t = line.trim();
                   if (!t) return <div key={i} className="h-2" />;
                   const isBullet = /^[•\-\*]\s/.test(t);
                   return (
-                    <p key={i} className={`${isBullet ? 'ml-4 text-slate-400' : 'text-slate-200 font-medium'} text-xs leading-relaxed`}>
+                    <p key={i} className={`text-xs leading-relaxed ${isBullet ? 'ml-4' : 'font-semibold'}`} style={{ color: isBullet ? '#374151' : '#1e1b4b' }}>
                       {t}
                     </p>
                   );
@@ -192,9 +196,9 @@ function ResumePreviewPanel({ content, documentId, onClose, onDownload, jobTitle
           {/* Education */}
           {content.education?.length > 0 && (
             <div>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Education</p>
+              <p className="section-head text-xs font-bold uppercase tracking-wider mb-2" style={{ color: '#1e1b4b', borderBottom: '1px solid #c7d2fe', paddingBottom: '3px' }}>Education</p>
               {content.education.map((line, i) => (
-                <p key={i} className="text-slate-300 text-xs">{typeof line === 'string' ? line : line.degree || ''}</p>
+                <p key={i} className="text-xs" style={{ color: '#374151' }}>{typeof line === 'string' ? line : line.degree || ''}</p>
               ))}
             </div>
           )}
@@ -202,9 +206,9 @@ function ResumePreviewPanel({ content, documentId, onClose, onDownload, jobTitle
           {/* Certs */}
           {content.certs?.length > 0 && (
             <div>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Certifications</p>
+              <p className="section-head text-xs font-bold uppercase tracking-wider mb-2" style={{ color: '#1e1b4b', borderBottom: '1px solid #c7d2fe', paddingBottom: '3px' }}>Certifications</p>
               {content.certs.map((line, i) => (
-                <p key={i} className="text-slate-300 text-xs">{line}</p>
+                <p key={i} className="text-xs" style={{ color: '#374151' }}>{line}</p>
               ))}
             </div>
           )}
@@ -212,8 +216,8 @@ function ResumePreviewPanel({ content, documentId, onClose, onDownload, jobTitle
           {/* Additional */}
           {content.additional && (
             <div>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Additional Experience</p>
-              <p className="text-slate-300 text-xs whitespace-pre-wrap">{content.additional}</p>
+              <p className="section-head text-xs font-bold uppercase tracking-wider mb-2" style={{ color: '#1e1b4b', borderBottom: '1px solid #c7d2fe', paddingBottom: '3px' }}>Additional Experience</p>
+              <p className="text-xs whitespace-pre-wrap" style={{ color: '#374151' }}>{content.additional}</p>
             </div>
           )}
         </div>

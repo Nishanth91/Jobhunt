@@ -26,6 +26,13 @@ const TECH_SKILLS = [
   // Methodologies
   'agile', 'scrum', 'kanban', 'devops', 'ci/cd', 'tdd', 'bdd', 'microservices',
   'rest', 'soap', 'oauth', 'jwt', 'api design',
+  // Manufacturing & Production
+  'lean manufacturing', '5s', 'kaizen', 'six sigma', 'sap pp', 'sap',
+  'quality control', 'quality assurance', 'sop', 'root cause analysis',
+  'production planning', 'erp', 'gmp', 'iso 9001', 'osha',
+  'power bi', 'pcb assembly', 'preventive maintenance', 'tpm',
+  'value stream mapping', 'capacity planning', 'supply chain',
+  'continuous improvement', 'safety compliance',
 ];
 
 const SOFT_SKILLS = [

@@ -58,7 +58,7 @@ const roleSkillsMap = {
     },
   },
 
-  'Production Engineer': {
+  'Production Engineer (SRE)': {
     requiredSkills: [
       'Linux Administration', 'Networking', 'Shell Scripting', 'Python', 'Monitoring & Alerting',
       'Incident Management', 'Load Balancing', 'TCP/IP', 'DNS', 'System Troubleshooting',
@@ -98,13 +98,70 @@ const roleSkillsMap = {
         { title: 'Docker Tutorial for Beginners', url: 'https://www.youtube.com/watch?v=fqMOX6JJhGo', type: 'youtube', provider: 'freeCodeCamp' },
         { title: 'Docker Getting Started', url: 'https://docs.docker.com/get-started/', type: 'docs', provider: 'Docker Docs' },
       ],
-      'Terraform': [
-        { title: 'Terraform in 100 Seconds + Tutorial', url: 'https://www.youtube.com/watch?v=tomUWcQ0P3k', type: 'youtube', provider: 'Fireship' },
-        { title: 'HashiCorp Terraform Tutorials', url: 'https://developer.hashicorp.com/terraform/tutorials', type: 'docs', provider: 'HashiCorp' },
-      ],
       'SRE Practices': [
         { title: 'Site Reliability Engineering (Google)', url: 'https://www.youtube.com/watch?v=uTEL8Ff1Zvk', type: 'youtube', provider: 'Google Cloud' },
         { title: 'Google SRE Book (Free Online)', url: 'https://sre.google/sre-book/table-of-contents/', type: 'docs', provider: 'Google SRE' },
+      ],
+    },
+  },
+
+  'Manufacturing Production Supervisor': {
+    requiredSkills: [
+      'Production Planning & Scheduling', 'Lean Manufacturing', '5S Methodology', 'Kaizen',
+      'Quality Control (QC/QA)', 'SAP PP', 'Team Leadership & Supervision', 'Safety Compliance (OSHA)',
+      'SOP Development', 'Root Cause Analysis',
+    ],
+    advancedSkills: [
+      'Six Sigma (Green/Black Belt)', 'ERP Systems', 'Power BI', 'Statistical Process Control (SPC)',
+      'Supply Chain Coordination', 'Preventive Maintenance (TPM)', 'GMP/ISO Standards',
+      'Value Stream Mapping', 'Capacity Planning',
+    ],
+    emergingSkills: [
+      'Industry 4.0 / Smart Manufacturing', 'IoT for Manufacturing', 'Automation & Robotics',
+      'Digital Twin Technology', 'AI-Driven Quality Inspection', 'Predictive Maintenance',
+      'Sustainable Manufacturing',
+    ],
+    careerPath: [
+      { level: 'Entry', title: 'Production Technician / Assembler', skills: ['5S', 'Safety Compliance', 'SOP Following'] },
+      { level: 'Mid', title: 'Production Engineer / Supervisor', skills: ['SAP PP', 'Lean Manufacturing', 'Team Supervision'] },
+      { level: 'Senior', title: 'Senior Production Supervisor / Manager', skills: ['Six Sigma', 'Capacity Planning', 'Continuous Improvement'] },
+      { level: 'Principal', title: 'Plant Manager / Operations Manager', skills: ['P&L Management', 'Strategic Planning', 'Cross-Functional Leadership'] },
+      { level: 'Leadership', title: 'Director of Manufacturing / VP Operations', skills: ['Multi-Site Operations', 'Business Strategy', 'Supply Chain Optimization'] },
+    ],
+    resources: {
+      'Lean Manufacturing': [
+        { title: 'Lean Manufacturing - Complete Course', url: 'https://www.youtube.com/watch?v=wfsRAZUnonI', type: 'youtube', provider: 'YouTube' },
+        { title: 'Introduction to Lean Manufacturing', url: 'https://www.coursera.org/learn/lean-manufacturing', type: 'course', provider: 'Coursera (Free Audit)' },
+        { title: 'Lean Enterprise Institute Resources', url: 'https://www.lean.org/explore-lean/what-is-lean/', type: 'docs', provider: 'LEI' },
+      ],
+      'Six Sigma (Green/Black Belt)': [
+        { title: 'Six Sigma Full Course', url: 'https://www.youtube.com/watch?v=Wk7FQBfGVAo', type: 'youtube', provider: 'Simplilearn' },
+        { title: 'Six Sigma Yellow Belt Certification', url: 'https://www.coursera.org/learn/six-sigma-yellow-belt', type: 'course', provider: 'Coursera (Free Audit)' },
+        { title: 'ASQ Six Sigma Resources', url: 'https://asq.org/quality-resources/six-sigma', type: 'docs', provider: 'ASQ' },
+      ],
+      'SAP PP': [
+        { title: 'SAP PP (Production Planning) Tutorial', url: 'https://www.youtube.com/watch?v=hYYtK3YGLGM', type: 'youtube', provider: 'YouTube' },
+        { title: 'SAP Learning Hub (Free Tier)', url: 'https://learning.sap.com/', type: 'course', provider: 'SAP Learning' },
+      ],
+      'Quality Control (QC/QA)': [
+        { title: 'Quality Management Full Course', url: 'https://www.youtube.com/watch?v=TR2HLjuYfJU', type: 'youtube', provider: 'YouTube' },
+        { title: 'ISO 9001 Quality Management', url: 'https://asq.org/quality-resources/iso-9001', type: 'docs', provider: 'ASQ' },
+      ],
+      'Safety Compliance (OSHA)': [
+        { title: 'OSHA Safety Training', url: 'https://www.youtube.com/watch?v=LBh0yO4JN7c', type: 'youtube', provider: 'YouTube' },
+        { title: 'OSHA Free Training Resources', url: 'https://www.osha.gov/training', type: 'docs', provider: 'OSHA.gov' },
+      ],
+      'Power BI': [
+        { title: 'Power BI Full Course', url: 'https://www.youtube.com/watch?v=AGrl-H87pRU', type: 'youtube', provider: 'freeCodeCamp' },
+        { title: 'Microsoft Power BI Learning Path', url: 'https://learn.microsoft.com/en-us/training/powerplatform/power-bi', type: 'course', provider: 'Microsoft Learn (Free)' },
+      ],
+      'Industry 4.0 / Smart Manufacturing': [
+        { title: 'Industry 4.0 Explained', url: 'https://www.youtube.com/watch?v=RbLSgp1JDOQ', type: 'youtube', provider: 'YouTube' },
+        { title: 'Smart Manufacturing Overview', url: 'https://www.nist.gov/el/smart-manufacturing', type: 'docs', provider: 'NIST' },
+      ],
+      'Root Cause Analysis': [
+        { title: 'Root Cause Analysis Training', url: 'https://www.youtube.com/watch?v=gfEJe-LBFp8', type: 'youtube', provider: 'YouTube' },
+        { title: 'ASQ Root Cause Analysis', url: 'https://asq.org/quality-resources/root-cause-analysis', type: 'docs', provider: 'ASQ' },
       ],
     },
   },
@@ -682,9 +739,19 @@ export function findBestRoleMatch(userRole) {
     'dba': 'Oracle DBA',
     'database': 'Oracle DBA',
     'oracle': 'Oracle DBA',
-    'production': 'Production Engineer',
-    'sre': 'Production Engineer',
-    'site reliability': 'Production Engineer',
+    'manufacturing': 'Manufacturing Production Supervisor',
+    'production supervisor': 'Manufacturing Production Supervisor',
+    'production engineer': 'Manufacturing Production Supervisor',
+    'plant manager': 'Manufacturing Production Supervisor',
+    'production manager': 'Manufacturing Production Supervisor',
+    'assembly': 'Manufacturing Production Supervisor',
+    'assembler': 'Manufacturing Production Supervisor',
+    'shop floor': 'Manufacturing Production Supervisor',
+    'lean manufacturing': 'Manufacturing Production Supervisor',
+    'quality control': 'Manufacturing Production Supervisor',
+    'production': 'Manufacturing Production Supervisor',
+    'sre': 'Production Engineer (SRE)',
+    'site reliability': 'Production Engineer (SRE)',
     'frontend': 'Frontend Developer',
     'front-end': 'Frontend Developer',
     'front end': 'Frontend Developer',

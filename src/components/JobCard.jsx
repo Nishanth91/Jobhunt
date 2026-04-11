@@ -26,10 +26,23 @@ function companyToGradient(name) {
 }
 
 function companyToDomain(name) {
-  // Simple heuristic: lowercase, remove common suffixes, join words
-  return name.toLowerCase()
-    .replace(/\b(inc|ltd|llc|corp|pvt|co|group|solutions|technologies|services|international|company)\b\.?/gi, '')
-    .trim().replace(/\s+/g, '').replace(/[^a-z0-9]/g, '') + '.com';
+  // Heuristic: lowercase, remove common suffixes, join words
+  const clean = name.toLowerCase()
+    .replace(/\b(inc|ltd|llc|corp|pvt|co|group|solutions|technologies|services|international|company|india|usa|uk|gmbh|sa|ag)\b\.?/gi, '')
+    .trim().replace(/\s+/g, '').replace(/[^a-z0-9]/g, '');
+  return clean ? `${clean}.com` : null;
+}
+
+// Try multiple logo sources in order — returns array of URLs to try
+function getLogoUrls(company, domain) {
+  const urls = [];
+  if (domain) {
+    // Google's favicon service (most reliable, always returns something)
+    urls.push(`https://www.google.com/s2/favicons?domain=${domain}&sz=128`);
+    // Clearbit (high quality when it works)
+    urls.push(`https://logo.clearbit.com/${domain}?size=128`);
+  }
+  return urls;
 }
 
 export default function JobCard({ job, onSave, onUnsave, onDismiss, saved = false, showATS = false }) {
@@ -50,9 +63,10 @@ export default function JobCard({ job, onSave, onUnsave, onDismiss, saved = fals
 
   // Try to get company logo from website URL or domain guess
   const logoDomain = job.companyWebsite
-    ? new URL(job.companyWebsite).hostname.replace('www.', '')
+    ? (() => { try { return new URL(job.companyWebsite).hostname.replace('www.', ''); } catch { return companyToDomain(job.company); } })()
     : companyToDomain(job.company);
-  const logoUrl = `https://logo.clearbit.com/${logoDomain}`;
+  const logoUrls = getLogoUrls(job.company, logoDomain);
+  const [logoIdx, setLogoIdx] = useState(0);
   const gradient = companyToGradient(job.company);
 
   const handleSaveAndView = async () => {
@@ -110,13 +124,21 @@ export default function JobCard({ job, onSave, onUnsave, onDismiss, saved = fals
       <div className="flex items-start gap-4">
         {/* Company Logo / Avatar */}
         <div className={`flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center text-white font-bold text-sm shadow-lg overflow-hidden`}>
-          {!logoError ? (
+          {!logoError && logoUrls.length > 0 ? (
             <img
-              src={logoUrl}
+              src={logoUrls[logoIdx]}
               alt={job.company}
               className="w-full h-full object-contain p-1.5 bg-white rounded-xl"
-              onError={() => setLogoError(true)}
+              onError={() => {
+                // Try next logo source, or fall back to initials
+                if (logoIdx + 1 < logoUrls.length) {
+                  setLogoIdx(logoIdx + 1);
+                } else {
+                  setLogoError(true);
+                }
+              }}
               loading="lazy"
+              referrerPolicy="no-referrer"
             />
           ) : (
             companyInitials || '?'

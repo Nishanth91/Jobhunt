@@ -110,8 +110,7 @@ export default function LoginPage() {
 
           <div className="mt-6 pt-5 border-t border-white/5">
             <p className="text-xs text-slate-600 text-center">
-              Default passwords: <code className="text-slate-400 bg-white/5 px-1.5 py-0.5 rounded">changeme123</code>
-              &nbsp;— Please change after first login
+              Your Career Command Center
             </p>
           </div>
         </div>

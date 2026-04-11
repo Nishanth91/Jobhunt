@@ -44,17 +44,67 @@ function extractSections(rawText) {
 
 // ─── Pre-process helpers ──────────────────────────────────────
 
-/** Merge lone bullet markers (•, -, *) with the line that follows */
+/** Detect if a line is a job title / company / date header */
+function isExperienceTitleLine(line) {
+  const t = line.trim();
+  if (!t || t.length > 120) return false;
+  if (/^[•\-\*]/.test(t)) return false;
+  const hasDate = /\b(19|20)\d{2}\b|present|current|till date/i.test(t);
+  const hasTitleWord = /\b(engineer|manager|analyst|developer|administrator|specialist|consultant|coordinator|supervisor|trainee|associate|director|lead|senior|junior|intern|apprentice|assembler)\b/i.test(t);
+  const hasCompany = /\b(ltd|inc|corp|pvt|llc|technologies|solutions|systems|group|company|electronics)\b/i.test(t);
+  // Only treat as title if it has concrete signals — date, title word, or company name
+  // Don't use the "starts with uppercase" heuristic as it catches continuation text
+  return hasDate || hasTitleWord || hasCompany;
+}
+
+/** Detect sub-headers inside experience */
+function isSubheader(line) {
+  const t = line.trim();
+  return /^(clients?|responsibilities|job description|technical environment|key achievements|projects?):?\s*$/i.test(t) ||
+    (t.endsWith(':') && t.length < 40 && !t.startsWith('•'));
+}
+
+/** Merge lone bullet markers AND continuation lines back into their parent bullet.
+ *  PDF text extraction often wraps long bullet lines across multiple lines.
+ *  e.g. "• Led daily shift huddles to align teams with production targets, assigned tasks, and provided\n
+ *        status updates."
+ *  → "• Led daily shift huddles to align teams with production targets, assigned tasks, and provided status updates."
+ */
 function mergeExperienceLines(lines) {
   const merged = [];
   for (let i = 0; i < lines.length; i++) {
     const t = lines[i].trim();
+
+    // Lone bullet marker (•, -, *) on its own — merge with next line
     if (/^[•\-\*]$/.test(t) && i + 1 < lines.length && lines[i + 1].trim()) {
       merged.push(`• ${lines[i + 1].trim()}`);
       i++;
-    } else {
-      merged.push(lines[i]);
+      continue;
     }
+
+    // Check if this line is a continuation of the previous bullet:
+    // It's a continuation if: (a) there IS a previous line that was a bullet,
+    // (b) this line does NOT start with a bullet marker,
+    // (c) this line is NOT a title/company/date header,
+    // (d) this line is NOT a section sub-header,
+    // (e) line is short-ish text (< 120 chars, no bullet prefix)
+    if (
+      t && merged.length > 0 &&
+      !/^[•\-\*]\s/.test(t) &&
+      !isExperienceTitleLine(t) &&
+      !isSubheader(t)
+    ) {
+      const prevTrimmed = merged[merged.length - 1].trim();
+      // Only merge into a bullet line (not into title lines)
+      if (/^[•\-\*]\s/.test(prevTrimmed)) {
+        // Remove trailing period from previous if we're continuing
+        const prevClean = prevTrimmed.replace(/\.\s*$/, '');
+        merged[merged.length - 1] = `${prevClean} ${t}`;
+        continue;
+      }
+    }
+
+    merged.push(lines[i]);
   }
   return merged;
 }
@@ -66,25 +116,6 @@ function splitSummaryBullets(text) {
     return text.split(/\s*•\s*/).filter((p) => p.trim()).map((p) => p.trim());
   }
   return [text.trim()];
-}
-
-/** Detect if a line is a job title / company / date header */
-function isExperienceTitleLine(line) {
-  const t = line.trim();
-  if (!t || t.length > 120) return false;
-  if (/^[•\-\*]/.test(t)) return false;
-  const hasDate = /\b(19|20)\d{2}\b|present|current|till date/i.test(t);
-  const hasTitleWord = /\b(engineer|manager|analyst|developer|administrator|specialist|consultant|coordinator|supervisor|trainee|associate|director|lead|senior|junior|intern|apprentice|assembler)\b/i.test(t);
-  const hasCompany = /\b(ltd|inc|corp|pvt|llc|technologies|solutions|systems|group|company|electronics)\b/i.test(t);
-  const isShortTitle = t.length < 80 && /^[A-Z0-9]/.test(t) && !t.endsWith('.');
-  return hasDate || hasTitleWord || hasCompany || isShortTitle;
-}
-
-/** Detect sub-headers inside experience */
-function isSubheader(line) {
-  const t = line.trim();
-  return /^(clients?|responsibilities|job description|technical environment|key achievements|projects?):?\s*$/i.test(t) ||
-    (t.endsWith(':') && t.length < 40 && !t.startsWith('•'));
 }
 
 // ─── Rephrase additional context ──────────────────────────────
@@ -153,32 +184,30 @@ function tailorSummary(summary, jobData, matchingSkills, allSkills) {
 // ─── Inject keywords into experience bullets ─────────────────
 
 function enhanceExperienceBullets(lines, missingKeywords) {
-  if (!missingKeywords?.length || !lines?.length) return lines;
+  // Filter out any undefined/empty keywords
+  const validKeywords = (missingKeywords || []).filter((k) => k && typeof k === 'string');
+  if (!validKeywords.length || !lines?.length) return lines;
 
-  // Find bullet lines that could be enhanced
-  const kwLower = missingKeywords.map((k) => k.toLowerCase());
   const enhanced = [...lines];
-  let injected = 0;
+  const usedKeywords = new Set();
 
-  for (let i = 0; i < enhanced.length && injected < 3; i++) {
+  for (let i = 0; i < enhanced.length && usedKeywords.size < Math.min(3, validKeywords.length); i++) {
     const t = enhanced[i].trim();
     const isBullet = /^[•\-\*]\s/.test(t);
     if (!isBullet) continue;
 
     const lineLower = t.toLowerCase();
-    // Find a keyword that could naturally fit but isn't there
-    for (const kw of kwLower) {
-      if (lineLower.includes(kw)) continue;
-      // Only inject if the bullet is about related topic
-      const related = lineLower.includes('managed') || lineLower.includes('led') ||
-        lineLower.includes('worked') || lineLower.includes('implemented') ||
-        lineLower.includes('developed') || lineLower.includes('maintained') ||
-        lineLower.includes('support') || lineLower.includes('performed') ||
-        lineLower.includes('handled') || lineLower.includes('configured');
+    // Find a keyword that could naturally fit but isn't already in the line
+    for (const kw of validKeywords) {
+      if (usedKeywords.has(kw)) continue;
+      if (lineLower.includes(kw.toLowerCase())) continue;
+
+      // Only inject if the bullet describes an action
+      const related = /\b(managed|led|worked|implemented|developed|maintained|support|performed|handled|configured|supervised|directed|conducted|coordinated|ensured|promoted|reduced|achieved|delivered)\b/i.test(lineLower);
       if (related) {
-        const clean = t.replace(/\.$/, '');
-        enhanced[i] = `${clean}, utilizing ${missingKeywords[injected]}.`;
-        injected++;
+        const clean = t.replace(/\.\s*$/, '');
+        enhanced[i] = `${clean}, utilizing ${kw}.`;
+        usedKeywords.add(kw);
         break;
       }
     }

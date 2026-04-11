@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { FileText, CheckCircle, Trash2, Clock } from 'lucide-react';
+import { FileText, CheckCircle, Trash2, Clock, ToggleLeft, ToggleRight } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import ResumeUploader from '@/components/ResumeUploader';
 import SkillTags from '@/components/SkillTags';
@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation';
 export default function UploadClient({ resumes }) {
   const router = useRouter();
   const [activeResume, setActiveResume] = useState(resumes[0] || null);
+  const [toggling, setToggling] = useState(null);
 
   const handleSuccess = (data) => {
     router.refresh();
@@ -19,6 +20,20 @@ export default function UploadClient({ resumes }) {
     if (!confirm('Remove this resume?')) return;
     await fetch(`/api/resume/${id}`, { method: 'DELETE' });
     router.refresh();
+  };
+
+  const handleToggleActive = async (id, currentlyActive) => {
+    setToggling(id);
+    try {
+      await fetch(`/api/resume/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isActive: !currentlyActive }),
+      });
+      router.refresh();
+    } finally {
+      setToggling(null);
+    }
   };
 
   return (
@@ -62,11 +77,23 @@ export default function UploadClient({ resumes }) {
                   </div>
 
                   <div className="flex items-center gap-2">
-                    {resume.isActive && (
-                      <span className="flex items-center gap-1 text-xs text-emerald-400">
-                        <CheckCircle size={12} /> Active
-                      </span>
-                    )}
+                    {/* Active toggle */}
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleToggleActive(resume.id, resume.isActive); }}
+                      disabled={toggling === resume.id}
+                      className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                        resume.isActive
+                          ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/25 hover:bg-emerald-500/25'
+                          : 'bg-white/[0.04] text-slate-500 border border-white/10 hover:text-slate-300 hover:border-white/20'
+                      }`}
+                      title={resume.isActive ? 'Currently active — click to deactivate' : 'Click to set as active resume'}
+                    >
+                      {resume.isActive ? (
+                        <><ToggleRight size={14} /> Active</>
+                      ) : (
+                        <><ToggleLeft size={14} /> Inactive</>
+                      )}
+                    </button>
                     <button
                       onClick={(e) => { e.stopPropagation(); handleDelete(resume.id); }}
                       className="w-8 h-8 rounded-lg bg-red-500/10 text-red-400 flex items-center justify-center hover:bg-red-500/20 transition-colors"
