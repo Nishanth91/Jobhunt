@@ -1,0 +1,115 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      String   @default("USER") // ADMIN or USER
+  avatar    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  resumes      Resume[]
+  preference   Preference?
+  savedJobs    SavedJob[]
+  applications Application[]
+  documents    TailoredDocument[]
+}
+
+model Resume {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fileName   String
+  filePath   String
+  rawText    String
+  skills     String   // JSON array string
+  experience String   // JSON array string
+  education  String   // JSON array string
+  summary    String?
+  jobTitle   String?
+  yearsExp   Int?
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Preference {
+  id         String   @id @default(cuid())
+  userId     String   @unique
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jobRoles   String   // JSON array string
+  locations  String   // JSON array string
+  industries String   // JSON array string
+  jobType    String   @default("any") // any, remote, onsite, hybrid
+  minSalary  Int?
+  maxSalary  Int?
+  updatedAt  DateTime @updatedAt
+}
+
+model SavedJob {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  externalId     String?
+  title          String
+  company        String
+  location       String
+  description    String
+  url            String
+  salary         String?
+  postedAt       DateTime?
+  source         String   @default("manual") // adzuna, jobicy, manual
+  companyWebsite String?
+  hrEmail        String?
+  matchScore     Float    @default(0)
+  atsScore       Float    @default(0)
+  status         String   @default("SAVED") // SAVED, APPLIED, INTERVIEW, OFFER, REJECTED
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  application Application?
+  documents   TailoredDocument[]
+}
+
+model Application {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jobId     String   @unique
+  job       SavedJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  status    String   @default("APPLIED") // APPLIED, SCREENING, INTERVIEW, FINAL_ROUND, OFFER, REJECTED
+  appliedAt DateTime @default(now())
+  notes     String?
+  updatedAt DateTime @updatedAt
+}
+
+model DismissedJob {
+  id         String   @id @default(cuid())
+  userId     String
+  externalId String
+  createdAt  DateTime @default(now())
+
+  @@unique([userId, externalId])
+}
+
+model TailoredDocument {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jobId     String
+  job       SavedJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  type      String   // RESUME, COVER_LETTER, EMAIL
+  content   String
+  filePath  String?
+  atsScore  Float?
+  createdAt DateTime @default(now())
+}

@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(/usr/local/bin/npm install:*)",
+      "Read(//usr/local/bin/**)",
+      "Read(//Users/nishanth/.nvm/versions/**)",
+      "Bash(npx prisma:*)",
+      "Bash(DATABASE_URL=\"file:./dev.db\" npx prisma db push)",
+      "Bash(DATABASE_URL=\"file:./dev.db\" node prisma/seed.js)",
+      "Bash(npx next:*)",
+      "Bash(tee /tmp/build-output.txt)",
+      "Bash(echo \"EXIT: $?\")",
+      "Bash(node -e ':*)",
+      "WebSearch"
+    ]
+  }
+}

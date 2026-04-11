@@ -1,0 +1,686 @@
+'use client';
+
+import { useState } from 'react';
+import {
+  MapPin, Clock, ExternalLink, Globe, Mail, FileText, PenLine,
+  Loader2, Download, ChevronDown, ChevronUp, CheckCircle,
+  AlertCircle, Briefcase, Wand2, X, Printer, ArrowLeft, Sparkles,
+  ClipboardList
+} from 'lucide-react';
+import { formatDistanceToNow } from 'date-fns';
+import { ScoreRing, ScoreBar, StatusBadge, SourceBadge } from '@/components/ScoreBadge';
+import SkillTags from '@/components/SkillTags';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+
+const STATUS_OPTIONS = ['SAVED', 'APPLIED', 'SCREENING', 'INTERVIEW', 'FINAL_ROUND', 'OFFER', 'REJECTED'];
+
+// ─── Resume Preview Panel ────────────────────────────────────
+function ResumePreviewPanel({ content, documentId, onClose, onDownload, jobTitle }) {
+  if (!content) return null;
+
+  const handlePrint = () => {
+    const w = window.open('', '_blank');
+    const summaryHtml = content.summaryBullets?.length > 1
+      ? content.summaryBullets.map((b) => `<li>${b}</li>`).join('')
+      : `<p class="body">${content.summary || ''}</p>`;
+    const summaryWrapper = content.summaryBullets?.length > 1
+      ? `<ul class="summary-list">${summaryHtml}</ul>`
+      : summaryHtml;
+
+    w.document.write(`
+      <html><head><title>${content.name} — Resume</title>
+      <style>
+        /* Kill browser headers/footers by removing page margin */
+        @page { margin: 0; size: letter; }
+        body {
+          font-family: 'Calibri', 'Segoe UI', Arial, sans-serif;
+          margin: 48px 56px;
+          color: #111;
+          line-height: 1.55;
+          font-size: 13px;
+        }
+        h1 { font-size: 24px; color: #1e1b4b; margin: 0 0 4px; font-weight: 700; }
+        .role-line { color: #4b5563; font-size: 13px; margin-bottom: 16px; }
+        .divider { border: none; border-top: 2.5px solid #4338ca; margin: 0 0 18px; }
+        h2 {
+          font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: #1e1b4b;
+          border-bottom: 1px solid #c7d2fe; padding-bottom: 3px; margin: 22px 0 10px;
+          font-weight: 700;
+        }
+        .body { margin: 3px 0; font-size: 13px; }
+        .summary-list { margin: 0; padding-left: 18px; }
+        .summary-list li { margin-bottom: 4px; font-size: 13px; }
+        .skills { font-size: 13px; }
+        .exp-title { font-weight: 700; color: #1e1b4b; margin: 10px 0 2px; font-size: 13px; }
+        .exp-sub { font-style: italic; color: #4b5563; font-size: 12px; margin: 2px 0; }
+        .bullet { margin-left: 18px; margin-bottom: 2px; font-size: 13px; }
+        .spacer { height: 8px; }
+        @media print {
+          body { margin: 48px 56px; }
+        }
+      </style></head><body>
+      <h1>${content.name}</h1>
+      <p class="role-line">${content.tailoredFor.title} | ${content.tailoredFor.company}</p>
+      <hr class="divider"/>
+
+      ${content.summary ? `<h2>Professional Summary</h2>${summaryWrapper}` : ''}
+
+      <h2>Technical Skills</h2>
+      <p class="skills">${content.skills.join('  |  ')}</p>
+
+      ${content.experience?.length ? `<h2>Professional Experience</h2>
+        ${content.experience.map((l) => {
+          const t = l.trim();
+          if (!t) return '<div class="spacer"></div>';
+          if (/^[•\-\*]\s/.test(t)) return `<p class="bullet">${t}</p>`;
+          return `<p class="exp-title">${t}</p>`;
+        }).join('')}` : ''}
+
+      ${content.education?.length ? `<h2>Education</h2>
+        ${content.education.map((l) => `<p class="body">${l}</p>`).join('')}` : ''}
+
+      ${content.certs?.length ? `<h2>Certifications</h2>
+        ${content.certs.map((l) => `<p class="body">${l}</p>`).join('')}` : ''}
+
+      ${content.additional ? `<h2>Additional Experience</h2><p class="body">${content.additional.replace(/\n/g, '<br/>')}</p>` : ''}
+      </body></html>
+    `);
+    w.document.close();
+    w.focus();
+    setTimeout(() => { w.print(); }, 500);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="bg-[#0d0d24] border border-white/10 rounded-3xl w-full max-w-3xl max-h-[90vh] flex flex-col shadow-2xl">
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-white/5">
+          <div>
+            <h3 className="text-base font-semibold text-white">Tailored Resume Preview</h3>
+            <p className="text-xs text-slate-400">For: {content.tailoredFor.title} at {content.tailoredFor.company}</p>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={handlePrint}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-500/20 text-emerald-300 text-xs font-medium hover:bg-emerald-500/30 border border-emerald-500/20 transition-all"
+            >
+              <Printer size={13} /> Save as PDF
+            </button>
+            <button
+              onClick={onDownload}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-blue-500/20 text-blue-300 text-xs font-medium hover:bg-blue-500/30 border border-blue-500/20 transition-all"
+            >
+              <Download size={13} /> Download Word
+            </button>
+            <button onClick={onClose} className="w-8 h-8 rounded-xl bg-white/[0.04] flex items-center justify-center text-slate-400 hover:text-white border border-white/10">
+              <X size={14} />
+            </button>
+          </div>
+        </div>
+
+        {/* Resume content */}
+        <div className="overflow-y-auto flex-1 px-8 py-6 space-y-5 text-sm">
+          {/* Name */}
+          <div className="border-b-2 border-indigo-500/40 pb-3">
+            <h2 className="text-2xl font-bold text-white">{content.name}</h2>
+            <p className="text-slate-400 text-xs mt-0.5">{content.tailoredFor.title} | {content.tailoredFor.company}</p>
+          </div>
+
+          {/* Summary */}
+          {content.summary && (
+            <div>
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Professional Summary</p>
+              {content.summaryBullets?.length > 1 ? (
+                <ul className="space-y-1 ml-3">
+                  {content.summaryBullets.map((b, i) => (
+                    <li key={i} className="text-slate-300 leading-relaxed text-xs flex gap-1.5">
+                      <span className="text-indigo-400 mt-0.5">•</span> {b}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-slate-300 leading-relaxed">{content.summary}</p>
+              )}
+            </div>
+          )}
+
+          {/* Skills */}
+          {content.skills?.length > 0 && (
+            <div>
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Technical Skills</p>
+              <div className="flex flex-wrap gap-1.5">
+                {content.skills.map((s) => {
+                  const isNew = content.addedSkills?.includes(s);
+                  const isMatch = content.matchingSkills?.includes(s);
+                  return (
+                    <span key={s} className={`px-2 py-0.5 rounded-md text-xs border ${
+                      isNew ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30' :
+                      isMatch ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/25' :
+                      'bg-white/5 text-slate-300 border-white/10'
+                    }`}>
+                      {s}{isNew ? ' ✦' : ''}
+                    </span>
+                  );
+                })}
+              </div>
+              {content.addedSkills?.length > 0 && (
+                <p className="text-xs text-indigo-400 mt-1.5">✦ Added to target this role &nbsp;|&nbsp; <span className="text-emerald-400">Green = matches job requirements</span></p>
+              )}
+            </div>
+          )}
+
+          {/* Experience */}
+          {content.experience?.length > 0 && (
+            <div>
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Professional Experience</p>
+              <div className="space-y-0.5">
+                {content.experience.map((line, i) => {
+                  const t = line.trim();
+                  if (!t) return <div key={i} className="h-2" />;
+                  const isBullet = /^[•\-\*]\s/.test(t);
+                  return (
+                    <p key={i} className={`${isBullet ? 'ml-4 text-slate-400' : 'text-slate-200 font-medium'} text-xs leading-relaxed`}>
+                      {t}
+                    </p>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Education */}
+          {content.education?.length > 0 && (
+            <div>
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Education</p>
+              {content.education.map((line, i) => (
+                <p key={i} className="text-slate-300 text-xs">{typeof line === 'string' ? line : line.degree || ''}</p>
+              ))}
+            </div>
+          )}
+
+          {/* Certs */}
+          {content.certs?.length > 0 && (
+            <div>
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Certifications</p>
+              {content.certs.map((line, i) => (
+                <p key={i} className="text-slate-300 text-xs">{line}</p>
+              ))}
+            </div>
+          )}
+
+          {/* Additional */}
+          {content.additional && (
+            <div>
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Additional Experience</p>
+              <p className="text-slate-300 text-xs whitespace-pre-wrap">{content.additional}</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── ATS Fix Log Panel ────────────────────────────────────────
+function ATSFixLog({ entries }) {
+  if (!entries || entries.length === 0) return null;
+  return (
+    <div className="rounded-2xl bg-gradient-to-br from-indigo-500/5 to-violet-500/5 border border-indigo-500/15 p-5 space-y-3">
+      <div className="flex items-center gap-2">
+        <ClipboardList size={14} className="text-indigo-400" />
+        <h4 className="text-xs font-semibold text-indigo-300 uppercase tracking-wider">ATS Fix Log</h4>
+      </div>
+      <div className="space-y-2 max-h-64 overflow-y-auto">
+        {entries.map((entry, i) => (
+          <div key={i} className="flex items-start gap-2 p-2.5 rounded-xl bg-white/[0.03] border border-white/5">
+            <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${
+              entry.type === 'added' ? 'bg-emerald-500/20 text-emerald-400' :
+              entry.type === 'improved' ? 'bg-blue-500/20 text-blue-400' :
+              'bg-amber-500/20 text-amber-400'
+            }`}>
+              <span className="text-[10px] font-bold">{entry.type === 'added' ? '+' : entry.type === 'improved' ? '↑' : '!'}</span>
+            </div>
+            <div>
+              <p className="text-xs text-slate-300">{entry.message}</p>
+              {entry.keywords && (
+                <div className="flex flex-wrap gap-1 mt-1">
+                  {entry.keywords.map((k) => (
+                    <span key={k} className="px-1.5 py-0.5 rounded text-[10px] bg-indigo-500/15 text-indigo-300 border border-indigo-500/20">{k}</span>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Main Component ────────────────────────────────────────────
+export default function JobDetailClient({ job, resumeData, documents, userName }) {
+  const router = useRouter();
+  const [status, setStatus] = useState(job.status || 'SAVED');
+  const [atsResult, setAtsResult] = useState(null);
+  const [scoringATS, setScoringATS] = useState(false);
+  const [fixingATS, setFixingATS] = useState(false);
+  const [fixResult, setFixResult] = useState(null);
+  const [atsFixLog, setAtsFixLog] = useState([]);
+  const [generatingResume, setGeneratingResume] = useState(false);
+  const [generatingCover, setGeneratingCover] = useState(false);
+  const [resumePreview, setResumePreview] = useState(null);
+  const [currentDocId, setCurrentDocId] = useState(null);
+  const [coverLetter, setCoverLetter] = useState('');
+  const [emailDraft, setEmailDraft] = useState(null);
+  const [showDesc, setShowDesc] = useState(false);
+  const [tab, setTab] = useState('overview');
+  const [additionalText, setAdditionalText] = useState('');
+  const [showAdditional, setShowAdditional] = useState(false);
+
+  const handleStatusChange = async (newStatus) => {
+    setStatus(newStatus);
+    await fetch(`/api/jobs/${job.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: newStatus }),
+    });
+    router.refresh();
+  };
+
+  const scoreATS = async () => {
+    if (!resumeData) return;
+    setScoringATS(true);
+    try {
+      const res = await fetch('/api/ats/score', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jobId: job.id, resumeId: resumeData.id }),
+      });
+      const data = await res.json();
+      setAtsResult(data);
+      setTab('ats');
+    } finally {
+      setScoringATS(false);
+    }
+  };
+
+  const fixATS = async () => {
+    if (!resumeData || !atsResult) return;
+    setFixingATS(true);
+    try {
+      const res = await fetch('/api/resume/fix-ats', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jobId: job.id, resumeId: resumeData.id }),
+      });
+      const data = await res.json();
+      setFixResult(data);
+
+      // Build the log entries
+      const logEntries = [];
+      if (data.addedKeywords?.length > 0) {
+        logEntries.push({
+          type: 'added',
+          message: `Added ${data.addedKeywords.length} missing keywords to resume`,
+          keywords: data.addedKeywords,
+        });
+      }
+      if (data.before !== undefined && data.after !== undefined) {
+        logEntries.push({
+          type: 'improved',
+          message: `ATS score improved from ${data.before}% → ${data.after}% (+${data.after - data.before}%)`,
+        });
+      }
+      logEntries.push({
+        type: 'info',
+        message: 'New resume version created and set as active. Previous version preserved.',
+      });
+      setAtsFixLog((prev) => [...logEntries, ...prev]);
+
+      // Re-run ATS score
+      await scoreATS();
+      router.refresh();
+    } finally {
+      setFixingATS(false);
+    }
+  };
+
+  const generateResume = async () => {
+    if (!resumeData) return;
+    setGeneratingResume(true);
+    try {
+      const res = await fetch('/api/resume/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jobId: job.id, resumeId: resumeData.id, additionalText }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setResumePreview(data.content);
+        setCurrentDocId(data.documentId);
+        if (data.atsBreakdown) setAtsResult(data.atsBreakdown);
+      }
+    } finally {
+      setGeneratingResume(false);
+    }
+  };
+
+  const downloadWord = async () => {
+    if (!currentDocId) return;
+    const res = await fetch(`/api/resume/generate/${currentDocId}/download`);
+    if (res.ok) {
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Resume_${job.title}_${job.company}.docx`.replace(/\s+/g, '_');
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+  };
+
+  const generateCoverLetter = async () => {
+    if (!resumeData) return;
+    setGeneratingCover(true);
+    try {
+      const res = await fetch('/api/cover-letter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jobId: job.id, resumeId: resumeData.id }),
+      });
+      const data = await res.json();
+      setCoverLetter(data.coverLetter);
+      setEmailDraft(data.email);
+      setTab('documents');
+    } finally {
+      setGeneratingCover(false);
+    }
+  };
+
+  const display = atsResult || { total: Math.round(job.atsScore), breakdown: null, matchedSkills: [], missingSkills: [], missingKeywords: [], suggestions: [] };
+
+  return (
+    <>
+      {resumePreview && (
+        <ResumePreviewPanel
+          content={resumePreview}
+          documentId={currentDocId}
+          onClose={() => setResumePreview(null)}
+          onDownload={downloadWord}
+          jobTitle={job.title}
+        />
+      )}
+
+      <div className="max-w-5xl space-y-6">
+        {/* Header */}
+        <div className="rounded-2xl bg-gradient-to-br from-white/[0.04] to-white/[0.02] border border-white/10 p-6">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex items-start gap-4">
+              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
+                {job.company.slice(0, 2).toUpperCase()}
+              </div>
+              <div>
+                <h1 className="text-xl font-bold text-white">{job.title}</h1>
+                <p className="text-indigo-300 font-medium mt-0.5">{job.company}</p>
+                <div className="flex items-center gap-3 mt-2 flex-wrap">
+                  <span className="flex items-center gap-1 text-sm text-slate-400"><MapPin size={13} />{job.location}</span>
+                  {job.postedAt && <span className="flex items-center gap-1 text-sm text-slate-500"><Clock size={13} />{formatDistanceToNow(new Date(job.postedAt), { addSuffix: true })}</span>}
+                  {job.salary && <span className="text-sm text-emerald-400 font-medium">{job.salary}</span>}
+                  <SourceBadge source={job.source} />
+                </div>
+              </div>
+            </div>
+            <div className="flex flex-col items-end gap-3">
+              <div className="flex items-center gap-3">
+                <ScoreRing score={Math.round(job.matchScore)} size={64} label="Match" />
+                {display.total > 0 && <ScoreRing score={display.total} size={64} label="ATS" />}
+              </div>
+              <StatusBadge status={status} />
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="flex flex-wrap gap-2 mt-5 pt-5 border-t border-white/5">
+            <a href={job.url} target="_blank" rel="noopener noreferrer"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-500/20 text-indigo-300 text-sm font-medium hover:bg-indigo-500/30 border border-indigo-500/20 transition-all">
+              <ExternalLink size={14} /> View Original
+            </a>
+            {job.companyWebsite && (
+              <a href={job.companyWebsite} target="_blank" rel="noopener noreferrer"
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/[0.04] text-slate-300 text-sm font-medium hover:bg-white/[0.08] border border-white/10 transition-all">
+                <Globe size={14} /> Company Site
+              </a>
+            )}
+            {job.hrEmail && (
+              <a href={`mailto:${job.hrEmail}`}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/[0.04] text-slate-300 text-sm font-medium hover:bg-white/[0.08] border border-white/10 transition-all">
+                <Mail size={14} /> Email HR
+              </a>
+            )}
+
+            {resumeData ? (
+              <>
+                <button onClick={scoreATS} disabled={scoringATS}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-violet-500/20 text-violet-300 text-sm font-medium hover:bg-violet-500/30 border border-violet-500/20 transition-all disabled:opacity-50">
+                  {scoringATS ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle size={14} />}
+                  ATS Score
+                </button>
+                <button onClick={() => setShowAdditional(!showAdditional)}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-500/20 text-blue-300 text-sm font-medium hover:bg-blue-500/30 border border-blue-500/20 transition-all">
+                  <Sparkles size={14} /> Tailored Resume
+                </button>
+                <button onClick={generateCoverLetter} disabled={generatingCover}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500/20 text-emerald-300 text-sm font-medium hover:bg-emerald-500/30 border border-emerald-500/20 transition-all disabled:opacity-50">
+                  {generatingCover ? <Loader2 size={14} className="animate-spin" /> : <PenLine size={14} />}
+                  Cover Letter
+                </button>
+              </>
+            ) : (
+              <Link href="/upload" className="flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-500/20 text-amber-300 text-sm font-medium border border-amber-500/20">
+                <Briefcase size={14} /> Upload Resume First
+              </Link>
+            )}
+          </div>
+
+          {/* Additional text panel */}
+          {showAdditional && (
+            <div className="mt-4 p-4 rounded-xl bg-white/[0.03] border border-blue-500/20 space-y-3">
+              <p className="text-xs font-medium text-blue-300 flex items-center gap-1.5">
+                <Sparkles size={12} /> Add any recent experience or context not in your resume (optional)
+              </p>
+              <textarea
+                value={additionalText}
+                onChange={(e) => setAdditionalText(e.target.value)}
+                rows={3}
+                placeholder="e.g. Currently leading a team of 5 engineers at XYZ Corp, shipping a new React dashboard..."
+                className="w-full px-3 py-2 bg-white/[0.04] border border-white/10 rounded-xl text-sm text-white placeholder-slate-600 focus:border-blue-500/50 transition-all resize-none"
+              />
+              <button onClick={() => { setShowAdditional(false); generateResume(); }} disabled={generatingResume}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-500/20 text-blue-300 text-sm font-medium hover:bg-blue-500/30 border border-blue-500/20 transition-all disabled:opacity-50">
+                {generatingResume ? <><Loader2 size={13} className="animate-spin" /> Generating...</> : <><FileText size={13} /> Generate & Preview</>}
+              </button>
+            </div>
+          )}
+
+          {/* Status */}
+          <div className="flex items-center gap-2 mt-4 flex-wrap">
+            <span className="text-xs text-slate-500">Status:</span>
+            {STATUS_OPTIONS.map((s) => (
+              <button key={s} onClick={() => handleStatusChange(s)}
+                className={`px-2.5 py-1 rounded-lg text-xs transition-all ${
+                  status === s ? 'bg-indigo-500/30 text-indigo-200 border border-indigo-500/30' : 'text-slate-600 hover:text-slate-400 border border-transparent hover:border-white/10'
+                }`}>
+                {s.replace('_', ' ')}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Tabs */}
+        <div className="flex gap-1 border-b border-white/5">
+          {['overview', 'ats', 'documents'].map((t) => (
+            <button key={t} onClick={() => setTab(t)}
+              className={`px-4 py-2.5 text-sm font-medium transition-all border-b-2 -mb-px ${
+                tab === t ? 'text-indigo-300 border-indigo-500' : 'text-slate-500 border-transparent hover:text-slate-300'
+              }`}>
+              {t === 'overview' ? 'Job Details' : t === 'ats' ? 'ATS Analysis' : 'Documents'}
+            </button>
+          ))}
+        </div>
+
+        {/* Overview Tab */}
+        {tab === 'overview' && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2">
+              <div className="rounded-2xl bg-white/[0.02] border border-white/10 p-6">
+                <button onClick={() => setShowDesc(!showDesc)} className="flex items-center justify-between w-full text-left">
+                  <h3 className="text-sm font-semibold text-white">Job Description</h3>
+                  {showDesc ? <ChevronUp size={16} className="text-slate-500" /> : <ChevronDown size={16} className="text-slate-500" />}
+                </button>
+                <div className={`mt-4 text-sm text-slate-300 leading-relaxed whitespace-pre-wrap ${showDesc ? '' : 'line-clamp-8'}`}>
+                  {job.description || 'No description available.'}
+                </div>
+                {!showDesc && <button onClick={() => setShowDesc(true)} className="mt-2 text-xs text-indigo-400 hover:text-indigo-300">Show full description</button>}
+              </div>
+            </div>
+            <div className="space-y-4">
+              <div className="rounded-2xl bg-white/[0.02] border border-white/10 p-5 space-y-2.5 text-sm">
+                <h3 className="text-sm font-semibold text-white mb-3">Job Details</h3>
+                <div className="flex justify-between"><span className="text-slate-500">Company</span><span className="text-white font-medium">{job.company}</span></div>
+                <div className="flex justify-between"><span className="text-slate-500">Location</span><span className="text-slate-300">{job.location}</span></div>
+                {job.salary && <div className="flex justify-between"><span className="text-slate-500">Salary</span><span className="text-emerald-400 font-medium">{job.salary}</span></div>}
+                <div className="flex justify-between"><span className="text-slate-500">Source</span><SourceBadge source={job.source} /></div>
+                {job.postedAt && <div className="flex justify-between"><span className="text-slate-500">Posted</span><span className="text-slate-400">{formatDistanceToNow(new Date(job.postedAt), { addSuffix: true })}</span></div>}
+              </div>
+              {job.hrEmail && (
+                <div className="rounded-2xl bg-emerald-500/5 border border-emerald-500/20 p-4">
+                  <p className="text-xs font-semibold text-emerald-400 mb-1">HR Contact Found</p>
+                  <a href={`mailto:${job.hrEmail}`} className="text-sm text-emerald-300 break-all hover:text-emerald-200">{job.hrEmail}</a>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ATS Tab */}
+        {tab === 'ats' && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="rounded-2xl bg-white/[0.02] border border-white/10 p-6 space-y-5">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-semibold text-white">ATS Score Breakdown</h3>
+                {!atsResult && (
+                  <button onClick={scoreATS} disabled={scoringATS || !resumeData} className="text-xs text-indigo-400 hover:text-indigo-300 disabled:opacity-50">
+                    {scoringATS ? 'Scoring...' : 'Run Analysis'}
+                  </button>
+                )}
+              </div>
+
+              {!resumeData && (
+                <div className="flex items-center gap-2 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs">
+                  <AlertCircle size={14} /> Upload a resume first
+                </div>
+              )}
+
+              {display.breakdown && (
+                <div className="space-y-3">
+                  <ScoreBar value={display.breakdown.skills} label="Skills Match" color="indigo" />
+                  <ScoreBar value={display.breakdown.keywords} label="Keywords Match" color="blue" />
+                  <ScoreBar value={display.breakdown.format} label="Resume Format" color="emerald" />
+                  <ScoreBar value={display.breakdown.experience} label="Experience Fit" color="amber" />
+                </div>
+              )}
+
+              {display.total > 0 && (
+                <div className="flex items-center justify-center pt-2 border-t border-white/5">
+                  <ScoreRing score={display.total} size={80} label="Total ATS Score" />
+                </div>
+              )}
+
+              {/* Fix ATS Button */}
+              {atsResult && atsResult.missingKeywords?.length > 0 && (
+                <div className="pt-3 border-t border-white/5 space-y-2">
+                  <p className="text-xs text-slate-400">Auto-fix adds missing keywords to your resume and creates an updated version.</p>
+                  <button onClick={fixATS} disabled={fixingATS}
+                    className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500/20 to-violet-500/20 text-indigo-200 text-sm font-medium hover:from-indigo-500/30 hover:to-violet-500/30 border border-indigo-500/20 transition-all disabled:opacity-50">
+                    {fixingATS ? <><Loader2 size={14} className="animate-spin" /> Fixing resume...</> : <><Wand2 size={14} /> Auto-Fix Resume Keywords</>}
+                  </button>
+                  {fixResult && (
+                    <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-300">
+                      ✓ ATS score improved: {fixResult.before}% → {fixResult.after}%
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-4">
+              {/* ATS Fix Log — always visible when there are entries */}
+              <ATSFixLog entries={atsFixLog} />
+
+              {atsResult?.matchedSkills?.length > 0 && (
+                <div className="rounded-2xl bg-emerald-500/5 border border-emerald-500/15 p-5">
+                  <p className="text-xs font-semibold text-emerald-400 mb-3">✓ Matching Skills ({atsResult.matchedSkills.length})</p>
+                  <SkillTags skills={atsResult.matchedSkills} />
+                </div>
+              )}
+              {atsResult?.missingSkills?.length > 0 && (
+                <div className="rounded-2xl bg-red-500/5 border border-red-500/15 p-5">
+                  <p className="text-xs font-semibold text-red-400 mb-3">Missing Skills</p>
+                  <SkillTags skills={atsResult.missingSkills} />
+                </div>
+              )}
+              {atsResult?.suggestions?.length > 0 && (
+                <div className="rounded-2xl bg-amber-500/5 border border-amber-500/15 p-5">
+                  <p className="text-xs font-semibold text-amber-400 mb-3">Suggestions</p>
+                  <ul className="space-y-1.5">
+                    {atsResult.suggestions.map((s, i) => (
+                      <li key={i} className="text-xs text-slate-300 leading-relaxed">• {s}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Documents Tab */}
+        {tab === 'documents' && (
+          <div className="space-y-4">
+            {coverLetter && (
+              <div className="rounded-2xl bg-white/[0.02] border border-white/10 p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-sm font-semibold text-white">Cover Letter</h3>
+                  <button onClick={() => navigator.clipboard.writeText(coverLetter)} className="text-xs text-indigo-400 hover:text-indigo-300">Copy</button>
+                </div>
+                <pre className="text-xs text-slate-300 leading-relaxed whitespace-pre-wrap font-sans bg-white/[0.02] rounded-xl p-4 border border-white/5 max-h-96 overflow-y-auto">{coverLetter}</pre>
+              </div>
+            )}
+            {emailDraft && (
+              <div className="rounded-2xl bg-white/[0.02] border border-white/10 p-6">
+                <h3 className="text-sm font-semibold text-white mb-4">Email Draft</h3>
+                <div className="space-y-3">
+                  <div className="rounded-xl bg-white/[0.03] p-3 border border-white/5">
+                    <p className="text-xs text-slate-500 mb-1">Subject</p>
+                    <p className="text-sm text-white font-medium">{emailDraft.subject}</p>
+                  </div>
+                  <div className="rounded-xl bg-white/[0.03] p-3 border border-white/5">
+                    <p className="text-xs text-slate-500 mb-1">Body</p>
+                    <pre className="text-xs text-slate-300 whitespace-pre-wrap font-sans leading-relaxed">{emailDraft.body}</pre>
+                  </div>
+                </div>
+              </div>
+            )}
+            {!coverLetter && documents.length === 0 && (
+              <div className="text-center py-16">
+                <FileText size={40} className="text-slate-700 mx-auto mb-4" />
+                <p className="text-slate-400 font-medium">No documents yet</p>
+                <p className="text-sm text-slate-500 mt-1">Generate a tailored resume or cover letter using the buttons above</p>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </>
+  );
+}
