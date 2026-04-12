@@ -12,8 +12,13 @@ function fmt(amount, currency = 'CAD') {
   return `${sym}${amount.toLocaleString('en-US')}`;
 }
 
+function hourly(annual) {
+  return (annual / 2080).toFixed(2);
+}
+
 function SalaryBar({ label, min, median, max, currency, isPrimary, maxValue }) {
   const barWidth = maxValue ? Math.round((median / maxValue) * 100) : 100;
+  const sym = CURRENCY_SYMBOLS[currency] || '$';
 
   return (
     <div className={`rounded-2xl border p-5 transition-all ${
@@ -43,7 +48,7 @@ function SalaryBar({ label, min, median, max, currency, isPrimary, maxValue }) {
       </div>
 
       {/* Min / Median / Max */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-3 mb-3">
         <div>
           <p className="text-[10px] uppercase tracking-wider text-slate-500 mb-0.5">Min</p>
           <p className="text-sm font-semibold text-slate-300">{fmt(min, currency)}</p>
@@ -56,6 +61,19 @@ function SalaryBar({ label, min, median, max, currency, isPrimary, maxValue }) {
           <p className="text-[10px] uppercase tracking-wider text-slate-500 mb-0.5">Max</p>
           <p className="text-sm font-semibold text-slate-300">{fmt(max, currency)}</p>
         </div>
+      </div>
+
+      {/* Hourly equivalent */}
+      <div className="pt-3 border-t border-white/[0.06]">
+        <p className="text-[10px] uppercase tracking-wider text-slate-500 mb-1">Hourly (≈2080 hrs/yr)</p>
+        <p className="text-xs text-slate-400">
+          <span className="text-slate-500">{sym}{hourly(min)}</span>
+          <span className="mx-1.5 text-slate-600">–</span>
+          <span className="text-emerald-400 font-semibold">{sym}{hourly(median)}</span>
+          <span className="mx-1.5 text-slate-600">–</span>
+          <span className="text-slate-500">{sym}{hourly(max)}</span>
+          <span className="ml-1.5 text-slate-600">/hr</span>
+        </p>
       </div>
     </div>
   );
@@ -224,10 +242,10 @@ export default function SalaryClient() {
 
             {/* Autocomplete dropdown */}
             {showSuggestions && suggestions.length > 0 && (
-              <div className="absolute top-full left-0 right-0 mt-1 max-h-72 overflow-y-auto rounded-xl bg-[#111] border border-white/10 shadow-2xl z-50">
+              <div className="absolute top-full left-0 right-0 mt-1 max-h-72 overflow-y-auto rounded-xl bg-white dark:bg-[#111] border border-slate-200 dark:border-white/10 shadow-2xl z-50">
                 {Object.entries(grouped).map(([cat, roles]) => (
                   <div key={cat}>
-                    <div className="px-3 py-1.5 text-[10px] font-semibold text-slate-500 uppercase tracking-wider bg-white/[0.02] sticky top-0">
+                    <div className="px-3 py-1.5 text-[10px] font-semibold text-slate-500 uppercase tracking-wider bg-slate-50 dark:bg-white/[0.02] sticky top-0">
                       {cat}
                     </div>
                     {roles.map((r) => (
@@ -235,9 +253,9 @@ export default function SalaryClient() {
                         key={r.role}
                         type="button"
                         onClick={() => handleSelect(r)}
-                        className="w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-white/[0.06] transition-colors"
+                        className="w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-colors"
                       >
-                        <span className="text-sm text-white flex-1">{r.role}</span>
+                        <span className="text-sm text-slate-900 dark:text-white flex-1">{r.role}</span>
                         <span className="text-[10px] text-slate-500 font-mono">NOC {r.noc}</span>
                       </button>
                     ))}
@@ -317,24 +335,27 @@ export default function SalaryClient() {
             </div>
 
             {/* Numbers */}
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-3 gap-4 mb-4">
               <div className="rounded-xl bg-white/[0.03] border border-white/[0.06] p-4 text-center">
                 <p className="text-[10px] uppercase tracking-wider text-slate-500 mb-1">Minimum</p>
                 <p className="text-lg font-bold text-slate-300">
                   {fmt(data.primary.min, data.primary.currency)}
                 </p>
+                <p className="text-[10px] text-slate-600 mt-1">{CURRENCY_SYMBOLS[data.primary.currency]}{hourly(data.primary.min)}/hr</p>
               </div>
               <div className="rounded-xl bg-emerald-500/[0.06] border border-emerald-500/20 p-4 text-center">
                 <p className="text-[10px] uppercase tracking-wider text-emerald-400/70 mb-1">Median</p>
                 <p className="text-lg font-bold text-emerald-400">
                   {fmt(data.primary.median, data.primary.currency)}
                 </p>
+                <p className="text-[10px] text-emerald-600 mt-1">{CURRENCY_SYMBOLS[data.primary.currency]}{hourly(data.primary.median)}/hr</p>
               </div>
               <div className="rounded-xl bg-white/[0.03] border border-white/[0.06] p-4 text-center">
                 <p className="text-[10px] uppercase tracking-wider text-slate-500 mb-1">Maximum</p>
                 <p className="text-lg font-bold text-slate-300">
                   {fmt(data.primary.max, data.primary.currency)}
                 </p>
+                <p className="text-[10px] text-slate-600 mt-1">{CURRENCY_SYMBOLS[data.primary.currency]}{hourly(data.primary.max)}/hr</p>
               </div>
             </div>
           </div>
