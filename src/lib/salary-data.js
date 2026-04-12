@@ -264,11 +264,11 @@ export function getSalaryInsights(role) {
 
   const roleData = salaryDatabase[matchedRole];
 
-  // Canada first, US second
+  // Canada first (shown as Winnipeg, MB), US second
   const regions = ['Canada', 'United States'];
 
   const allRegions = regions.map((region) => ({
-    region,
+    region: region === 'Canada' ? 'Winnipeg, MB' : region,
     ...roleData[region],
     isPrimary: region === 'Canada',
   }));
@@ -277,7 +277,7 @@ export function getSalaryInsights(role) {
     matchedRole,
     noc: roleData.noc,
     category: roleData.category,
-    primary: { region: 'Canada', ...roleData['Canada'] },
+    primary: { region: 'Winnipeg, MB', ...roleData['Canada'] },
     allRegions,
     availableRoles: roleList,
   };

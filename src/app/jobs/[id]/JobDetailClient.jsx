@@ -62,6 +62,9 @@ function ResumePreviewPanel({ content, documentId, onClose, onDownload, jobTitle
       </style></head><body>
       <h1>${content.name}</h1>
       <p class="role-line">${content.tailoredFor.title} | ${content.tailoredFor.company}</p>
+      ${[content.contactEmail, content.phone, content.linkedIn].filter(Boolean).length > 0
+        ? `<p class="role-line" style="font-size:11px;color:#6b7280">${[content.contactEmail, content.phone, content.linkedIn].filter(Boolean).join('  |  ')}</p>`
+        : ''}
       <hr class="divider"/>
 
       ${content.summary ? `<h2>Professional Summary</h2>${summaryWrapper}` : ''}
@@ -126,8 +129,12 @@ function ResumePreviewPanel({ content, documentId, onClose, onDownload, jobTitle
             <h2 className="text-2xl font-bold" style={{ color: '#1e1b4b' }}>{content.name}</h2>
             <p className="text-xs mt-0.5" style={{ color: '#4b5563' }}>
               {content.tailoredFor.title} | {content.tailoredFor.company}
-              {content.linkedIn && <span style={{ color: '#6366f1' }}> | {content.linkedIn}</span>}
             </p>
+            {(content.contactEmail || content.phone || content.linkedIn) && (
+              <p className="text-xs mt-0.5" style={{ color: '#6b7280' }}>
+                {[content.contactEmail, content.phone, content.linkedIn].filter(Boolean).join('  |  ')}
+              </p>
+            )}
           </div>
 
           {/* Summary */}
@@ -495,7 +502,7 @@ export default function JobDetailClient({ job, resumeData, documents, userName }
           {showAdditional && (
             <div className="mt-4 p-4 rounded-xl bg-white/[0.03] border border-blue-500/20 space-y-3">
               <p className="text-xs font-medium text-blue-300 flex items-center gap-1.5">
-                <Sparkles size={12} /> Add any recent experience or context not in your resume (optional)
+                <Sparkles size={12} /> Add any recent achievements or context not captured in your resume (optional — blended into experience)
               </p>
               <textarea
                 value={additionalText}
@@ -504,16 +511,7 @@ export default function JobDetailClient({ job, resumeData, documents, userName }
                 placeholder="e.g. Currently leading a team of 5 engineers at XYZ Corp, shipping a new React dashboard..."
                 className="w-full px-3 py-2 bg-white/[0.04] border border-white/10 rounded-xl text-sm text-white placeholder-slate-600 focus:border-blue-500/50 transition-all resize-none"
               />
-              <div>
-                <label className="text-xs text-slate-500 mb-1 block">LinkedIn URL (optional — included on resume header)</label>
-                <input
-                  type="text"
-                  value={linkedInUrl}
-                  onChange={(e) => setLinkedInUrl(e.target.value)}
-                  placeholder="https://linkedin.com/in/yourprofile"
-                  className="w-full px-3 py-2 bg-white/[0.04] border border-white/10 rounded-xl text-sm text-white placeholder-slate-600 focus:border-blue-500/50 transition-all"
-                />
-              </div>
+              <p className="text-[10px] text-slate-500">LinkedIn, phone & email are pulled from your <a href="/settings" className="text-blue-400 hover:text-blue-300 underline">Account Settings → Contact Info</a>.</p>
               <button onClick={() => { setShowAdditional(false); generateResume(); }} disabled={generatingResume}
                 className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-500/20 text-blue-300 text-sm font-medium hover:bg-blue-500/30 border border-blue-500/20 transition-all disabled:opacity-50">
                 {generatingResume ? <><Loader2 size={13} className="animate-spin" /> Generating...</> : <><FileText size={13} /> Generate & Preview</>}
@@ -667,9 +665,49 @@ export default function JobDetailClient({ job, resumeData, documents, userName }
           <div className="space-y-4">
             {coverLetter && (
               <div className="rounded-2xl bg-white/[0.02] border border-white/10 p-6">
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
                   <h3 className="text-sm font-semibold text-white">Cover Letter</h3>
-                  <button onClick={() => navigator.clipboard.writeText(coverLetter)} className="text-xs text-teal-400 hover:text-teal-300">Copy</button>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <button
+                      onClick={() => navigator.clipboard.writeText(coverLetter)}
+                      className="text-xs text-slate-400 hover:text-slate-300 px-3 py-1.5 rounded-lg border border-white/10 hover:border-white/20 transition-all"
+                    >
+                      Copy
+                    </button>
+                    <button
+                      onClick={() => {
+                        const w = window.open('', '_blank');
+                        w.document.write(`<html><head><title>Cover Letter</title><style>@page{margin:0}body{font-family:Calibri,Arial,sans-serif;margin:64px 72px;font-size:12pt;line-height:1.6;color:#111}pre{white-space:pre-wrap;font-family:inherit}@media print{body{margin:64px 72px}}</style></head><body><pre>${coverLetter.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</pre></body></html>`);
+                        w.document.close();
+                        w.focus();
+                        setTimeout(() => w.print(), 400);
+                      }}
+                      className="flex items-center gap-1.5 text-xs text-emerald-300 px-3 py-1.5 rounded-lg border border-emerald-500/20 bg-emerald-500/10 hover:bg-emerald-500/20 transition-all"
+                    >
+                      <Printer size={11} /> Save as PDF
+                    </button>
+                    <button
+                      onClick={async () => {
+                        const res = await fetch('/api/cover-letter/download', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ text: coverLetter, jobTitle: job.title, company: job.company }),
+                        });
+                        if (res.ok) {
+                          const blob = await res.blob();
+                          const url = URL.createObjectURL(blob);
+                          const a = document.createElement('a');
+                          a.href = url;
+                          a.download = `CoverLetter_${job.company}_${job.title}.docx`.replace(/\s+/g, '_');
+                          a.click();
+                          URL.revokeObjectURL(url);
+                        }
+                      }}
+                      className="flex items-center gap-1.5 text-xs text-blue-300 px-3 py-1.5 rounded-lg border border-blue-500/20 bg-blue-500/10 hover:bg-blue-500/20 transition-all"
+                    >
+                      <Download size={11} /> Download Word
+                    </button>
+                  </div>
                 </div>
                 <pre className="text-xs text-slate-300 leading-relaxed whitespace-pre-wrap font-sans bg-white/[0.02] rounded-xl p-4 border border-white/5 max-h-96 overflow-y-auto">{coverLetter}</pre>
               </div>

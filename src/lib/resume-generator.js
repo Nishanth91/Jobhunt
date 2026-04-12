@@ -218,7 +218,7 @@ function enhanceExperienceBullets(lines, missingKeywords) {
 
 // ─── Main generator ──────────────────────────────────────────
 
-export async function generateTailoredResume(resumeData, jobData, additionalText = '', linkedInUrl = '') {
+export async function generateTailoredResume(resumeData, jobData, additionalText = '', linkedInUrl = '', phone = '', contactEmail = '') {
   const sections = extractSections(resumeData.rawText || '');
 
   const originalSkills = Array.isArray(resumeData.skills)
@@ -260,14 +260,22 @@ export async function generateTailoredResume(resumeData, jobData, additionalText
   // Inject missing keywords naturally into some experience bullets
   experienceLines = enhanceExperienceBullets(experienceLines, missingToAdd);
 
+  // Blend rephrased additional context INTO experience section (not as a separate section)
+  const rephrasedAdditional = rephraseAdditionalContext(additionalText, jobData.title);
+  if (rephrasedAdditional.length > 0) {
+    // Append after the last experience entry as new bullets
+    experienceLines = [
+      ...experienceLines,
+      '',
+      ...rephrasedAdditional.map((b) => `• ${b}`),
+    ];
+  }
+
   const educationLines = sections.education.length
     ? sections.education
     : (Array.isArray(resumeData.education)
         ? resumeData.education
         : JSON.parse(resumeData.education || '[]')).map((e) => (typeof e === 'string' ? e : e.degree || ''));
-
-  // Rephrase additional context professionally
-  const rephrasedAdditional = rephraseAdditionalContext(additionalText, jobData.title);
 
   // ─── Build content object for preview ─────────────────────────
   const content = {
@@ -280,9 +288,11 @@ export async function generateTailoredResume(resumeData, jobData, additionalText
     experience: experienceLines,
     education: educationLines,
     certs: sections.certs || [],
-    additional: rephrasedAdditional.length > 0 ? rephrasedAdditional.join('\n') : '',
-    additionalBullets: rephrasedAdditional,
+    additional: '',
+    additionalBullets: [],
     linkedIn: linkedInUrl || '',
+    phone: phone || '',
+    contactEmail: contactEmail || '',
     tailoredFor: { title: jobData.title, company: jobData.company },
   };
 
@@ -298,17 +308,31 @@ export async function generateTailoredResume(resumeData, jobData, additionalText
     }),
   );
 
-  // Role target subtitle + optional LinkedIn
+  // Contact line: email | phone | linkedin
+  const contactParts = [];
+  if (contactEmail) contactParts.push(contactEmail);
+  if (phone) contactParts.push(phone);
+  if (linkedInUrl) contactParts.push(linkedInUrl);
+  const contactLine = contactParts.join('  |  ');
+
   const subtitleParts = [new TextRun({ text: `${jobData.title} | ${jobData.company}`, size: 20, color: '4b5563', font: 'Calibri' })];
-  if (linkedInUrl) {
-    subtitleParts.push(new TextRun({ text: `  |  ${linkedInUrl}`, size: 18, color: '6366f1', font: 'Calibri' }));
-  }
   children.push(
     new Paragraph({
       children: subtitleParts,
       alignment: AlignmentType.LEFT,
-      spacing: { after: 160 },
+      spacing: { after: contactLine ? 60 : 160 },
     }),
+  );
+  if (contactLine) {
+    children.push(
+      new Paragraph({
+        children: [new TextRun({ text: contactLine, size: 18, color: '4b5563', font: 'Calibri' })],
+        alignment: AlignmentType.LEFT,
+        spacing: { after: 160 },
+      }),
+    );
+  }
+  children.push(
     new Paragraph({
       border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: '4338ca' } },
       spacing: { after: 200 },
@@ -385,14 +409,6 @@ export async function generateTailoredResume(resumeData, jobData, additionalText
       children.push(body_para(line.trim()));
     }
     children.push(spacer());
-  }
-
-  // Rephrased additional context
-  if (rephrasedAdditional.length > 0) {
-    children.push(sectionHead('Additional Experience'));
-    for (const line of rephrasedAdditional) {
-      children.push(bullet_para(`• ${line}`));
-    }
   }
 
   // ABSOLUTELY NO WATERMARK, NO FOOTER, NO TIMESTAMP

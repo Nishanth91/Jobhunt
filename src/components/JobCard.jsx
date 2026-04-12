@@ -33,16 +33,11 @@ function companyToDomain(name) {
   return clean ? `${clean}.com` : null;
 }
 
-// Try multiple logo sources in order — returns array of URLs to try
+// Try Clearbit logo — returns empty array if no domain (falls back to initials)
 function getLogoUrls(company, domain) {
-  const urls = [];
-  if (domain) {
-    // Google's favicon service (most reliable, always returns something)
-    urls.push(`https://www.google.com/s2/favicons?domain=${domain}&sz=128`);
-    // Clearbit (high quality when it works)
-    urls.push(`https://logo.clearbit.com/${domain}?size=128`);
-  }
-  return urls;
+  if (!domain) return [];
+  // Clearbit returns a clean 404 when no logo is found, triggering onError → initials
+  return [`https://logo.clearbit.com/${domain}?size=128`];
 }
 
 export default function JobCard({ job, onSave, onUnsave, onDismiss, saved = false, showATS = false }) {

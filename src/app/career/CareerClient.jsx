@@ -333,6 +333,8 @@ export default function CareerClient({
     goodToHave,
     emergingTrends,
     matchedSkills,
+    topStrengths,
+    personalInsight,
     coveragePercent,
     overallCoverage,
     careerPaths,
@@ -356,6 +358,25 @@ export default function CareerClient({
           Personalized skill analysis and learning roadmap based on your profile and target roles.
         </p>
       </div>
+
+      {/* Personalized Insight Banner */}
+      {personalInsight && (
+        <div className="rounded-2xl bg-gradient-to-r from-teal-500/10 to-cyan-500/10 border border-teal-500/20 px-5 py-4 flex items-start gap-3">
+          <Sparkles size={16} className="text-teal-400 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="text-sm text-slate-200 leading-relaxed">{personalInsight}</p>
+            {topStrengths.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mt-2">
+                {topStrengths.map((s) => (
+                  <span key={s} className="px-2.5 py-0.5 rounded-lg text-[10px] font-medium bg-teal-500/20 text-teal-300 border border-teal-500/20">
+                    ✓ {s}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Overview Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
