@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Eye, EyeOff, Lock, CheckCircle, AlertCircle, Loader2, User, Camera, Trash2, Palette, Sun, Moon, Link2, Phone, Mail } from 'lucide-react';
+import { Eye, EyeOff, Lock, CheckCircle, AlertCircle, Loader2, User, Camera, Trash2, Palette, Sun, Moon, Link2, Phone, Mail, MapPin } from 'lucide-react';
 import { useTheme, COLOR_SCHEMES } from '@/components/ThemeProvider';
 
 export default function SettingsClient({ user }) {
@@ -19,7 +19,7 @@ export default function SettingsClient({ user }) {
   const fileRef = useRef(null);
 
   // Contact info state
-  const [contact, setContact] = useState({ linkedIn: '', phone: '', contactEmail: '' });
+  const [contact, setContact] = useState({ linkedIn: '', phone: '', contactEmail: '', city: '' });
   const [savingContact, setSavingContact] = useState(false);
   const [contactSaved, setContactSaved] = useState(false);
   const [contactMsg, setContactMsg] = useState('');
@@ -37,6 +37,7 @@ export default function SettingsClient({ user }) {
           linkedIn: data.linkedIn || '',
           phone: data.phone || '',
           contactEmail: data.contactEmail || '',
+          city: data.city || '',
         });
       })
       .catch(() => {});
@@ -49,7 +50,7 @@ export default function SettingsClient({ user }) {
       const res = await fetch('/api/users/profile', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(contact),
+        body: JSON.stringify(contact),  // includes city
       });
       if (res.ok) {
         setContactSaved(true);
@@ -261,6 +262,18 @@ export default function SettingsClient({ user }) {
               value={contact.contactEmail}
               onChange={(e) => setContact((c) => ({ ...c, contactEmail: e.target.value }))}
               placeholder="you@email.com"
+              className="w-full px-4 py-2.5 bg-white/[0.04] border border-white/10 rounded-xl text-sm text-white placeholder-slate-600 focus:border-teal-500/50 transition-all"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-slate-400 mb-1.5 flex items-center gap-1.5">
+              <MapPin size={11} /> City
+            </label>
+            <input
+              type="text"
+              value={contact.city}
+              onChange={(e) => setContact((c) => ({ ...c, city: e.target.value }))}
+              placeholder="Winnipeg, MB"
               className="w-full px-4 py-2.5 bg-white/[0.04] border border-white/10 rounded-xl text-sm text-white placeholder-slate-600 focus:border-teal-500/50 transition-all"
             />
           </div>

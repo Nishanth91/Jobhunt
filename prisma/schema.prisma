@@ -18,6 +18,7 @@ model User {
   linkedIn     String?
   phone        String?
   contactEmail String?
+  city         String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 

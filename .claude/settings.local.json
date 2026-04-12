@@ -38,7 +38,9 @@
       "Bash(sed -i '' 's/#6366f1/#14b8a6/g' src/components/ScoreBadge.jsx)",
       "Bash(sed -i '' -e s/indigo/teal/g -e s/violet/cyan/g -e s/purple/teal/g -e 's/#6366f1/#14b8a6/g' -e 's/#8b5cf6/#06b6d4/g' -e 's/#a78bfa/#22d3ee/g' -e 's/#a5b4fc/#5eead4/g' -e 's/#c4b5fd/#67e8f9/g' -e 's/#818cf8/#2dd4bf/g' -e 's/rgba\\(99, 102, 241/rgba\\(20, 184, 166/g' -e 's/rgba\\(139, 92, 246/rgba\\(6, 182, 212/g' -e 's/rgba\\(99,102,241/rgba\\(20,184,166/g' -e 's/rgba\\(139,92,246/rgba\\(6,182,212/g' -e 's/#4f46e5/#0d9488/g' -e 's/#4338ca/#0f766e/g' -e 's/#3730a3/#115e59/g' -e 's/#1e1b4b/#042f2e/g' -e 's/#7c3aed/#0891b2/g' -e 's/#f5f3ff/#f0fdfa/g' -e 's/#f4f5fb/#f0fdfa/g' -e 's/#f9f9ff/#f5fffe/g' -e 's/#f0f1fa/#ecfdf5/g' -e 's/#dde1f5/#d1e7e5/g' -e 's/#e2e4f3/#cce8e5/g' -e 's/#d1d5f0/#b0d5d2/g' -e 's/#eaecf8/#e0efed/g' -e 's/#f8f7ff/#f2faf9/g' src/app/globals.css)",
       "Bash(sed -i '' -e 's/'\\\\''#6366f1'\\\\''/'\\\\''#14b8a6'\\\\''/g' -e 's/'\\\\''#8b5cf6'\\\\''/'\\\\''#06b6d4'\\\\''/g' -e 's/purple: '\\\\''#6366f1'\\\\''/teal: '\\\\''#14b8a6'\\\\''/g' -e 's/violet: '\\\\''#8b5cf6'\\\\''/cyan: '\\\\''#06b6d4'\\\\''/g' -e 's/rgba\\(99, 102, 241/rgba\\(20, 184, 166/g' -e 's/rgba\\(139, 92, 246/rgba\\(6, 182, 212/g' -e 's/rgba\\(99,102,241/rgba\\(20,184,166/g' -e 's/rgba\\(139,92,246/rgba\\(6,182,212/g' src/tailwind.config.js)",
-      "Bash(sed -i '' -e 's/#6366f1/#14b8a6/g' -e 's/#8b5cf6/#06b6d4/g' -e 's/rgba\\(99, 102, 241/rgba\\(20, 184, 166/g' -e 's/rgba\\(99,102,241/rgba\\(20,184,166/g' tailwind.config.js)"
+      "Bash(sed -i '' -e 's/#6366f1/#14b8a6/g' -e 's/#8b5cf6/#06b6d4/g' -e 's/rgba\\(99, 102, 241/rgba\\(20, 184, 166/g' -e 's/rgba\\(99,102,241/rgba\\(20,184,166/g' tailwind.config.js)",
+      "Bash(git checkout:*)",
+      "Bash(git merge:*)"
     ]
   }
 }
