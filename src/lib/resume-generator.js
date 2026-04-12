@@ -326,7 +326,7 @@ export async function generateTailoredResume(resumeData, jobData, additionalText
   if (contactLine) {
     children.push(
       new Paragraph({
-        children: [new TextRun({ text: contactLine, size: 18, color: '4b5563', font: 'Calibri' })],
+        children: [new TextRun({ text: contactLine, size: 22, color: '4b5563', font: 'Calibri' })],
         alignment: AlignmentType.LEFT,
         spacing: { after: 160 },
       }),
@@ -356,7 +356,7 @@ export async function generateTailoredResume(resumeData, jobData, additionalText
   // Skills
   if (enhancedSkills.length > 0) {
     children.push(sectionHead('Technical Skills'));
-    children.push(body_para(enhancedSkills.join('  |  ')));
+    children.push(body_para(enhancedSkills.join(', ')));
     children.push(spacer());
   }
 
@@ -416,7 +416,7 @@ export async function generateTailoredResume(resumeData, jobData, additionalText
   const doc = new Document({
     sections: [{
       properties: {
-        page: { margin: { top: 900, bottom: 720, left: 900, right: 900 } },
+        page: { margin: { top: 1080, bottom: 1080, left: 1080, right: 1080 } },
       },
       children,
     }],

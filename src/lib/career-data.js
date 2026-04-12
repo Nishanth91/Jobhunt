@@ -24,7 +24,7 @@ const roleSkillsMap = {
     ],
     resources: {
       'Oracle Database': [
-        { title: 'Oracle Database Administration Full Course', url: 'https://www.youtube.com/watch?v=c1qJCImFRJQ', type: 'youtube', provider: 'YouTube' },
+        { title: 'Oracle Database Administration Full Course', url: 'https://www.youtube.com/results?search_query=oracle+database+administration+full+course', type: 'youtube', provider: 'YouTube Search' },
         { title: 'Oracle Database for Developers - Free Course', url: 'https://education.oracle.com/oracle-database-explorer', type: 'course', provider: 'Oracle Learning' },
         { title: 'Oracle Database Documentation', url: 'https://docs.oracle.com/en/database/', type: 'docs', provider: 'Oracle Docs' },
       ],
@@ -34,25 +34,25 @@ const roleSkillsMap = {
         { title: 'SQLBolt Interactive Tutorial', url: 'https://sqlbolt.com/', type: 'docs', provider: 'SQLBolt' },
       ],
       'PL/SQL': [
-        { title: 'PL/SQL Tutorial for Beginners', url: 'https://www.youtube.com/watch?v=1HEhM2Wg7mM', type: 'youtube', provider: 'YouTube' },
+        { title: 'PL/SQL Tutorial for Beginners', url: 'https://www.youtube.com/results?search_query=oracle+plsql+tutorial+for+beginners', type: 'youtube', provider: 'YouTube Search' },
         { title: 'Oracle PL/SQL Fundamentals', url: 'https://education.oracle.com/oracle-database-program-with-pl-sql', type: 'course', provider: 'Oracle Learning' },
         { title: 'PL/SQL Reference Guide', url: 'https://docs.oracle.com/en/database/oracle/oracle-database/19/lnpls/', type: 'docs', provider: 'Oracle Docs' },
       ],
       'Performance Tuning': [
-        { title: 'Oracle Database Performance Tuning', url: 'https://www.youtube.com/watch?v=U1VDlXJw3z4', type: 'youtube', provider: 'YouTube' },
+        { title: 'Oracle Database Performance Tuning', url: 'https://www.youtube.com/results?search_query=oracle+database+performance+tuning+tutorial', type: 'youtube', provider: 'YouTube Search' },
         { title: 'Database Performance Tuning Guide', url: 'https://docs.oracle.com/en/database/oracle/oracle-database/19/tgdba/', type: 'docs', provider: 'Oracle Docs' },
       ],
       'Oracle RAC': [
-        { title: 'Oracle RAC Architecture Explained', url: 'https://www.youtube.com/watch?v=jqZGRwpSEaQ', type: 'youtube', provider: 'YouTube' },
+        { title: 'Oracle RAC Architecture Explained', url: 'https://www.youtube.com/results?search_query=oracle+rac+architecture+explained', type: 'youtube', provider: 'YouTube Search' },
         { title: 'Oracle RAC Admin Guide', url: 'https://docs.oracle.com/en/database/oracle/oracle-database/19/racad/', type: 'docs', provider: 'Oracle Docs' },
       ],
       'Oracle Cloud Infrastructure': [
-        { title: 'OCI Foundations Full Course', url: 'https://www.youtube.com/watch?v=JKlMKS7g3HI', type: 'youtube', provider: 'YouTube' },
+        { title: 'OCI Foundations Full Course', url: 'https://www.youtube.com/results?search_query=oracle+cloud+infrastructure+foundations+tutorial', type: 'youtube', provider: 'YouTube Search' },
         { title: 'OCI Foundations Associate Certification', url: 'https://education.oracle.com/oracle-cloud-infrastructure-foundations-associate', type: 'course', provider: 'Oracle Learning (Free)' },
         { title: 'OCI Documentation', url: 'https://docs.oracle.com/en-us/iaas/Content/home.htm', type: 'docs', provider: 'Oracle Docs' },
       ],
       'Oracle Autonomous Database': [
-        { title: 'Autonomous Database Workshop', url: 'https://www.youtube.com/watch?v=YKIGpFCfNUk', type: 'youtube', provider: 'Oracle' },
+        { title: 'Autonomous Database Workshop', url: 'https://www.youtube.com/results?search_query=oracle+autonomous+database+tutorial', type: 'youtube', provider: 'YouTube Search' },
         { title: 'Always Free Autonomous Database', url: 'https://www.oracle.com/cloud/free/', type: 'course', provider: 'Oracle Cloud Free Tier' },
       ],
     },
@@ -130,7 +130,7 @@ const roleSkillsMap = {
     ],
     resources: {
       'Lean Manufacturing': [
-        { title: 'Lean Manufacturing - Complete Course', url: 'https://www.youtube.com/watch?v=wfsRAZUnonI', type: 'youtube', provider: 'YouTube' },
+        { title: 'Lean Manufacturing - Complete Course', url: 'https://www.youtube.com/results?search_query=lean+manufacturing+full+course', type: 'youtube', provider: 'YouTube Search' },
         { title: 'Introduction to Lean Manufacturing', url: 'https://www.coursera.org/learn/lean-manufacturing', type: 'course', provider: 'Coursera (Free Audit)' },
         { title: 'Lean Enterprise Institute Resources', url: 'https://www.lean.org/explore-lean/what-is-lean/', type: 'docs', provider: 'LEI' },
       ],
@@ -140,15 +140,15 @@ const roleSkillsMap = {
         { title: 'ASQ Six Sigma Resources', url: 'https://asq.org/quality-resources/six-sigma', type: 'docs', provider: 'ASQ' },
       ],
       'SAP PP': [
-        { title: 'SAP PP (Production Planning) Tutorial', url: 'https://www.youtube.com/watch?v=hYYtK3YGLGM', type: 'youtube', provider: 'YouTube' },
+        { title: 'SAP PP (Production Planning) Tutorial', url: 'https://www.youtube.com/results?search_query=sap+production+planning+tutorial+beginners', type: 'youtube', provider: 'YouTube Search' },
         { title: 'SAP Learning Hub (Free Tier)', url: 'https://learning.sap.com/', type: 'course', provider: 'SAP Learning' },
       ],
       'Quality Control (QC/QA)': [
-        { title: 'Quality Management Full Course', url: 'https://www.youtube.com/watch?v=TR2HLjuYfJU', type: 'youtube', provider: 'YouTube' },
+        { title: 'Quality Management Full Course', url: 'https://www.youtube.com/results?search_query=quality+management+system+training', type: 'youtube', provider: 'YouTube Search' },
         { title: 'ISO 9001 Quality Management', url: 'https://asq.org/quality-resources/iso-9001', type: 'docs', provider: 'ASQ' },
       ],
       'Safety Compliance (OSHA)': [
-        { title: 'OSHA Safety Training', url: 'https://www.youtube.com/watch?v=LBh0yO4JN7c', type: 'youtube', provider: 'YouTube' },
+        { title: 'OSHA Safety Training', url: 'https://www.youtube.com/results?search_query=osha+safety+training+manufacturing', type: 'youtube', provider: 'YouTube Search' },
         { title: 'OSHA Free Training Resources', url: 'https://www.osha.gov/training', type: 'docs', provider: 'OSHA.gov' },
       ],
       'Power BI': [
@@ -156,11 +156,11 @@ const roleSkillsMap = {
         { title: 'Microsoft Power BI Learning Path', url: 'https://learn.microsoft.com/en-us/training/powerplatform/power-bi', type: 'course', provider: 'Microsoft Learn (Free)' },
       ],
       'Industry 4.0 / Smart Manufacturing': [
-        { title: 'Industry 4.0 Explained', url: 'https://www.youtube.com/watch?v=RbLSgp1JDOQ', type: 'youtube', provider: 'YouTube' },
+        { title: 'Industry 4.0 Explained', url: 'https://www.youtube.com/results?search_query=industry+4.0+smart+manufacturing+explained', type: 'youtube', provider: 'YouTube Search' },
         { title: 'Smart Manufacturing Overview', url: 'https://www.nist.gov/el/smart-manufacturing', type: 'docs', provider: 'NIST' },
       ],
       'Root Cause Analysis': [
-        { title: 'Root Cause Analysis Training', url: 'https://www.youtube.com/watch?v=gfEJe-LBFp8', type: 'youtube', provider: 'YouTube' },
+        { title: 'Root Cause Analysis Training', url: 'https://www.youtube.com/results?search_query=root+cause+analysis+training', type: 'youtube', provider: 'YouTube Search' },
         { title: 'ASQ Root Cause Analysis', url: 'https://asq.org/quality-resources/root-cause-analysis', type: 'docs', provider: 'ASQ' },
       ],
     },
@@ -473,16 +473,16 @@ const roleSkillsMap = {
     ],
     resources: {
       'Agile/Scrum': [
-        { title: 'Agile Project Management Full Course', url: 'https://www.youtube.com/watch?v=ZVNBg98VHAU', type: 'youtube', provider: 'YouTube' },
+        { title: 'Agile Project Management Full Course', url: 'https://www.youtube.com/results?search_query=agile+project+management+full+course', type: 'youtube', provider: 'YouTube Search' },
         { title: 'Google Project Management Certificate', url: 'https://www.coursera.org/professional-certificates/google-project-management', type: 'course', provider: 'Coursera (Free Audit)' },
         { title: 'Scrum Guide', url: 'https://scrumguides.org/', type: 'docs', provider: 'Scrum.org' },
       ],
       'JIRA/Asana': [
-        { title: 'JIRA Tutorial for Beginners', url: 'https://www.youtube.com/watch?v=uM_m6EzMg3k', type: 'youtube', provider: 'YouTube' },
+        { title: 'JIRA Tutorial for Beginners', url: 'https://www.youtube.com/results?search_query=jira+tutorial+for+beginners', type: 'youtube', provider: 'YouTube Search' },
         { title: 'Atlassian JIRA Guides', url: 'https://www.atlassian.com/software/jira/guides', type: 'docs', provider: 'Atlassian' },
       ],
       'Risk Management': [
-        { title: 'Risk Management in Projects', url: 'https://www.youtube.com/watch?v=6Cf8nsLDQ4A', type: 'youtube', provider: 'YouTube' },
+        { title: 'Risk Management in Projects', url: 'https://www.youtube.com/results?search_query=project+risk+management+training', type: 'youtube', provider: 'YouTube Search' },
         { title: 'PMI Risk Management Guide', url: 'https://www.pmi.org/learning/library', type: 'docs', provider: 'PMI' },
       ],
     },
@@ -510,11 +510,11 @@ const roleSkillsMap = {
     ],
     resources: {
       'Product Strategy': [
-        { title: 'Product Management Full Course', url: 'https://www.youtube.com/watch?v=kDk6R1BDkLo', type: 'youtube', provider: 'YouTube' },
+        { title: 'Product Management Full Course', url: 'https://www.youtube.com/results?search_query=product+management+full+course', type: 'youtube', provider: 'YouTube Search' },
         { title: 'Digital Product Management', url: 'https://www.coursera.org/learn/uva-darden-digital-product-management', type: 'course', provider: 'Coursera (Free Audit)' },
       ],
       'User Research': [
-        { title: 'UX Research for Beginners', url: 'https://www.youtube.com/watch?v=zGaGSGlE_0c', type: 'youtube', provider: 'YouTube' },
+        { title: 'UX Research for Beginners', url: 'https://www.youtube.com/results?search_query=ux+research+methods+tutorial', type: 'youtube', provider: 'YouTube Search' },
         { title: 'Google UX Design Certificate', url: 'https://www.coursera.org/professional-certificates/google-ux-design', type: 'course', provider: 'Coursera (Free Audit)' },
       ],
     },
@@ -546,7 +546,7 @@ const roleSkillsMap = {
         { title: 'Figma Official Tutorials', url: 'https://help.figma.com/hc/en-us/categories/360002051613-Get-started', type: 'docs', provider: 'Figma' },
       ],
       'User Research': [
-        { title: 'UX Research Methods', url: 'https://www.youtube.com/watch?v=zGaGSGlE_0c', type: 'youtube', provider: 'YouTube' },
+        { title: 'UX Research Methods', url: 'https://www.youtube.com/results?search_query=ux+research+methods+tutorial', type: 'youtube', provider: 'YouTube Search' },
         { title: 'Google UX Design Certificate', url: 'https://www.coursera.org/professional-certificates/google-ux-design', type: 'course', provider: 'Coursera (Free Audit)' },
         { title: 'NN/g UX Articles', url: 'https://www.nngroup.com/articles/', type: 'docs', provider: 'Nielsen Norman Group' },
       ],
@@ -583,7 +583,7 @@ const roleSkillsMap = {
         { title: 'PyTorch Tutorials', url: 'https://pytorch.org/tutorials/', type: 'docs', provider: 'PyTorch' },
       ],
       'LLM Fine-Tuning': [
-        { title: 'Fine-Tuning LLMs Explained', url: 'https://www.youtube.com/watch?v=eC6Hd1hFvos', type: 'youtube', provider: 'YouTube' },
+        { title: 'Fine-Tuning LLMs Explained', url: 'https://www.youtube.com/results?search_query=fine+tuning+llm+tutorial', type: 'youtube', provider: 'YouTube Search' },
         { title: 'Hugging Face NLP Course', url: 'https://huggingface.co/learn/nlp-course', type: 'course', provider: 'Hugging Face (Free)' },
       ],
     },
