@@ -11,14 +11,20 @@ export async function POST(request) {
 
   const { resumeId, jobId, additionalText = '', linkedInUrl = '', downloadNow = false } = await request.json();
 
-  const [resume, job] = await Promise.all([
+  const [resume, job, userProfile] = await Promise.all([
     prisma.resume.findFirst({ where: { id: resumeId, userId: session.user.id } }),
     prisma.savedJob.findFirst({ where: { id: jobId, userId: session.user.id } }),
+    prisma.user.findUnique({ where: { id: session.user.id }, select: { linkedIn: true, phone: true, contactEmail: true } }),
   ]);
 
   if (!resume || !job) {
     return NextResponse.json({ error: 'Resume or job not found' }, { status: 404 });
   }
+
+  // Use saved profile contact info; allow per-request override for linkedIn
+  const resolvedLinkedIn = linkedInUrl || userProfile?.linkedIn || '';
+  const resolvedPhone = userProfile?.phone || '';
+  const resolvedEmail = userProfile?.contactEmail || '';
 
   try {
     const resumeData = {
@@ -29,7 +35,7 @@ export async function POST(request) {
       education: JSON.parse(resume.education || '[]'),
     };
 
-    const { buffer, content } = await generateTailoredResume(resumeData, job, additionalText, linkedInUrl);
+    const { buffer, content } = await generateTailoredResume(resumeData, job, additionalText, resolvedLinkedIn, resolvedPhone, resolvedEmail);
 
     // Calculate ATS score
     const atsResult = calculateATSScore(resume.rawText, job.description || '');

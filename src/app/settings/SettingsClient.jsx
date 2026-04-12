@@ -1,9 +1,11 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Eye, EyeOff, Lock, CheckCircle, AlertCircle, Loader2, User, Camera, Trash2 } from 'lucide-react';
+import { Eye, EyeOff, Lock, CheckCircle, AlertCircle, Loader2, User, Camera, Trash2, Palette, Sun, Moon, Link2, Phone, Mail } from 'lucide-react';
+import { useTheme, COLOR_SCHEMES } from '@/components/ThemeProvider';
 
 export default function SettingsClient({ user }) {
+  const { theme, colorScheme, toggle: toggleTheme, setColorScheme } = useTheme();
   const [form, setForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
   const [showPw, setShowPw] = useState({ current: false, new: false, confirm: false });
   const [loading, setLoading] = useState(false);
@@ -16,13 +18,50 @@ export default function SettingsClient({ user }) {
   const [avatarMsg, setAvatarMsg] = useState('');
   const fileRef = useRef(null);
 
-  // Load avatar on mount
+  // Contact info state
+  const [contact, setContact] = useState({ linkedIn: '', phone: '', contactEmail: '' });
+  const [savingContact, setSavingContact] = useState(false);
+  const [contactSaved, setContactSaved] = useState(false);
+  const [contactMsg, setContactMsg] = useState('');
+
+  // Load avatar + contact info on mount
   useEffect(() => {
     fetch('/api/users/avatar')
       .then((r) => r.json())
       .then((data) => { if (data.avatar) setAvatar(data.avatar); })
       .catch(() => {});
+    fetch('/api/users/profile')
+      .then((r) => r.json())
+      .then((data) => {
+        setContact({
+          linkedIn: data.linkedIn || '',
+          phone: data.phone || '',
+          contactEmail: data.contactEmail || '',
+        });
+      })
+      .catch(() => {});
   }, []);
+
+  const handleSaveContact = async () => {
+    setSavingContact(true);
+    setContactMsg('');
+    try {
+      const res = await fetch('/api/users/profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(contact),
+      });
+      if (res.ok) {
+        setContactSaved(true);
+        setContactMsg('Saved!');
+        setTimeout(() => { setContactSaved(false); setContactMsg(''); }, 3000);
+      }
+    } catch {
+      setContactMsg('Failed to save');
+    } finally {
+      setSavingContact(false);
+    }
+  };
 
   const handleAvatarUpload = async (e) => {
     const file = e.target.files?.[0];
@@ -115,7 +154,7 @@ export default function SettingsClient({ user }) {
   const initials = user.name.split(' ').map((n) => n[0]).join('').toUpperCase();
 
   return (
-    <div className="max-w-lg space-y-8">
+    <div className="max-w-lg mx-auto space-y-8">
       <div>
         <h2 className="text-xl font-semibold text-white mb-1">Settings</h2>
         <p className="text-sm text-slate-400">Manage your account details</p>
@@ -177,6 +216,116 @@ export default function SettingsClient({ user }) {
                 {avatarMsg}
               </p>
             )}
+          </div>
+        </div>
+      </div>
+
+      {/* Contact Info */}
+      <div className="rounded-2xl bg-white/[0.02] border border-white/10 p-6">
+        <h3 className="text-sm font-semibold text-white mb-5 flex items-center gap-2">
+          <Link2 size={15} className="text-teal-400" /> Contact Info
+        </h3>
+        <p className="text-xs text-slate-500 mb-4">Saved once — auto-applied to every resume header you generate.</p>
+
+        <div className="space-y-4">
+          <div>
+            <label className="block text-xs font-medium text-slate-400 mb-1.5 flex items-center gap-1.5">
+              <Link2 size={11} /> LinkedIn URL
+            </label>
+            <input
+              type="url"
+              value={contact.linkedIn}
+              onChange={(e) => setContact((c) => ({ ...c, linkedIn: e.target.value }))}
+              placeholder="https://linkedin.com/in/yourprofile"
+              className="w-full px-4 py-2.5 bg-white/[0.04] border border-white/10 rounded-xl text-sm text-white placeholder-slate-600 focus:border-teal-500/50 transition-all"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-slate-400 mb-1.5 flex items-center gap-1.5">
+              <Phone size={11} /> Phone Number
+            </label>
+            <input
+              type="tel"
+              value={contact.phone}
+              onChange={(e) => setContact((c) => ({ ...c, phone: e.target.value }))}
+              placeholder="+1 (204) 555-0100"
+              className="w-full px-4 py-2.5 bg-white/[0.04] border border-white/10 rounded-xl text-sm text-white placeholder-slate-600 focus:border-teal-500/50 transition-all"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-slate-400 mb-1.5 flex items-center gap-1.5">
+              <Mail size={11} /> Contact Email
+            </label>
+            <input
+              type="email"
+              value={contact.contactEmail}
+              onChange={(e) => setContact((c) => ({ ...c, contactEmail: e.target.value }))}
+              placeholder="you@email.com"
+              className="w-full px-4 py-2.5 bg-white/[0.04] border border-white/10 rounded-xl text-sm text-white placeholder-slate-600 focus:border-teal-500/50 transition-all"
+            />
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3 mt-4">
+          <button
+            onClick={handleSaveContact}
+            disabled={savingContact}
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-teal-500 to-cyan-600 text-white font-semibold text-sm hover:from-teal-600 hover:to-cyan-700 disabled:opacity-60 transition-all"
+          >
+            {savingContact ? <><Loader2 size={14} className="animate-spin" /> Saving...</> : contactSaved ? <><CheckCircle size={14} /> Saved!</> : 'Save Contact Info'}
+          </button>
+          {contactMsg && !savingContact && (
+            <p className={`text-xs ${contactSaved ? 'text-emerald-400' : 'text-red-400'}`}>{contactMsg}</p>
+          )}
+        </div>
+      </div>
+
+      {/* Appearance */}
+      <div className="rounded-2xl bg-white/[0.02] border border-white/10 p-6">
+        <h3 className="text-sm font-semibold text-white mb-5 flex items-center gap-2">
+          <Palette size={15} className="text-teal-400" /> Appearance
+        </h3>
+
+        {/* Dark / Light toggle */}
+        <div className="flex items-center justify-between mb-5">
+          <div>
+            <p className="text-sm text-white font-medium">Theme Mode</p>
+            <p className="text-xs text-slate-500 mt-0.5">Switch between dark and light mode</p>
+          </div>
+          <button
+            onClick={toggleTheme}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/[0.04] border border-white/10 text-sm text-slate-300 hover:text-white hover:border-white/20 transition-all"
+          >
+            {theme === 'dark' ? <><Moon size={14} /> Dark</> : <><Sun size={14} /> Light</>}
+          </button>
+        </div>
+
+        {/* Color scheme swatches */}
+        <div>
+          <p className="text-sm text-white font-medium mb-3">Accent Color</p>
+          <div className="flex flex-wrap gap-3">
+            {COLOR_SCHEMES.map((scheme) => (
+              <button
+                key={scheme.id}
+                onClick={() => setColorScheme(scheme.id)}
+                title={scheme.label}
+                className={`flex flex-col items-center gap-1.5 group`}
+              >
+                <div
+                  className={`w-10 h-10 rounded-xl transition-all ring-offset-2 ring-offset-[#050510] ${
+                    colorScheme === scheme.id ? 'ring-2 scale-110' : 'hover:scale-105 opacity-70 hover:opacity-100'
+                  }`}
+                  style={{
+                    background: `linear-gradient(135deg, ${scheme.primary}, ${scheme.secondary})`,
+                    ringColor: scheme.primary,
+                    boxShadow: colorScheme === scheme.id ? `0 0 12px ${scheme.primary}60` : 'none',
+                  }}
+                />
+                <span className={`text-[10px] font-medium transition-colors ${colorScheme === scheme.id ? 'text-white' : 'text-slate-500 group-hover:text-slate-300'}`}>
+                  {scheme.label}
+                </span>
+              </button>
+            ))}
           </div>
         </div>
       </div>

@@ -29,8 +29,8 @@ export default async function CareerPage() {
   const yearsExp = resume?.yearsExp || 0;
   const targetRoles = preference ? JSON.parse(preference.jobRoles || '[]') : [];
 
-  // Run skill gap analysis
-  const analysis = analyzeSkillGap(resumeSkills, targetRoles, resumeJobTitle);
+  // Run skill gap analysis — pass years of experience for personalised insights
+  const analysis = analyzeSkillGap(resumeSkills, targetRoles, resumeJobTitle, yearsExp);
 
   return (
     <div className="flex min-h-screen">

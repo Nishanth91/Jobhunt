@@ -5,6 +5,13 @@ import ThemeProvider from '@/components/ThemeProvider';
 export const metadata = {
   title: 'JobHunt — Your Career Command Center',
   description: 'Personalized job search dashboard with AI-powered resume tailoring and ATS scoring',
+  icons: {
+    icon: [
+      { url: '/icon.svg', type: 'image/svg+xml' },
+    ],
+    shortcut: '/icon.svg',
+    apple: '/icon.svg',
+  },
 };
 
 export default function RootLayout({ children }) {

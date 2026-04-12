@@ -73,7 +73,7 @@ function ComparisonChart({ regions }) {
     <div className="rounded-2xl bg-white/[0.02] border border-white/10 p-5">
       <div className="flex items-center gap-2 mb-5">
         <BarChart3 className="w-5 h-5 text-teal-400" />
-        <h3 className="text-base font-semibold text-white">Canada vs US Comparison</h3>
+        <h3 className="text-base font-semibold text-white">Winnipeg vs US Comparison</h3>
       </div>
 
       <div className="space-y-4">
@@ -290,7 +290,7 @@ export default function SalaryClient() {
             <div className="flex items-center gap-2 mb-5">
               <TrendingUp className="w-5 h-5 text-teal-400" />
               <h3 className="text-base font-semibold text-white">
-                {data.matchedRole} &mdash; Canada (CAD)
+                {data.matchedRole} &mdash; Winnipeg, MB (CAD)
               </h3>
             </div>
 

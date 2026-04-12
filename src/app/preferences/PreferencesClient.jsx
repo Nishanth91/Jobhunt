@@ -63,7 +63,7 @@ export default function PreferencesClient({ preference }) {
   };
 
   return (
-    <div className="max-w-2xl space-y-8">
+    <div className="max-w-2xl mx-auto space-y-8">
       <div>
         <h2 className="text-xl font-semibold text-white mb-1">Job Preferences</h2>
         <p className="text-sm text-slate-400">These preferences power your job matches and search defaults.</p>

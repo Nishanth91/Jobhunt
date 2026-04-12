@@ -800,7 +800,7 @@ export function getRoleData(roleName) {
 }
 
 // Analyze skill gap between user skills and role requirements
-export function analyzeSkillGap(userSkills = [], targetRoles = [], resumeJobTitle = '') {
+export function analyzeSkillGap(userSkills = [], targetRoles = [], resumeJobTitle = '', yearsExp = 0) {
   // Normalize user skills for comparison
   const normalizedUserSkills = userSkills.map((s) => s.toLowerCase().trim());
 
@@ -811,6 +811,7 @@ export function analyzeSkillGap(userSkills = [], targetRoles = [], resumeJobTitl
   const allCareerPaths = [];
   const allResources = {};
 
+  // Use target roles first; fall back to resume job title; don't default to generic "Software Engineer"
   const rolesToCheck = targetRoles.length > 0 ? targetRoles : [resumeJobTitle].filter(Boolean);
 
   if (rolesToCheck.length === 0) {
@@ -864,8 +865,20 @@ export function analyzeSkillGap(userSkills = [], targetRoles = [], resumeJobTitl
   const coveredAll = totalAll - highPriority.length - goodToHave.length - emergingTrends.length;
   const overallCoverage = totalAll > 0 ? Math.round((coveredAll / totalAll) * 100) : 0;
 
-  // Skills user already has (matched)
+  // Skills user already has (matched against ALL role skill pools)
   const matchedSkills = [...allRequired, ...allAdvanced].filter((s) => hasSkill(s));
+
+  // Personalized strength insights: top matched skills are the user's core strengths
+  const topStrengths = matchedSkills.slice(0, 5);
+
+  // Build a personalized insight message
+  const expLabel = yearsExp > 0 ? `${yearsExp}+ year${yearsExp > 1 ? 's' : ''} of experience` : 'your background';
+  const titleLabel = resumeJobTitle ? ` as ${resumeJobTitle}` : '';
+  const strengthSummary = topStrengths.length > 0
+    ? `Your core strengths in ${topStrengths.slice(0, 3).join(', ')} are directly relevant — focus gaps to unlock the next level.`
+    : 'Build on your existing experience by tackling the high-priority skills below.';
+
+  const personalInsight = `With ${expLabel}${titleLabel}, you already cover ${coveragePercent}% of the core requirements. ${strengthSummary}`;
 
   return {
     matchedRoles,
@@ -873,6 +886,8 @@ export function analyzeSkillGap(userSkills = [], targetRoles = [], resumeJobTitl
     goodToHave,
     emergingTrends,
     matchedSkills,
+    topStrengths,
+    personalInsight,
     coveragePercent,
     overallCoverage,
     careerPaths: allCareerPaths,
