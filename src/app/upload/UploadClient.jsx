@@ -58,14 +58,14 @@ export default function UploadClient({ resumes }) {
                 onClick={() => setActiveResume(resume)}
                 className={`rounded-2xl border p-5 cursor-pointer transition-all ${
                   activeResume?.id === resume.id
-                    ? 'border-indigo-500/40 bg-indigo-500/5'
+                    ? 'border-teal-500/40 bg-teal-500/5'
                     : 'border-white/10 bg-white/[0.02] hover:border-white/20'
                 }`}
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-indigo-500/20 flex items-center justify-center">
-                      <FileText size={18} className="text-indigo-400" />
+                    <div className="w-10 h-10 rounded-xl bg-teal-500/20 flex items-center justify-center">
+                      <FileText size={18} className="text-teal-400" />
                     </div>
                     <div>
                       <p className="text-sm font-medium text-white">{resume.fileName}</p>
@@ -120,7 +120,7 @@ export default function UploadClient({ resumes }) {
                     <span className="text-xs text-slate-500">{resume.education.length} education entry</span>
                   )}
                   {resume.jobTitle && (
-                    <span className="text-xs text-indigo-400">{resume.jobTitle}</span>
+                    <span className="text-xs text-teal-400">{resume.jobTitle}</span>
                   )}
                 </div>
               </div>

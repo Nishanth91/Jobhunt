@@ -39,7 +39,7 @@ export default async function DashboardPage() {
 
   const pipeline = [
     { status: 'APPLIED', label: 'Applied', count: applications.filter((a) => a.status === 'APPLIED').length, color: 'bg-blue-500', jobs: applications.filter((a) => a.status === 'APPLIED') },
-    { status: 'SCREENING', label: 'Screening', count: applications.filter((a) => a.status === 'SCREENING').length, color: 'bg-violet-500', jobs: applications.filter((a) => a.status === 'SCREENING') },
+    { status: 'SCREENING', label: 'Screening', count: applications.filter((a) => a.status === 'SCREENING').length, color: 'bg-cyan-500', jobs: applications.filter((a) => a.status === 'SCREENING') },
     { status: 'INTERVIEW', label: 'Interview', count: applications.filter((a) => ['INTERVIEW', 'FINAL_ROUND'].includes(a.status)).length, color: 'bg-amber-500', jobs: applications.filter((a) => ['INTERVIEW', 'FINAL_ROUND'].includes(a.status)) },
     { status: 'OFFER', label: 'Offer', count: applications.filter((a) => a.status === 'OFFER').length, color: 'bg-emerald-500', jobs: applications.filter((a) => a.status === 'OFFER') },
   ];
@@ -58,12 +58,12 @@ export default async function DashboardPage() {
         <main className="flex-1 px-8 py-7 space-y-8">
 
           {/* Welcome Banner */}
-          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-indigo-500/10 via-violet-500/8 to-purple-500/10 border border-indigo-500/20 p-6">
+          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-teal-500/10 via-cyan-500/8 to-teal-500/10 border border-teal-500/20 p-6">
             <div className="relative z-10">
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                    <Sparkles size={20} className="text-indigo-400" />
+                    <Sparkles size={20} className="text-teal-400" />
                     Welcome back, {userName}
                   </h2>
                   <p className="text-sm text-slate-400 mt-1">
@@ -74,17 +74,17 @@ export default async function DashboardPage() {
                 </div>
                 <div className="flex gap-3 flex-shrink-0">
                   {!hasResume && (
-                    <Link href="/upload" className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 text-white text-sm font-medium hover:shadow-glow transition-all">
+                    <Link href="/upload" className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-teal-500 to-cyan-600 text-white text-sm font-medium hover:shadow-glow transition-all">
                       <Upload size={14} /> Upload Resume
                     </Link>
                   )}
                   {!hasPreferences && (
-                    <Link href="/preferences" className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-violet-500/20 text-violet-300 text-sm font-medium hover:bg-violet-500/30 border border-violet-500/20 transition-all">
+                    <Link href="/preferences" className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-cyan-500/20 text-cyan-300 text-sm font-medium hover:bg-cyan-500/30 border border-cyan-500/20 transition-all">
                       <Settings size={14} /> Set Preferences
                     </Link>
                   )}
                   {hasResume && hasPreferences && (
-                    <Link href="/jobs" className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 text-white text-sm font-medium hover:shadow-glow transition-all">
+                    <Link href="/jobs" className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-teal-500 to-cyan-600 text-white text-sm font-medium hover:shadow-glow transition-all">
                       <Zap size={14} /> Search Jobs <ArrowRight size={12} />
                     </Link>
                   )}
@@ -92,15 +92,15 @@ export default async function DashboardPage() {
               </div>
             </div>
             {/* Decorative blobs */}
-            <div className="absolute top-0 right-0 w-48 h-48 bg-indigo-500/10 rounded-full blur-3xl" />
-            <div className="absolute bottom-0 left-1/3 w-32 h-32 bg-violet-500/10 rounded-full blur-3xl" />
+            <div className="absolute top-0 right-0 w-48 h-48 bg-teal-500/10 rounded-full blur-3xl" />
+            <div className="absolute bottom-0 left-1/3 w-32 h-32 bg-cyan-500/10 rounded-full blur-3xl" />
           </div>
 
           {/* Stats Row */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <StatsCard icon={Briefcase} label="Jobs Saved" value={totalSaved} sub="Total positions" color="indigo" />
+            <StatsCard icon={Briefcase} label="Jobs Saved" value={totalSaved} sub="Total positions" color="teal" />
             <StatsCard icon={CheckCircle} label="Applications" value={totalApplied} sub="Sent out" color="blue" />
-            <StatsCard icon={Calendar} label="Interviews" value={interviews} sub="In progress" color="violet" />
+            <StatsCard icon={Calendar} label="Interviews" value={interviews} sub="In progress" color="cyan" />
             <StatsCard icon={TrendingUp} label="Match Score" value={`${avgMatch}%`} sub="Avg. fit" color="emerald" />
           </div>
 
@@ -109,7 +109,7 @@ export default async function DashboardPage() {
             <div className="rounded-2xl bg-white/[0.02] border border-white/10 p-5">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-semibold text-white flex items-center gap-2">
-                  <Target size={14} className="text-indigo-400" /> Application Pipeline
+                  <Target size={14} className="text-teal-400" /> Application Pipeline
                 </h3>
                 <span className="text-xs text-slate-500">{totalApplied} total</span>
               </div>
@@ -146,19 +146,19 @@ export default async function DashboardPage() {
             <div className="xl:col-span-2 space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-base font-semibold text-white">Recent Saved Jobs</h3>
-                <Link href="/jobs" className="flex items-center gap-1 text-xs text-indigo-400 hover:text-indigo-300 transition-colors font-medium">
+                <Link href="/jobs" className="flex items-center gap-1 text-xs text-teal-400 hover:text-teal-300 transition-colors font-medium">
                   View all <ArrowRight size={11} />
                 </Link>
               </div>
 
               {savedJobs.length === 0 ? (
                 <div className="rounded-2xl bg-white/[0.02] border border-white/5 p-10 text-center">
-                  <div className="w-16 h-16 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center mx-auto mb-4">
-                    <Briefcase size={24} className="text-indigo-400" />
+                  <div className="w-16 h-16 rounded-2xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center mx-auto mb-4">
+                    <Briefcase size={24} className="text-teal-400" />
                   </div>
                   <p className="text-slate-300 font-medium">No jobs saved yet</p>
                   <p className="text-sm text-slate-500 mt-1 max-w-sm mx-auto">Search for positions that match your skills and save them to track your progress</p>
-                  <Link href="/jobs" className="inline-flex items-center gap-2 mt-5 px-5 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 text-white text-sm font-medium hover:shadow-glow transition-all">
+                  <Link href="/jobs" className="inline-flex items-center gap-2 mt-5 px-5 py-2.5 rounded-xl bg-gradient-to-r from-teal-500 to-cyan-600 text-white text-sm font-medium hover:shadow-glow transition-all">
                     <Zap size={14} /> Browse Jobs
                   </Link>
                 </div>
@@ -217,10 +217,10 @@ export default async function DashboardPage() {
                 <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Quick Actions</h4>
                 <div className="space-y-2">
                   <Link href="/jobs" className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg bg-white/[0.03] hover:bg-white/[0.06] text-sm text-slate-300 transition-colors">
-                    <Briefcase size={14} className="text-indigo-400" /> Search new jobs
+                    <Briefcase size={14} className="text-teal-400" /> Search new jobs
                   </Link>
                   <Link href="/upload" className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg bg-white/[0.03] hover:bg-white/[0.06] text-sm text-slate-300 transition-colors">
-                    <Upload size={14} className="text-violet-400" /> Update resume
+                    <Upload size={14} className="text-cyan-400" /> Update resume
                   </Link>
                   <Link href="/career" className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg bg-white/[0.03] hover:bg-white/[0.06] text-sm text-slate-300 transition-colors">
                     <Sparkles size={14} className="text-amber-400" /> Career guidance

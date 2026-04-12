@@ -233,10 +233,10 @@ function ResumePreviewPanel({ content, documentId, onClose, onDownload, jobTitle
 function ATSFixLog({ entries }) {
   if (!entries || entries.length === 0) return null;
   return (
-    <div className="rounded-2xl bg-gradient-to-br from-indigo-500/5 to-violet-500/5 border border-indigo-500/15 p-5 space-y-3">
+    <div className="rounded-2xl bg-gradient-to-br from-teal-500/5 to-cyan-500/5 border border-teal-500/15 p-5 space-y-3">
       <div className="flex items-center gap-2">
-        <ClipboardList size={14} className="text-indigo-400" />
-        <h4 className="text-xs font-semibold text-indigo-300 uppercase tracking-wider">ATS Fix Log</h4>
+        <ClipboardList size={14} className="text-teal-400" />
+        <h4 className="text-xs font-semibold text-teal-300 uppercase tracking-wider">ATS Fix Log</h4>
       </div>
       <div className="space-y-2 max-h-64 overflow-y-auto">
         {entries.map((entry, i) => (
@@ -253,7 +253,7 @@ function ATSFixLog({ entries }) {
               {entry.keywords && (
                 <div className="flex flex-wrap gap-1 mt-1">
                   {entry.keywords.map((k) => (
-                    <span key={k} className="px-1.5 py-0.5 rounded text-[10px] bg-indigo-500/15 text-indigo-300 border border-indigo-500/20">{k}</span>
+                    <span key={k} className="px-1.5 py-0.5 rounded text-[10px] bg-teal-500/15 text-teal-300 border border-teal-500/20">{k}</span>
                   ))}
                 </div>
               )}
@@ -425,12 +425,12 @@ export default function JobDetailClient({ job, resumeData, documents, userName }
         <div className="rounded-2xl bg-gradient-to-br from-white/[0.04] to-white/[0.02] border border-white/10 p-6">
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-start gap-4">
-              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
+              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
                 {job.company.slice(0, 2).toUpperCase()}
               </div>
               <div>
                 <h1 className="text-xl font-bold text-white">{job.title}</h1>
-                <p className="text-indigo-300 font-medium mt-0.5">{job.company}</p>
+                <p className="text-teal-300 font-medium mt-0.5">{job.company}</p>
                 <div className="flex items-center gap-3 mt-2 flex-wrap">
                   <span className="flex items-center gap-1 text-sm text-slate-400"><MapPin size={13} />{job.location}</span>
                   {job.postedAt && <span className="flex items-center gap-1 text-sm text-slate-500"><Clock size={13} />{formatDistanceToNow(new Date(job.postedAt), { addSuffix: true })}</span>}
@@ -451,7 +451,7 @@ export default function JobDetailClient({ job, resumeData, documents, userName }
           {/* Actions */}
           <div className="flex flex-wrap gap-2 mt-5 pt-5 border-t border-white/5">
             <a href={job.url} target="_blank" rel="noopener noreferrer"
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-500/20 text-indigo-300 text-sm font-medium hover:bg-indigo-500/30 border border-indigo-500/20 transition-all">
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-teal-500/20 text-teal-300 text-sm font-medium hover:bg-teal-500/30 border border-teal-500/20 transition-all">
               <ExternalLink size={14} /> View Original
             </a>
             {job.companyWebsite && (
@@ -470,7 +470,7 @@ export default function JobDetailClient({ job, resumeData, documents, userName }
             {resumeData ? (
               <>
                 <button onClick={scoreATS} disabled={scoringATS}
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-violet-500/20 text-violet-300 text-sm font-medium hover:bg-violet-500/30 border border-violet-500/20 transition-all disabled:opacity-50">
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-cyan-500/20 text-cyan-300 text-sm font-medium hover:bg-cyan-500/30 border border-cyan-500/20 transition-all disabled:opacity-50">
                   {scoringATS ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle size={14} />}
                   ATS Score
                 </button>
@@ -527,7 +527,7 @@ export default function JobDetailClient({ job, resumeData, documents, userName }
             {STATUS_OPTIONS.map((s) => (
               <button key={s} onClick={() => handleStatusChange(s)}
                 className={`px-2.5 py-1 rounded-lg text-xs transition-all ${
-                  status === s ? 'bg-indigo-500/30 text-indigo-200 border border-indigo-500/30' : 'text-slate-600 hover:text-slate-400 border border-transparent hover:border-white/10'
+                  status === s ? 'bg-teal-500/30 text-teal-200 border border-teal-500/30' : 'text-slate-600 hover:text-slate-400 border border-transparent hover:border-white/10'
                 }`}>
                 {s.replace('_', ' ')}
               </button>
@@ -540,7 +540,7 @@ export default function JobDetailClient({ job, resumeData, documents, userName }
           {['overview', 'ats', 'documents'].map((t) => (
             <button key={t} onClick={() => setTab(t)}
               className={`px-4 py-2.5 text-sm font-medium transition-all border-b-2 -mb-px ${
-                tab === t ? 'text-indigo-300 border-indigo-500' : 'text-slate-500 border-transparent hover:text-slate-300'
+                tab === t ? 'text-teal-300 border-teal-500' : 'text-slate-500 border-transparent hover:text-slate-300'
               }`}>
               {t === 'overview' ? 'Job Details' : t === 'ats' ? 'ATS Analysis' : 'Documents'}
             </button>
@@ -559,7 +559,7 @@ export default function JobDetailClient({ job, resumeData, documents, userName }
                 <div className={`mt-4 text-sm text-slate-300 leading-relaxed whitespace-pre-wrap ${showDesc ? '' : 'line-clamp-8'}`}>
                   {job.description || 'No description available.'}
                 </div>
-                {!showDesc && <button onClick={() => setShowDesc(true)} className="mt-2 text-xs text-indigo-400 hover:text-indigo-300">Show full description</button>}
+                {!showDesc && <button onClick={() => setShowDesc(true)} className="mt-2 text-xs text-teal-400 hover:text-teal-300">Show full description</button>}
               </div>
             </div>
             <div className="space-y-4">
@@ -588,7 +588,7 @@ export default function JobDetailClient({ job, resumeData, documents, userName }
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-semibold text-white">ATS Score Breakdown</h3>
                 {!atsResult && (
-                  <button onClick={scoreATS} disabled={scoringATS || !resumeData} className="text-xs text-indigo-400 hover:text-indigo-300 disabled:opacity-50">
+                  <button onClick={scoreATS} disabled={scoringATS || !resumeData} className="text-xs text-teal-400 hover:text-teal-300 disabled:opacity-50">
                     {scoringATS ? 'Scoring...' : 'Run Analysis'}
                   </button>
                 )}
@@ -602,7 +602,7 @@ export default function JobDetailClient({ job, resumeData, documents, userName }
 
               {display.breakdown && (
                 <div className="space-y-3">
-                  <ScoreBar value={display.breakdown.skills} label="Skills Match" color="indigo" />
+                  <ScoreBar value={display.breakdown.skills} label="Skills Match" color="teal" />
                   <ScoreBar value={display.breakdown.keywords} label="Keywords Match" color="blue" />
                   <ScoreBar value={display.breakdown.format} label="Resume Format" color="emerald" />
                   <ScoreBar value={display.breakdown.experience} label="Experience Fit" color="amber" />
@@ -620,7 +620,7 @@ export default function JobDetailClient({ job, resumeData, documents, userName }
                 <div className="pt-3 border-t border-white/5 space-y-2">
                   <p className="text-xs text-slate-400">Auto-fix adds missing keywords to your resume and creates an updated version.</p>
                   <button onClick={fixATS} disabled={fixingATS}
-                    className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500/20 to-violet-500/20 text-indigo-200 text-sm font-medium hover:from-indigo-500/30 hover:to-violet-500/30 border border-indigo-500/20 transition-all disabled:opacity-50">
+                    className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-gradient-to-r from-teal-500/20 to-cyan-500/20 text-teal-200 text-sm font-medium hover:from-teal-500/30 hover:to-cyan-500/30 border border-teal-500/20 transition-all disabled:opacity-50">
                     {fixingATS ? <><Loader2 size={14} className="animate-spin" /> Fixing resume...</> : <><Wand2 size={14} /> Auto-Fix Resume Keywords</>}
                   </button>
                   {fixResult && (
@@ -669,7 +669,7 @@ export default function JobDetailClient({ job, resumeData, documents, userName }
               <div className="rounded-2xl bg-white/[0.02] border border-white/10 p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-sm font-semibold text-white">Cover Letter</h3>
-                  <button onClick={() => navigator.clipboard.writeText(coverLetter)} className="text-xs text-indigo-400 hover:text-indigo-300">Copy</button>
+                  <button onClick={() => navigator.clipboard.writeText(coverLetter)} className="text-xs text-teal-400 hover:text-teal-300">Copy</button>
                 </div>
                 <pre className="text-xs text-slate-300 leading-relaxed whitespace-pre-wrap font-sans bg-white/[0.02] rounded-xl p-4 border border-white/5 max-h-96 overflow-y-auto">{coverLetter}</pre>
               </div>

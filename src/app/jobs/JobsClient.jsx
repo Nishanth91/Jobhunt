@@ -124,7 +124,7 @@ export default function JobsClient({ preference, resumeData, savedJobIds, defaul
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && search()}
               placeholder="Job title, skill, or keyword..."
-              className="w-full pl-9 pr-4 py-2.5 bg-white/[0.04] border border-white/10 rounded-xl text-sm text-white placeholder-slate-500 focus:border-indigo-500/50 transition-all"
+              className="w-full pl-9 pr-4 py-2.5 bg-white/[0.04] border border-white/10 rounded-xl text-sm text-white placeholder-slate-500 focus:border-teal-500/50 transition-all"
             />
           </div>
           <div className="flex-1 relative sm:max-w-xs">
@@ -135,13 +135,13 @@ export default function JobsClient({ preference, resumeData, savedJobIds, defaul
               onChange={(e) => setLocation(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && search()}
               placeholder="City, state, or 'Remote'..."
-              className="w-full pl-9 pr-4 py-2.5 bg-white/[0.04] border border-white/10 rounded-xl text-sm text-white placeholder-slate-500 focus:border-indigo-500/50 transition-all"
+              className="w-full pl-9 pr-4 py-2.5 bg-white/[0.04] border border-white/10 rounded-xl text-sm text-white placeholder-slate-500 focus:border-teal-500/50 transition-all"
             />
           </div>
           <button
             onClick={() => search()}
             disabled={loading || !query.trim()}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 text-white text-sm font-medium disabled:opacity-50 hover:from-indigo-600 hover:to-violet-700 transition-all flex-shrink-0"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-teal-500 to-cyan-600 text-white text-sm font-medium disabled:opacity-50 hover:from-teal-600 hover:to-cyan-700 transition-all flex-shrink-0"
           >
             {loading ? <Loader2 size={14} className="animate-spin" /> : <Search size={14} />}
             Search
@@ -160,7 +160,7 @@ export default function JobsClient({ preference, resumeData, savedJobIds, defaul
                   onClick={() => setSource(s)}
                   className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
                     source === s
-                      ? 'bg-indigo-500/30 text-indigo-200 border border-indigo-500/30'
+                      ? 'bg-teal-500/30 text-teal-200 border border-teal-500/30'
                       : 'text-slate-500 hover:text-slate-300 border border-transparent hover:border-white/10'
                   }`}
                 >
@@ -178,7 +178,7 @@ export default function JobsClient({ preference, resumeData, savedJobIds, defaul
                 <button
                   key={role}
                   onClick={() => { setQuery(role); search(role, location, source); }}
-                  className="px-2.5 py-1 rounded-lg text-xs text-slate-400 border border-white/5 hover:border-indigo-500/30 hover:text-indigo-300 transition-all"
+                  className="px-2.5 py-1 rounded-lg text-xs text-slate-400 border border-white/5 hover:border-teal-500/30 hover:text-teal-300 transition-all"
                 >
                   {role}
                 </button>
@@ -245,8 +245,8 @@ export default function JobsClient({ preference, resumeData, savedJobIds, defaul
 
       {!searched && !loading && (
         <div className="text-center py-20">
-          <div className="w-20 h-20 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center mx-auto mb-5">
-            <Search size={32} className="text-indigo-400" />
+          <div className="w-20 h-20 rounded-2xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center mx-auto mb-5">
+            <Search size={32} className="text-teal-400" />
           </div>
           <p className="text-white font-semibold text-lg">Start your job search</p>
           <p className="text-sm text-slate-400 mt-2 max-w-sm mx-auto">

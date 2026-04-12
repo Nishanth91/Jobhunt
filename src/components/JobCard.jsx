@@ -9,12 +9,12 @@ import { useRouter } from 'next/navigation';
 
 // Gradient colors based on company name hash
 const GRADIENTS = [
-  'from-indigo-500 to-violet-600',
+  'from-teal-500 to-cyan-600',
   'from-blue-500 to-cyan-500',
   'from-emerald-500 to-teal-500',
   'from-rose-500 to-pink-600',
   'from-amber-500 to-orange-500',
-  'from-violet-500 to-purple-600',
+  'from-cyan-500 to-teal-600',
   'from-sky-500 to-blue-600',
   'from-fuchsia-500 to-pink-500',
 ];
@@ -109,7 +109,7 @@ export default function JobCard({ job, onSave, onUnsave, onDismiss, saved = fals
   if (dismissed) return null;
 
   return (
-    <div className="group relative rounded-2xl bg-gradient-to-br from-white/[0.04] to-white/[0.02] border border-white/10 p-5 hover:border-indigo-500/40 hover:shadow-glow transition-all duration-300 hover:-translate-y-0.5">
+    <div className="group relative rounded-2xl bg-gradient-to-br from-white/[0.04] to-white/[0.02] border border-white/10 p-5 hover:border-teal-500/40 hover:shadow-glow transition-all duration-300 hover:-translate-y-0.5">
       {/* Dismiss button — top-right corner, only on hover */}
       {onDismiss && (
         <button
@@ -151,7 +151,7 @@ export default function JobCard({ job, onSave, onUnsave, onDismiss, saved = fals
             {isSavedJob ? (
               <Link
                 href={`/jobs/${job.id}`}
-                className="text-base font-semibold text-white hover:text-indigo-300 transition-colors line-clamp-1"
+                className="text-base font-semibold text-white hover:text-teal-300 transition-colors line-clamp-1"
               >
                 {job.title}
               </Link>
@@ -164,7 +164,7 @@ export default function JobCard({ job, onSave, onUnsave, onDismiss, saved = fals
               <button
                 onClick={handleUnsave}
                 disabled={saving}
-                className="flex-shrink-0 text-indigo-400 hover:text-red-400 transition-colors"
+                className="flex-shrink-0 text-teal-400 hover:text-red-400 transition-colors"
                 title="Remove from saved"
               >
                 <BookmarkCheck size={18} />
@@ -173,7 +173,7 @@ export default function JobCard({ job, onSave, onUnsave, onDismiss, saved = fals
               <button
                 onClick={() => { setSaving(true); onSave?.(job).then((s) => { setIsSaved(true); setSaving(false); }).catch(() => setSaving(false)); }}
                 disabled={saving}
-                className="flex-shrink-0 text-slate-500 hover:text-indigo-400 transition-colors"
+                className="flex-shrink-0 text-slate-500 hover:text-teal-400 transition-colors"
                 title="Save job"
               >
                 <Bookmark size={18} />
@@ -182,7 +182,7 @@ export default function JobCard({ job, onSave, onUnsave, onDismiss, saved = fals
           </div>
 
           {/* Company + Location */}
-          <p className="text-sm text-indigo-300 font-medium mt-0.5">{job.company}</p>
+          <p className="text-sm text-teal-300 font-medium mt-0.5">{job.company}</p>
           <div className="flex items-center gap-3 mt-1.5 flex-wrap">
             <span className="flex items-center gap-1 text-xs text-slate-400">
               <MapPin size={11} /> {job.location}
@@ -236,7 +236,7 @@ export default function JobCard({ job, onSave, onUnsave, onDismiss, saved = fals
           {isSavedJob ? (
             <Link
               href={`/jobs/${job.id}`}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-500/20 text-indigo-300 text-xs font-medium hover:bg-indigo-500/30 transition-colors border border-indigo-500/20"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-teal-500/20 text-teal-300 text-xs font-medium hover:bg-teal-500/30 transition-colors border border-teal-500/20"
             >
               View Details <ArrowRight size={11} />
             </Link>
@@ -244,7 +244,7 @@ export default function JobCard({ job, onSave, onUnsave, onDismiss, saved = fals
             <button
               onClick={handleSaveAndView}
               disabled={saving}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-500/20 text-indigo-300 text-xs font-medium hover:bg-indigo-500/30 transition-colors border border-indigo-500/20 disabled:opacity-50"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-teal-500/20 text-teal-300 text-xs font-medium hover:bg-teal-500/30 transition-colors border border-teal-500/20 disabled:opacity-50"
             >
               {saving ? 'Saving…' : isSaved ? 'View Details' : 'Save & View'} <ArrowRight size={11} />
             </button>

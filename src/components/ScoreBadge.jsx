@@ -9,7 +9,7 @@ export function ScoreRing({ score, size = 72, label = '' }) {
 
   const color =
     progress >= 80 ? '#10b981' :
-    progress >= 60 ? '#6366f1' :
+    progress >= 60 ? '#14b8a6' :
     progress >= 40 ? '#f59e0b' :
     '#ef4444';
 
@@ -46,8 +46,8 @@ export function StatusBadge({ status }) {
   const styles = {
     SAVED:       'bg-slate-700 text-slate-300',
     APPLIED:     'bg-blue-500/20 text-blue-300 border border-blue-500/30',
-    INTERVIEW:   'bg-violet-500/20 text-violet-300 border border-violet-500/30',
-    FINAL_ROUND: 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30',
+    INTERVIEW:   'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30',
+    FINAL_ROUND: 'bg-teal-500/20 text-teal-300 border border-teal-500/30',
     OFFER:       'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30',
     REJECTED:    'bg-red-500/20 text-red-300 border border-red-500/30',
     SCREENING:   'bg-yellow-500/20 text-yellow-300 border border-yellow-500/30',
@@ -79,9 +79,9 @@ export function SourceBadge({ source }) {
   );
 }
 
-export function ScoreBar({ value, label, color = 'indigo' }) {
+export function ScoreBar({ value, label, color = 'teal' }) {
   const colors = {
-    indigo: 'bg-indigo-500',
+    teal: 'bg-teal-500',
     emerald: 'bg-emerald-500',
     amber: 'bg-amber-500',
     blue: 'bg-blue-500',
@@ -95,7 +95,7 @@ export function ScoreBar({ value, label, color = 'indigo' }) {
       </div>
       <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
         <div
-          className={`h-full rounded-full ${colors[color] || colors.indigo} transition-all duration-1000`}
+          className={`h-full rounded-full ${colors[color] || colors.teal} transition-all duration-1000`}
           style={{ width: `${value}%` }}
         />
       </div>

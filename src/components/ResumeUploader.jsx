@@ -65,12 +65,12 @@ export default function ResumeUploader({ onSuccess }) {
         onClick={() => inputRef.current?.click()}
         className={`relative cursor-pointer rounded-2xl border-2 border-dashed p-10 text-center transition-all ${
           state === 'dragging'
-            ? 'border-indigo-400 bg-indigo-500/10'
+            ? 'border-teal-400 bg-teal-500/10'
             : state === 'success'
             ? 'border-emerald-500/50 bg-emerald-500/5'
             : state === 'error'
             ? 'border-red-500/50 bg-red-500/5'
-            : 'border-white/10 hover:border-indigo-500/40 hover:bg-white/[0.02]'
+            : 'border-white/10 hover:border-teal-500/40 hover:bg-white/[0.02]'
         }`}
       >
         <input
@@ -83,7 +83,7 @@ export default function ResumeUploader({ onSuccess }) {
 
         {state === 'uploading' && (
           <div className="flex flex-col items-center gap-3">
-            <Loader2 size={40} className="text-indigo-400 animate-spin" />
+            <Loader2 size={40} className="text-teal-400 animate-spin" />
             <p className="text-slate-300 font-medium">Analysing {fileName}...</p>
             <p className="text-sm text-slate-500">Extracting skills, experience & education</p>
           </div>
@@ -108,8 +108,8 @@ export default function ResumeUploader({ onSuccess }) {
 
         {(state === 'idle' || state === 'dragging') && (
           <div className="flex flex-col items-center gap-3">
-            <div className="w-16 h-16 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center">
-              <Upload size={28} className="text-indigo-400" />
+            <div className="w-16 h-16 rounded-2xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center">
+              <Upload size={28} className="text-teal-400" />
             </div>
             <div>
               <p className="text-white font-medium">Drop your resume here</p>
@@ -126,7 +126,7 @@ export default function ResumeUploader({ onSuccess }) {
           <p className="text-sm font-semibold text-white">Extracted Skills</p>
           <div className="flex flex-wrap gap-1.5">
             {result.skills.slice(0, 15).map((skill) => (
-              <span key={skill} className="px-2.5 py-1 rounded-lg text-xs bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+              <span key={skill} className="px-2.5 py-1 rounded-lg text-xs bg-teal-500/20 text-teal-300 border border-teal-500/30">
                 {skill}
               </span>
             ))}

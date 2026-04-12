@@ -46,7 +46,7 @@ export default function Sidebar() {
       {/* Logo */}
       <div className="px-6 py-6 border-b border-white/5">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-glow-sm">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center shadow-glow-sm">
             <Star size={16} className="text-white" />
           </div>
           <div>
@@ -59,7 +59,7 @@ export default function Sidebar() {
       {/* User Profile */}
       <div className="px-4 py-4 border-b border-white/5">
         <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-white/[0.03]">
-          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-400 to-violet-500 flex items-center justify-center text-white text-sm font-bold flex-shrink-0 overflow-hidden">
+          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center text-white text-sm font-bold flex-shrink-0 overflow-hidden">
             {avatar ? <img src={avatar} alt="" className="w-full h-full object-cover" /> : initials}
           </div>
           <div className="min-w-0">
@@ -79,13 +79,13 @@ export default function Sidebar() {
               href={href}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 group ${
                 active
-                  ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/20'
+                  ? 'bg-teal-500/20 text-teal-300 border border-teal-500/20'
                   : 'text-slate-400 hover:text-white hover:bg-white/5'
               }`}
             >
-              <Icon size={16} className={active ? 'text-indigo-400' : 'text-slate-500 group-hover:text-slate-300'} />
+              <Icon size={16} className={active ? 'text-teal-400' : 'text-slate-500 group-hover:text-slate-300'} />
               <span className="flex-1">{label}</span>
-              {active && <ChevronRight size={12} className="text-indigo-400/50" />}
+              {active && <ChevronRight size={12} className="text-teal-400/50" />}
             </Link>
           );
         })}
@@ -99,7 +99,7 @@ export default function Sidebar() {
               href="/admin"
               className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all group ${
                 pathname === '/admin'
-                  ? 'bg-violet-500/20 text-violet-300 border border-violet-500/20'
+                  ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/20'
                   : 'text-slate-400 hover:text-white hover:bg-white/5'
               }`}
             >

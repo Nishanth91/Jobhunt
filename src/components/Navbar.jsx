@@ -43,7 +43,7 @@ export default function Navbar({ title = '' }) {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search jobs by title, skill, or company..."
-              className="w-full pl-9 pr-4 py-2 bg-white/[0.04] border border-white/10 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500/50 focus:bg-white/[0.06] transition-all"
+              className="w-full pl-9 pr-4 py-2 bg-white/[0.04] border border-white/10 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-teal-500/50 focus:bg-white/[0.06] transition-all"
             />
           </div>
         </form>
@@ -51,12 +51,12 @@ export default function Navbar({ title = '' }) {
         <div className="flex items-center gap-2">
           <button
             onClick={toggle}
-            className="w-9 h-9 rounded-xl bg-white/[0.04] border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:border-indigo-500/30 transition-all"
+            className="w-9 h-9 rounded-xl bg-white/[0.04] border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:border-teal-500/30 transition-all"
             title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
           >
             {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
           </button>
-          <button className="w-9 h-9 rounded-xl bg-white/[0.04] border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:border-indigo-500/30 transition-all">
+          <button className="w-9 h-9 rounded-xl bg-white/[0.04] border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:border-teal-500/30 transition-all">
             <Bell size={15} />
           </button>
         </div>

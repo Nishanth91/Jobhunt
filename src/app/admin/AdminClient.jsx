@@ -53,7 +53,7 @@ export default function AdminClient({ users }) {
         </div>
         <button
           onClick={() => setShowAddForm(true)}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 text-white text-sm font-medium hover:from-indigo-600 hover:to-violet-700 transition-all shadow-glow-sm"
+          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-teal-500 to-cyan-600 text-white text-sm font-medium hover:from-teal-600 hover:to-cyan-700 transition-all shadow-glow-sm"
         >
           <Plus size={15} /> Add User
         </button>
@@ -61,7 +61,7 @@ export default function AdminClient({ users }) {
 
       {/* Add User Form */}
       {showAddForm && (
-        <div className="rounded-2xl bg-white/[0.03] border border-indigo-500/20 p-6">
+        <div className="rounded-2xl bg-white/[0.03] border border-teal-500/20 p-6">
           <div className="flex items-center justify-between mb-5">
             <h3 className="text-sm font-semibold text-white">Add New User</h3>
             <button onClick={() => setShowAddForm(false)} className="text-slate-500 hover:text-slate-300">
@@ -83,7 +83,7 @@ export default function AdminClient({ users }) {
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
                 placeholder="John Smith"
-                className="w-full px-3 py-2.5 bg-white/[0.04] border border-white/10 rounded-xl text-sm text-white placeholder-slate-600 focus:border-indigo-500/50 transition-all"
+                className="w-full px-3 py-2.5 bg-white/[0.04] border border-white/10 rounded-xl text-sm text-white placeholder-slate-600 focus:border-teal-500/50 transition-all"
               />
             </div>
             <div>
@@ -93,7 +93,7 @@ export default function AdminClient({ users }) {
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
                 placeholder="user@example.com"
-                className="w-full px-3 py-2.5 bg-white/[0.04] border border-white/10 rounded-xl text-sm text-white placeholder-slate-600 focus:border-indigo-500/50 transition-all"
+                className="w-full px-3 py-2.5 bg-white/[0.04] border border-white/10 rounded-xl text-sm text-white placeholder-slate-600 focus:border-teal-500/50 transition-all"
               />
             </div>
             <div>
@@ -104,7 +104,7 @@ export default function AdminClient({ users }) {
                   value={form.password}
                   onChange={(e) => setForm({ ...form, password: e.target.value })}
                   placeholder="Min 8 characters"
-                  className="w-full px-3 pr-9 py-2.5 bg-white/[0.04] border border-white/10 rounded-xl text-sm text-white placeholder-slate-600 focus:border-indigo-500/50 transition-all"
+                  className="w-full px-3 pr-9 py-2.5 bg-white/[0.04] border border-white/10 rounded-xl text-sm text-white placeholder-slate-600 focus:border-teal-500/50 transition-all"
                 />
                 <button type="button" onClick={() => setShowPw(!showPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500">
                   {showPw ? <EyeOff size={13} /> : <Eye size={13} />}
@@ -116,7 +116,7 @@ export default function AdminClient({ users }) {
               <select
                 value={form.role}
                 onChange={(e) => setForm({ ...form, role: e.target.value })}
-                className="w-full px-3 py-2.5 bg-white/[0.04] border border-white/10 rounded-xl text-sm text-white focus:border-indigo-500/50 transition-all"
+                className="w-full px-3 py-2.5 bg-white/[0.04] border border-white/10 rounded-xl text-sm text-white focus:border-teal-500/50 transition-all"
               >
                 <option value="USER">User</option>
                 <option value="ADMIN">Admin</option>
@@ -126,7 +126,7 @@ export default function AdminClient({ users }) {
 
           <div className="flex gap-3 mt-5">
             <button onClick={handleAdd} disabled={adding}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-500/20 text-indigo-300 text-sm font-medium hover:bg-indigo-500/30 border border-indigo-500/20 transition-all disabled:opacity-50">
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-teal-500/20 text-teal-300 text-sm font-medium hover:bg-teal-500/30 border border-teal-500/20 transition-all disabled:opacity-50">
               {adding ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle size={14} />}
               Create User
             </button>
@@ -149,14 +149,14 @@ export default function AdminClient({ users }) {
         {users.map((user) => (
           <div key={user.id} className="grid grid-cols-5 px-5 py-4 border-b border-white/5 last:border-0 hover:bg-white/[0.02] transition-colors items-center">
             <div className="col-span-2 flex items-center gap-3">
-              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-400 to-violet-500 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
+              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
                 {user.name.split(' ').map((n) => n[0]).join('').toUpperCase()}
               </div>
               <div>
                 <p className="text-sm font-medium text-white">{user.name}</p>
                 <p className="text-xs text-slate-500">{user.email}</p>
                 {user.role === 'ADMIN' && (
-                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300">ADMIN</span>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-teal-500/20 text-teal-300">ADMIN</span>
                 )}
               </div>
             </div>

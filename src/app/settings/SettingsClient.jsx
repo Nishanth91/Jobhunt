@@ -124,7 +124,7 @@ export default function SettingsClient({ user }) {
       {/* Profile Info + Avatar Upload */}
       <div className="rounded-2xl bg-white/[0.02] border border-white/10 p-6">
         <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
-          <User size={15} className="text-indigo-400" /> Profile
+          <User size={15} className="text-teal-400" /> Profile
         </h3>
         <div className="flex items-center gap-5">
           {/* Avatar with upload overlay */}
@@ -139,7 +139,7 @@ export default function SettingsClient({ user }) {
             <button
               onClick={() => fileRef.current?.click()}
               disabled={avatarLoading}
-              className="avatar-upload w-20 h-20 rounded-full bg-gradient-to-br from-indigo-400 to-violet-500 flex items-center justify-center text-white text-2xl font-bold overflow-hidden ring-2 ring-white/10 ring-offset-2 ring-offset-[#050510]"
+              className="avatar-upload w-20 h-20 rounded-full bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center text-white text-2xl font-bold overflow-hidden ring-2 ring-white/10 ring-offset-2 ring-offset-[#050510]"
             >
               {avatar ? (
                 <img src={avatar} alt="Profile" className="w-full h-full object-cover" />
@@ -158,7 +158,7 @@ export default function SettingsClient({ user }) {
               <button
                 onClick={() => fileRef.current?.click()}
                 disabled={avatarLoading}
-                className="text-xs text-indigo-400 hover:text-indigo-300 font-medium transition-colors"
+                className="text-xs text-teal-400 hover:text-teal-300 font-medium transition-colors"
               >
                 {avatar ? 'Change photo' : 'Upload photo'}
               </button>
@@ -184,7 +184,7 @@ export default function SettingsClient({ user }) {
       {/* Change Password */}
       <div className="rounded-2xl bg-white/[0.02] border border-white/10 p-6">
         <h3 className="text-sm font-semibold text-white mb-5 flex items-center gap-2">
-          <Lock size={15} className="text-indigo-400" /> Change Password
+          <Lock size={15} className="text-teal-400" /> Change Password
         </h3>
 
         {success && (
@@ -208,7 +208,7 @@ export default function SettingsClient({ user }) {
                 value={form.currentPassword}
                 onChange={(e) => setForm((f) => ({ ...f, currentPassword: e.target.value }))}
                 required
-                className="w-full px-4 py-3 pr-12 bg-white/[0.04] border border-white/10 rounded-xl text-white placeholder-slate-600 text-sm focus:border-indigo-500/50 transition-all"
+                className="w-full px-4 py-3 pr-12 bg-white/[0.04] border border-white/10 rounded-xl text-white placeholder-slate-600 text-sm focus:border-teal-500/50 transition-all"
                 placeholder="••••••••"
               />
               <button
@@ -231,7 +231,7 @@ export default function SettingsClient({ user }) {
                 value={form.newPassword}
                 onChange={(e) => setForm((f) => ({ ...f, newPassword: e.target.value }))}
                 required
-                className="w-full px-4 py-3 pr-12 bg-white/[0.04] border border-white/10 rounded-xl text-white placeholder-slate-600 text-sm focus:border-indigo-500/50 transition-all"
+                className="w-full px-4 py-3 pr-12 bg-white/[0.04] border border-white/10 rounded-xl text-white placeholder-slate-600 text-sm focus:border-teal-500/50 transition-all"
                 placeholder="••••••••"
               />
               <button
@@ -254,7 +254,7 @@ export default function SettingsClient({ user }) {
                 value={form.confirmPassword}
                 onChange={(e) => setForm((f) => ({ ...f, confirmPassword: e.target.value }))}
                 required
-                className="w-full px-4 py-3 pr-12 bg-white/[0.04] border border-white/10 rounded-xl text-white placeholder-slate-600 text-sm focus:border-indigo-500/50 transition-all"
+                className="w-full px-4 py-3 pr-12 bg-white/[0.04] border border-white/10 rounded-xl text-white placeholder-slate-600 text-sm focus:border-teal-500/50 transition-all"
                 placeholder="••••••••"
               />
               <button
@@ -271,7 +271,7 @@ export default function SettingsClient({ user }) {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 text-white font-semibold text-sm hover:from-indigo-600 hover:to-violet-700 disabled:opacity-60 transition-all flex items-center justify-center gap-2 mt-2"
+            className="w-full py-3 rounded-xl bg-gradient-to-r from-teal-500 to-cyan-600 text-white font-semibold text-sm hover:from-teal-600 hover:to-cyan-700 disabled:opacity-60 transition-all flex items-center justify-center gap-2 mt-2"
           >
             {loading ? <><Loader2 size={15} className="animate-spin" /> Updating...</> : 'Update Password'}
           </button>

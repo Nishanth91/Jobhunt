@@ -4,7 +4,6 @@ import { getSalaryInsights } from '@/lib/salary-data';
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const role = searchParams.get('role');
-  const location = searchParams.get('location') || '';
 
   if (!role) {
     return NextResponse.json(
@@ -13,7 +12,7 @@ export async function GET(request) {
     );
   }
 
-  const insights = getSalaryInsights(role, location);
+  const insights = getSalaryInsights(role);
 
   if (!insights) {
     return NextResponse.json(

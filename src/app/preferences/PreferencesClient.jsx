@@ -77,7 +77,7 @@ export default function PreferencesClient({ preference }) {
           {/* Tags */}
           <div className="flex flex-wrap gap-1.5 mb-3 min-h-[28px]">
             {form.jobRoles.map((tag) => (
-              <span key={tag} className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-500/20 text-indigo-200 text-xs border border-indigo-500/30">
+              <span key={tag} className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-teal-500/20 text-teal-200 text-xs border border-teal-500/30">
                 {tag}
                 <button
                   onMouseDown={(e) => e.preventDefault()}
@@ -98,12 +98,12 @@ export default function PreferencesClient({ preference }) {
               onChange={(e) => setRoleInput(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addTag('jobRoles', roleInput); } }}
               placeholder="e.g. Software Engineer"
-              className="flex-1 px-3 py-2 bg-white/[0.04] border border-white/10 rounded-xl text-sm text-white placeholder-slate-600 focus:border-indigo-500/50 transition-all"
+              className="flex-1 px-3 py-2 bg-white/[0.04] border border-white/10 rounded-xl text-sm text-white placeholder-slate-600 focus:border-teal-500/50 transition-all"
             />
             <button
               onMouseDown={(e) => e.preventDefault()}
               onClick={() => addTag('jobRoles', roleInput)}
-              className="px-3 py-2 rounded-xl bg-indigo-500/20 text-indigo-300 hover:bg-indigo-500/30 border border-indigo-500/20 transition-all"
+              className="px-3 py-2 rounded-xl bg-teal-500/20 text-teal-300 hover:bg-teal-500/30 border border-teal-500/20 transition-all"
             >
               <Plus size={16} />
             </button>
@@ -116,7 +116,7 @@ export default function PreferencesClient({ preference }) {
                 key={s}
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => addTag('jobRoles', s)}
-                className="px-2.5 py-1 rounded-lg text-xs text-slate-400 bg-white/[0.03] border border-white/5 hover:border-indigo-500/30 hover:text-indigo-300 transition-all"
+                className="px-2.5 py-1 rounded-lg text-xs text-slate-400 bg-white/[0.03] border border-white/5 hover:border-teal-500/30 hover:text-teal-300 transition-all"
               >
                 + {s}
               </button>
@@ -130,7 +130,7 @@ export default function PreferencesClient({ preference }) {
 
           <div className="flex flex-wrap gap-1.5 mb-3 min-h-[28px]">
             {form.locations.map((tag) => (
-              <span key={tag} className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-500/20 text-indigo-200 text-xs border border-indigo-500/30">
+              <span key={tag} className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-teal-500/20 text-teal-200 text-xs border border-teal-500/30">
                 {tag}
                 <button
                   onMouseDown={(e) => e.preventDefault()}
@@ -150,12 +150,12 @@ export default function PreferencesClient({ preference }) {
               onChange={(e) => setLocationInput(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addTag('locations', locationInput); } }}
               placeholder="e.g. New York, Remote"
-              className="flex-1 px-3 py-2 bg-white/[0.04] border border-white/10 rounded-xl text-sm text-white placeholder-slate-600 focus:border-indigo-500/50 transition-all"
+              className="flex-1 px-3 py-2 bg-white/[0.04] border border-white/10 rounded-xl text-sm text-white placeholder-slate-600 focus:border-teal-500/50 transition-all"
             />
             <button
               onMouseDown={(e) => e.preventDefault()}
               onClick={() => addTag('locations', locationInput)}
-              className="px-3 py-2 rounded-xl bg-indigo-500/20 text-indigo-300 hover:bg-indigo-500/30 border border-indigo-500/20 transition-all"
+              className="px-3 py-2 rounded-xl bg-teal-500/20 text-teal-300 hover:bg-teal-500/30 border border-teal-500/20 transition-all"
             >
               <Plus size={16} />
             </button>
@@ -167,7 +167,7 @@ export default function PreferencesClient({ preference }) {
                 key={s}
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => addTag('locations', s)}
-                className="px-2.5 py-1 rounded-lg text-xs text-slate-400 bg-white/[0.03] border border-white/5 hover:border-indigo-500/30 hover:text-indigo-300 transition-all"
+                className="px-2.5 py-1 rounded-lg text-xs text-slate-400 bg-white/[0.03] border border-white/5 hover:border-teal-500/30 hover:text-teal-300 transition-all"
               >
                 + {s}
               </button>
@@ -185,7 +185,7 @@ export default function PreferencesClient({ preference }) {
                 onClick={() => setForm((f) => ({ ...f, jobType: value }))}
                 className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
                   form.jobType === value
-                    ? 'bg-indigo-500/30 text-indigo-200 border border-indigo-500/40'
+                    ? 'bg-teal-500/30 text-teal-200 border border-teal-500/40'
                     : 'bg-white/[0.03] text-slate-400 border border-white/10 hover:border-white/20 hover:text-white'
                 }`}
               >
@@ -206,7 +206,7 @@ export default function PreferencesClient({ preference }) {
                 value={form.minSalary || ''}
                 onChange={(e) => setForm((f) => ({ ...f, minSalary: e.target.value ? Number(e.target.value) : null }))}
                 placeholder="e.g. 80000"
-                className="w-full px-3 py-2.5 bg-white/[0.04] border border-white/10 rounded-xl text-sm text-white placeholder-slate-600 focus:border-indigo-500/50 transition-all"
+                className="w-full px-3 py-2.5 bg-white/[0.04] border border-white/10 rounded-xl text-sm text-white placeholder-slate-600 focus:border-teal-500/50 transition-all"
               />
             </div>
             <div>
@@ -216,7 +216,7 @@ export default function PreferencesClient({ preference }) {
                 value={form.maxSalary || ''}
                 onChange={(e) => setForm((f) => ({ ...f, maxSalary: e.target.value ? Number(e.target.value) : null }))}
                 placeholder="e.g. 150000"
-                className="w-full px-3 py-2.5 bg-white/[0.04] border border-white/10 rounded-xl text-sm text-white placeholder-slate-600 focus:border-indigo-500/50 transition-all"
+                className="w-full px-3 py-2.5 bg-white/[0.04] border border-white/10 rounded-xl text-sm text-white placeholder-slate-600 focus:border-teal-500/50 transition-all"
               />
             </div>
           </div>
@@ -226,7 +226,7 @@ export default function PreferencesClient({ preference }) {
       <button
         onClick={handleSave}
         disabled={saving}
-        className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 text-white font-semibold text-sm hover:from-indigo-600 hover:to-violet-700 disabled:opacity-60 transition-all shadow-glow-sm"
+        className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-teal-500 to-cyan-600 text-white font-semibold text-sm hover:from-teal-600 hover:to-cyan-700 disabled:opacity-60 transition-all shadow-glow-sm"
       >
         {saving ? <><Loader2 size={16} className="animate-spin" /> Saving...</> :
          saved  ? <><CheckCircle size={16} /> Saved!</> :

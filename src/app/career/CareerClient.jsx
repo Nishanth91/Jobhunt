@@ -35,12 +35,12 @@ const CATEGORY_CONFIG = {
     label: 'Emerging Trends',
     description: 'Trending skills that give you a competitive edge',
     icon: TrendingUp,
-    gradient: 'from-violet-500 to-purple-500',
-    bg: 'bg-violet-500/10',
-    border: 'border-violet-500/20',
-    text: 'text-violet-300',
-    badge: 'bg-violet-500/20 text-violet-300 border-violet-500/30',
-    glow: 'shadow-violet-500/5',
+    gradient: 'from-cyan-500 to-teal-500',
+    bg: 'bg-cyan-500/10',
+    border: 'border-cyan-500/20',
+    text: 'text-cyan-300',
+    badge: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30',
+    glow: 'shadow-cyan-500/5',
   },
 };
 
@@ -142,7 +142,7 @@ function SkillCard({ skill, category, resources, isExpanded, onToggle }) {
                   <ResIcon size={14} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-medium text-white truncate group-hover:text-indigo-200 transition-colors">
+                  <p className="text-xs font-medium text-white truncate group-hover:text-teal-200 transition-colors">
                     {resource.title}
                   </p>
                   <p className="text-[10px] text-slate-500">{resource.provider}</p>
@@ -167,7 +167,7 @@ function SkillCard({ skill, category, resources, isExpanded, onToggle }) {
               <Play size={14} />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-medium text-white group-hover:text-indigo-200 transition-colors">
+              <p className="text-xs font-medium text-white group-hover:text-teal-200 transition-colors">
                 {skill} Tutorial
               </p>
               <p className="text-[10px] text-slate-500">YouTube</p>
@@ -197,12 +197,12 @@ function CareerPathVisualization({ careerPaths, yearsExp }) {
       {careerPaths.map(({ role, path }, pathIdx) => (
         <div key={pathIdx}>
           <h4 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
-            <Layers size={14} className="text-indigo-400" />
+            <Layers size={14} className="text-teal-400" />
             {role}
           </h4>
           <div className="relative">
             {/* Connecting line */}
-            <div className="absolute left-[19px] top-6 bottom-6 w-px bg-gradient-to-b from-indigo-500/40 via-violet-500/40 to-purple-500/40" />
+            <div className="absolute left-[19px] top-6 bottom-6 w-px bg-gradient-to-b from-teal-500/40 via-cyan-500/40 to-teal-500/40" />
 
             <div className="space-y-3">
               {path.map((step, idx) => {
@@ -216,7 +216,7 @@ function CareerPathVisualization({ careerPaths, yearsExp }) {
                     <div
                       className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 z-10 border transition-all ${
                         isCurrent
-                          ? 'bg-gradient-to-br from-indigo-500 to-violet-600 border-indigo-400/50 shadow-lg shadow-indigo-500/20'
+                          ? 'bg-gradient-to-br from-teal-500 to-cyan-600 border-teal-400/50 shadow-lg shadow-teal-500/20'
                           : isPast
                           ? 'bg-emerald-500/20 border-emerald-500/30'
                           : 'bg-white/[0.03] border-white/10'
@@ -235,7 +235,7 @@ function CareerPathVisualization({ careerPaths, yearsExp }) {
                     <div
                       className={`flex-1 rounded-xl px-4 py-3 border transition-all ${
                         isCurrent
-                          ? 'bg-indigo-500/10 border-indigo-500/20'
+                          ? 'bg-teal-500/10 border-teal-500/20'
                           : isPast
                           ? 'bg-emerald-500/5 border-emerald-500/10'
                           : 'bg-white/[0.02] border-white/5'
@@ -244,7 +244,7 @@ function CareerPathVisualization({ careerPaths, yearsExp }) {
                       <div className="flex items-center gap-2 mb-1">
                         <span
                           className={`text-[10px] font-semibold uppercase tracking-wider ${
-                            isCurrent ? 'text-indigo-400' : isPast ? 'text-emerald-500' : 'text-slate-600'
+                            isCurrent ? 'text-teal-400' : isPast ? 'text-emerald-500' : 'text-slate-600'
                           }`}
                         >
                           {step.level}
@@ -260,7 +260,7 @@ function CareerPathVisualization({ careerPaths, yearsExp }) {
                             key={s}
                             className={`px-2 py-0.5 rounded text-[10px] border ${
                               isCurrent
-                                ? 'bg-indigo-500/15 text-indigo-300 border-indigo-500/20'
+                                ? 'bg-teal-500/15 text-teal-300 border-teal-500/20'
                                 : isPast
                                 ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
                                 : 'bg-white/[0.03] text-slate-500 border-white/5'
@@ -302,8 +302,8 @@ export default function CareerClient({
   if (!hasResume && !hasPreferences) {
     return (
       <div className="max-w-2xl mx-auto py-16 text-center">
-        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-violet-500/20 border border-indigo-500/20 flex items-center justify-center mx-auto mb-6">
-          <GraduationCap size={28} className="text-indigo-400" />
+        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-teal-500/20 to-cyan-500/20 border border-teal-500/20 flex items-center justify-center mx-auto mb-6">
+          <GraduationCap size={28} className="text-teal-400" />
         </div>
         <h2 className="text-xl font-bold text-white mb-2">Career Guidance</h2>
         <p className="text-sm text-slate-400 mb-8 max-w-md mx-auto">
@@ -312,13 +312,13 @@ export default function CareerClient({
         <div className="flex gap-3 justify-center">
           <Link
             href="/upload"
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-500/20 text-indigo-300 text-sm font-medium hover:bg-indigo-500/30 border border-indigo-500/20 transition-all"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-teal-500/20 text-teal-300 text-sm font-medium hover:bg-teal-500/30 border border-teal-500/20 transition-all"
           >
             <Upload size={14} /> Upload Resume
           </Link>
           <Link
             href="/preferences"
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-violet-500/20 text-violet-300 text-sm font-medium hover:bg-violet-500/30 border border-violet-500/20 transition-all"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-cyan-500/20 text-cyan-300 text-sm font-medium hover:bg-cyan-500/30 border border-cyan-500/20 transition-all"
           >
             <Settings size={14} /> Set Preferences
           </Link>
@@ -362,14 +362,14 @@ export default function CareerClient({
         {/* Role Match Card */}
         <div className="rounded-2xl bg-white/[0.02] border border-white/10 p-5 backdrop-blur-sm">
           <div className="flex items-center gap-2 mb-3">
-            <Target size={16} className="text-indigo-400" />
+            <Target size={16} className="text-teal-400" />
             <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Target Roles</span>
           </div>
           <div className="flex flex-wrap gap-1.5">
             {matchedRoles.map((role) => (
               <span
                 key={role}
-                className="px-2.5 py-1 rounded-lg bg-indigo-500/15 text-indigo-200 text-xs border border-indigo-500/20 font-medium"
+                className="px-2.5 py-1 rounded-lg bg-teal-500/15 text-teal-200 text-xs border border-teal-500/20 font-medium"
               >
                 {role}
               </span>
@@ -425,7 +425,7 @@ export default function CareerClient({
             onClick={() => setActiveTab(key)}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
               activeTab === key
-                ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/20'
+                ? 'bg-teal-500/20 text-teal-300 border border-teal-500/20'
                 : 'text-slate-400 hover:text-white hover:bg-white/5'
             }`}
           >
@@ -546,7 +546,7 @@ export default function CareerClient({
 
       {/* Prompt to complete profile */}
       {(!hasResume || !hasPreferences) && (
-        <div className="rounded-2xl bg-gradient-to-r from-indigo-500/10 to-violet-500/10 border border-indigo-500/20 p-5">
+        <div className="rounded-2xl bg-gradient-to-r from-teal-500/10 to-cyan-500/10 border border-teal-500/20 p-5">
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-sm font-semibold text-white mb-1">
@@ -560,7 +560,7 @@ export default function CareerClient({
             </div>
             <Link
               href={!hasResume ? '/upload' : '/preferences'}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-500/20 text-indigo-300 text-sm font-medium hover:bg-indigo-500/30 border border-indigo-500/20 transition-all flex-shrink-0"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-teal-500/20 text-teal-300 text-sm font-medium hover:bg-teal-500/30 border border-teal-500/20 transition-all flex-shrink-0"
             >
               {!hasResume ? <Upload size={14} /> : <Settings size={14} />}
               {!hasResume ? 'Upload Resume' : 'Set Preferences'}

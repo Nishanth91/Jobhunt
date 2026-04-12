@@ -729,12 +729,9 @@ export function findBestRoleMatch(userRole) {
     if (key.toLowerCase() === lower) return key;
   }
 
-  // Partial/contains match
-  for (const key of Object.keys(roleSkillsMap)) {
-    if (lower.includes(key.toLowerCase()) || key.toLowerCase().includes(lower)) return key;
-  }
-
-  // Keyword-based match
+  // Keyword-based match — checked BEFORE partial match to avoid
+  // "Production Engineer" matching "Production Engineer (SRE)" via substring
+  // when it should match "Manufacturing Production Supervisor" via keyword.
   const keywordMap = {
     'dba': 'Oracle DBA',
     'database': 'Oracle DBA',
@@ -786,6 +783,11 @@ export function findBestRoleMatch(userRole) {
 
   for (const [keyword, role] of Object.entries(keywordMap)) {
     if (lower.includes(keyword)) return role;
+  }
+
+  // Partial/contains match (after keyword match to avoid false positives)
+  for (const key of Object.keys(roleSkillsMap)) {
+    if (lower.includes(key.toLowerCase()) || key.toLowerCase().includes(lower)) return key;
   }
 
   // Default fallback

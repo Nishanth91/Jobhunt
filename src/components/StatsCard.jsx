@@ -1,18 +1,18 @@
-export default function StatsCard({ icon: Icon, label, value, sub, color = 'indigo', trend }) {
+export default function StatsCard({ icon: Icon, label, value, sub, color = 'teal', trend }) {
   const colors = {
-    indigo: {
-      bg: 'from-indigo-500/10 to-indigo-600/5',
-      border: 'border-indigo-500/20',
-      icon: 'bg-gradient-to-br from-indigo-500 to-indigo-600 text-white',
-      value: 'text-indigo-300',
-      glow: 'bg-indigo-500',
+    teal: {
+      bg: 'from-teal-500/10 to-teal-600/5',
+      border: 'border-teal-500/20',
+      icon: 'bg-gradient-to-br from-teal-500 to-teal-600 text-white',
+      value: 'text-teal-300',
+      glow: 'bg-teal-500',
     },
-    violet: {
-      bg: 'from-violet-500/10 to-violet-600/5',
-      border: 'border-violet-500/20',
-      icon: 'bg-gradient-to-br from-violet-500 to-violet-600 text-white',
-      value: 'text-violet-300',
-      glow: 'bg-violet-500',
+    cyan: {
+      bg: 'from-cyan-500/10 to-cyan-600/5',
+      border: 'border-cyan-500/20',
+      icon: 'bg-gradient-to-br from-cyan-500 to-cyan-600 text-white',
+      value: 'text-cyan-300',
+      glow: 'bg-cyan-500',
     },
     emerald: {
       bg: 'from-emerald-500/10 to-emerald-600/5',
@@ -37,7 +37,7 @@ export default function StatsCard({ icon: Icon, label, value, sub, color = 'indi
     },
   };
 
-  const c = colors[color] || colors.indigo;
+  const c = colors[color] || colors.teal;
 
   return (
     <div className={`stat-shine relative overflow-hidden rounded-2xl bg-gradient-to-br ${c.bg} border ${c.border} p-5 hover:scale-[1.02] transition-all duration-300 hover:shadow-glow`}>

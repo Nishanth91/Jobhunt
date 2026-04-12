@@ -17,23 +17,23 @@ export default function ResumesClient({ documents }) {
 
       {documents.length === 0 ? (
         <div className="text-center py-20">
-          <div className="w-20 h-20 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center mx-auto mb-5">
-            <FileText size={32} className="text-indigo-400" />
+          <div className="w-20 h-20 rounded-2xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center mx-auto mb-5">
+            <FileText size={32} className="text-teal-400" />
           </div>
           <p className="text-white font-semibold text-lg">No tailored resumes yet</p>
           <p className="text-sm text-slate-400 mt-2 max-w-sm mx-auto">
             Go to a saved job and click "Tailored Resume" to generate one optimised for that specific role.
           </p>
-          <Link href="/jobs" className="inline-flex items-center gap-2 mt-5 px-4 py-2 rounded-xl bg-indigo-500/20 text-indigo-300 text-sm font-medium hover:bg-indigo-500/30 border border-indigo-500/20 transition-all">
+          <Link href="/jobs" className="inline-flex items-center gap-2 mt-5 px-4 py-2 rounded-xl bg-teal-500/20 text-teal-300 text-sm font-medium hover:bg-teal-500/30 border border-teal-500/20 transition-all">
             Browse Jobs →
           </Link>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {documents.map((doc) => (
-            <div key={doc.id} className="rounded-2xl bg-gradient-to-br from-white/[0.04] to-white/[0.02] border border-white/10 p-5 hover:border-indigo-500/30 transition-all">
+            <div key={doc.id} className="rounded-2xl bg-gradient-to-br from-white/[0.04] to-white/[0.02] border border-white/10 p-5 hover:border-teal-500/30 transition-all">
               <div className="flex items-start justify-between gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center flex-shrink-0">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center flex-shrink-0">
                   <FileText size={16} className="text-white" />
                 </div>
                 {doc.atsScore && <ScoreRing score={Math.round(doc.atsScore)} size={48} />}
@@ -42,8 +42,8 @@ export default function ResumesClient({ documents }) {
               <div className="mt-3">
                 <p className="text-sm font-semibold text-white">{doc.job?.title || 'Unknown Role'}</p>
                 <div className="flex items-center gap-1 mt-0.5">
-                  <Building size={11} className="text-indigo-400" />
-                  <span className="text-xs text-indigo-300">{doc.job?.company || 'Unknown Company'}</span>
+                  <Building size={11} className="text-teal-400" />
+                  <span className="text-xs text-teal-300">{doc.job?.company || 'Unknown Company'}</span>
                 </div>
               </div>
 

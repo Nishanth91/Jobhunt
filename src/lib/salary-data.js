@@ -1,116 +1,203 @@
-// Template-based salary ranges for common roles across regions.
-// Used by the Salary Insights page for quick salary comparisons.
+// Salary ranges for common roles in Canada and the US.
+// Roles include Canadian NOC codes for easy identification.
+// Data is template-based; used by the Salary Insights page.
 
 const salaryDatabase = {
+  'Production Supervisor': {
+    noc: '9211', category: 'Manufacturing & Trades',
+    'Canada': { min: 45000, median: 65000, max: 95000, currency: 'CAD' },
+    'United States': { min: 50000, median: 72000, max: 105000, currency: 'USD' },
+  },
+  'Industrial Engineer': {
+    noc: '2141', category: 'Engineering',
+    'Canada': { min: 60000, median: 82000, max: 115000, currency: 'CAD' },
+    'United States': { min: 70000, median: 95000, max: 130000, currency: 'USD' },
+  },
+  'Machinist': {
+    noc: '7231', category: 'Manufacturing & Trades',
+    'Canada': { min: 40000, median: 58000, max: 80000, currency: 'CAD' },
+    'United States': { min: 38000, median: 55000, max: 78000, currency: 'USD' },
+  },
+  'Welder': {
+    noc: '7237', category: 'Manufacturing & Trades',
+    'Canada': { min: 38000, median: 55000, max: 82000, currency: 'CAD' },
+    'United States': { min: 40000, median: 58000, max: 85000, currency: 'USD' },
+  },
+  'Electrician': {
+    noc: '7241', category: 'Manufacturing & Trades',
+    'Canada': { min: 50000, median: 72000, max: 100000, currency: 'CAD' },
+    'United States': { min: 48000, median: 68000, max: 98000, currency: 'USD' },
+  },
+  'Millwright': {
+    noc: '7311', category: 'Manufacturing & Trades',
+    'Canada': { min: 52000, median: 75000, max: 105000, currency: 'CAD' },
+    'United States': { min: 50000, median: 72000, max: 100000, currency: 'USD' },
+  },
+  'Quality Control Inspector': {
+    noc: '2262', category: 'Manufacturing & Trades',
+    'Canada': { min: 40000, median: 55000, max: 78000, currency: 'CAD' },
+    'United States': { min: 38000, median: 52000, max: 75000, currency: 'USD' },
+  },
+  'Mechanical Engineer': {
+    noc: '2132', category: 'Engineering',
+    'Canada': { min: 62000, median: 85000, max: 120000, currency: 'CAD' },
+    'United States': { min: 75000, median: 100000, max: 140000, currency: 'USD' },
+  },
+  'Civil Engineer': {
+    noc: '2131', category: 'Engineering',
+    'Canada': { min: 60000, median: 80000, max: 115000, currency: 'CAD' },
+    'United States': { min: 70000, median: 95000, max: 135000, currency: 'USD' },
+  },
+  'Electrical Engineer': {
+    noc: '2133', category: 'Engineering',
+    'Canada': { min: 62000, median: 88000, max: 125000, currency: 'CAD' },
+    'United States': { min: 78000, median: 105000, max: 150000, currency: 'USD' },
+  },
   'Software Engineer': {
-    'United States': { min: 90000, median: 130000, max: 200000, currency: 'USD' },
+    noc: '2173', category: 'Technology',
     'Canada': { min: 70000, median: 100000, max: 155000, currency: 'CAD' },
-    'United Kingdom': { min: 40000, median: 62000, max: 95000, currency: 'GBP' },
-    'Remote/Global': { min: 60000, median: 105000, max: 175000, currency: 'USD' },
+    'United States': { min: 90000, median: 130000, max: 200000, currency: 'USD' },
   },
   'Frontend Developer': {
-    'United States': { min: 80000, median: 120000, max: 180000, currency: 'USD' },
+    noc: '2175', category: 'Technology',
     'Canada': { min: 60000, median: 90000, max: 140000, currency: 'CAD' },
-    'United Kingdom': { min: 35000, median: 55000, max: 85000, currency: 'GBP' },
-    'Remote/Global': { min: 50000, median: 95000, max: 160000, currency: 'USD' },
+    'United States': { min: 80000, median: 120000, max: 180000, currency: 'USD' },
   },
   'Backend Developer': {
-    'United States': { min: 90000, median: 135000, max: 210000, currency: 'USD' },
+    noc: '2175', category: 'Technology',
     'Canada': { min: 70000, median: 105000, max: 160000, currency: 'CAD' },
-    'United Kingdom': { min: 42000, median: 65000, max: 100000, currency: 'GBP' },
-    'Remote/Global': { min: 60000, median: 110000, max: 180000, currency: 'USD' },
+    'United States': { min: 90000, median: 135000, max: 210000, currency: 'USD' },
   },
   'Full Stack Developer': {
-    'United States': { min: 85000, median: 128000, max: 195000, currency: 'USD' },
+    noc: '2175', category: 'Technology',
     'Canada': { min: 65000, median: 98000, max: 150000, currency: 'CAD' },
-    'United Kingdom': { min: 38000, median: 60000, max: 92000, currency: 'GBP' },
-    'Remote/Global': { min: 55000, median: 100000, max: 170000, currency: 'USD' },
+    'United States': { min: 85000, median: 128000, max: 195000, currency: 'USD' },
   },
   'Data Analyst': {
-    'United States': { min: 55000, median: 78000, max: 115000, currency: 'USD' },
+    noc: '2172', category: 'Technology',
     'Canada': { min: 48000, median: 68000, max: 100000, currency: 'CAD' },
-    'United Kingdom': { min: 28000, median: 42000, max: 65000, currency: 'GBP' },
-    'Remote/Global': { min: 40000, median: 65000, max: 100000, currency: 'USD' },
+    'United States': { min: 55000, median: 78000, max: 115000, currency: 'USD' },
   },
   'Data Scientist': {
-    'United States': { min: 95000, median: 140000, max: 220000, currency: 'USD' },
+    noc: '2172', category: 'Technology',
     'Canada': { min: 75000, median: 110000, max: 170000, currency: 'CAD' },
-    'United Kingdom': { min: 45000, median: 68000, max: 105000, currency: 'GBP' },
-    'Remote/Global': { min: 70000, median: 115000, max: 190000, currency: 'USD' },
+    'United States': { min: 95000, median: 140000, max: 220000, currency: 'USD' },
   },
   'DevOps Engineer': {
-    'United States': { min: 95000, median: 140000, max: 210000, currency: 'USD' },
+    noc: '2171', category: 'Technology',
     'Canada': { min: 75000, median: 110000, max: 165000, currency: 'CAD' },
-    'United Kingdom': { min: 48000, median: 72000, max: 110000, currency: 'GBP' },
-    'Remote/Global': { min: 70000, median: 120000, max: 185000, currency: 'USD' },
-  },
-  'Product Manager': {
-    'United States': { min: 100000, median: 145000, max: 225000, currency: 'USD' },
-    'Canada': { min: 80000, median: 115000, max: 175000, currency: 'CAD' },
-    'United Kingdom': { min: 45000, median: 70000, max: 110000, currency: 'GBP' },
-    'Remote/Global': { min: 75000, median: 120000, max: 195000, currency: 'USD' },
-  },
-  'Project Manager': {
-    'United States': { min: 70000, median: 100000, max: 150000, currency: 'USD' },
-    'Canada': { min: 60000, median: 85000, max: 130000, currency: 'CAD' },
-    'United Kingdom': { min: 35000, median: 52000, max: 80000, currency: 'GBP' },
-    'Remote/Global': { min: 50000, median: 82000, max: 130000, currency: 'USD' },
-  },
-  'UX Designer': {
-    'United States': { min: 75000, median: 110000, max: 165000, currency: 'USD' },
-    'Canada': { min: 58000, median: 85000, max: 130000, currency: 'CAD' },
-    'United Kingdom': { min: 35000, median: 52000, max: 80000, currency: 'GBP' },
-    'Remote/Global': { min: 50000, median: 88000, max: 145000, currency: 'USD' },
-  },
-  'Machine Learning Engineer': {
-    'United States': { min: 110000, median: 160000, max: 250000, currency: 'USD' },
-    'Canada': { min: 85000, median: 125000, max: 195000, currency: 'CAD' },
-    'United Kingdom': { min: 52000, median: 78000, max: 120000, currency: 'GBP' },
-    'Remote/Global': { min: 80000, median: 135000, max: 220000, currency: 'USD' },
-  },
-  'Cybersecurity Analyst': {
-    'United States': { min: 75000, median: 110000, max: 165000, currency: 'USD' },
-    'Canada': { min: 60000, median: 88000, max: 135000, currency: 'CAD' },
-    'United Kingdom': { min: 35000, median: 55000, max: 85000, currency: 'GBP' },
-    'Remote/Global': { min: 55000, median: 90000, max: 145000, currency: 'USD' },
+    'United States': { min: 95000, median: 140000, max: 210000, currency: 'USD' },
   },
   'Cloud Engineer': {
-    'United States': { min: 95000, median: 140000, max: 210000, currency: 'USD' },
+    noc: '2171', category: 'Technology',
     'Canada': { min: 78000, median: 112000, max: 168000, currency: 'CAD' },
-    'United Kingdom': { min: 48000, median: 70000, max: 108000, currency: 'GBP' },
-    'Remote/Global': { min: 70000, median: 118000, max: 185000, currency: 'USD' },
+    'United States': { min: 95000, median: 140000, max: 210000, currency: 'USD' },
   },
-  'Business Analyst': {
-    'United States': { min: 60000, median: 85000, max: 130000, currency: 'USD' },
-    'Canada': { min: 52000, median: 75000, max: 115000, currency: 'CAD' },
-    'United Kingdom': { min: 30000, median: 45000, max: 70000, currency: 'GBP' },
-    'Remote/Global': { min: 45000, median: 72000, max: 115000, currency: 'USD' },
+  'Machine Learning Engineer': {
+    noc: '2173', category: 'Technology',
+    'Canada': { min: 85000, median: 125000, max: 195000, currency: 'CAD' },
+    'United States': { min: 110000, median: 160000, max: 250000, currency: 'USD' },
   },
-  'Marketing Manager': {
-    'United States': { min: 65000, median: 95000, max: 150000, currency: 'USD' },
-    'Canada': { min: 55000, median: 80000, max: 125000, currency: 'CAD' },
-    'United Kingdom': { min: 32000, median: 48000, max: 75000, currency: 'GBP' },
-    'Remote/Global': { min: 48000, median: 78000, max: 130000, currency: 'USD' },
+  'Cybersecurity Analyst': {
+    noc: '2171', category: 'Technology',
+    'Canada': { min: 60000, median: 88000, max: 135000, currency: 'CAD' },
+    'United States': { min: 75000, median: 110000, max: 165000, currency: 'USD' },
   },
   'Oracle DBA': {
-    'United States': { min: 85000, median: 120000, max: 175000, currency: 'USD' },
+    noc: '2172', category: 'Technology',
     'Canada': { min: 70000, median: 100000, max: 150000, currency: 'CAD' },
-    'United Kingdom': { min: 40000, median: 60000, max: 92000, currency: 'GBP' },
-    'Remote/Global': { min: 60000, median: 100000, max: 155000, currency: 'USD' },
+    'United States': { min: 85000, median: 120000, max: 175000, currency: 'USD' },
   },
-  'Manufacturing Production Supervisor': {
-    'United States': { min: 50000, median: 72000, max: 105000, currency: 'USD' },
+  'Product Manager': {
+    noc: '0213', category: 'Business & Management',
+    'Canada': { min: 80000, median: 115000, max: 175000, currency: 'CAD' },
+    'United States': { min: 100000, median: 145000, max: 225000, currency: 'USD' },
+  },
+  'Project Manager': {
+    noc: '0213', category: 'Business & Management',
+    'Canada': { min: 60000, median: 85000, max: 130000, currency: 'CAD' },
+    'United States': { min: 70000, median: 100000, max: 150000, currency: 'USD' },
+  },
+  'Business Analyst': {
+    noc: '1122', category: 'Business & Management',
+    'Canada': { min: 52000, median: 75000, max: 115000, currency: 'CAD' },
+    'United States': { min: 60000, median: 85000, max: 130000, currency: 'USD' },
+  },
+  'Financial Analyst': {
+    noc: '1112', category: 'Business & Management',
+    'Canada': { min: 52000, median: 72000, max: 110000, currency: 'CAD' },
+    'United States': { min: 60000, median: 85000, max: 130000, currency: 'USD' },
+  },
+  'Accountant': {
+    noc: '1111', category: 'Business & Management',
+    'Canada': { min: 48000, median: 65000, max: 95000, currency: 'CAD' },
+    'United States': { min: 52000, median: 75000, max: 110000, currency: 'USD' },
+  },
+  'Human Resources Manager': {
+    noc: '0112', category: 'Business & Management',
+    'Canada': { min: 65000, median: 90000, max: 135000, currency: 'CAD' },
+    'United States': { min: 75000, median: 110000, max: 160000, currency: 'USD' },
+  },
+  'Marketing Manager': {
+    noc: '0124', category: 'Business & Management',
+    'Canada': { min: 55000, median: 80000, max: 125000, currency: 'CAD' },
+    'United States': { min: 65000, median: 95000, max: 150000, currency: 'USD' },
+  },
+  'Sales Manager': {
+    noc: '0601', category: 'Business & Management',
+    'Canada': { min: 55000, median: 78000, max: 120000, currency: 'CAD' },
+    'United States': { min: 65000, median: 95000, max: 150000, currency: 'USD' },
+  },
+  'Administrative Assistant': {
+    noc: '1241', category: 'Business & Management',
+    'Canada': { min: 35000, median: 45000, max: 58000, currency: 'CAD' },
+    'United States': { min: 32000, median: 42000, max: 55000, currency: 'USD' },
+  },
+  'UX Designer': {
+    noc: '2174', category: 'Technology',
+    'Canada': { min: 58000, median: 85000, max: 130000, currency: 'CAD' },
+    'United States': { min: 75000, median: 110000, max: 165000, currency: 'USD' },
+  },
+  'Registered Nurse': {
+    noc: '3012', category: 'Healthcare',
+    'Canada': { min: 60000, median: 78000, max: 100000, currency: 'CAD' },
+    'United States': { min: 58000, median: 80000, max: 115000, currency: 'USD' },
+  },
+  'Truck Driver': {
+    noc: '7511', category: 'Transportation & Trades',
+    'Canada': { min: 42000, median: 58000, max: 85000, currency: 'CAD' },
+    'United States': { min: 45000, median: 60000, max: 90000, currency: 'USD' },
+  },
+  'Carpenter': {
+    noc: '7271', category: 'Manufacturing & Trades',
+    'Canada': { min: 40000, median: 58000, max: 82000, currency: 'CAD' },
+    'United States': { min: 38000, median: 55000, max: 80000, currency: 'USD' },
+  },
+  'Plumber': {
+    noc: '7251', category: 'Manufacturing & Trades',
     'Canada': { min: 45000, median: 65000, max: 95000, currency: 'CAD' },
-    'United Kingdom': { min: 28000, median: 40000, max: 58000, currency: 'GBP' },
-    'Remote/Global': { min: 35000, median: 55000, max: 85000, currency: 'USD' },
+    'United States': { min: 42000, median: 60000, max: 90000, currency: 'USD' },
+  },
+  'Chef / Cook': {
+    noc: '6321', category: 'Service',
+    'Canada': { min: 30000, median: 42000, max: 65000, currency: 'CAD' },
+    'United States': { min: 32000, median: 48000, max: 75000, currency: 'USD' },
   },
 };
 
 const allRoles = Object.keys(salaryDatabase);
 
 /**
+ * Build a flat list of { role, noc, category } for autocomplete.
+ */
+export const roleList = allRoles.map((r) => ({
+  role: r,
+  noc: salaryDatabase[r].noc,
+  category: salaryDatabase[r].category,
+}));
+
+/**
  * Simple fuzzy match: find the closest role name in the database.
- * Uses a basic substring + Levenshtein-like scoring approach.
  */
 function fuzzyMatchRole(input) {
   if (!input) return null;
@@ -129,7 +216,11 @@ function fuzzyMatchRole(input) {
   );
   if (substringMatch) return substringMatch;
 
-  // 3) Word-overlap scoring
+  // 3) NOC code match
+  const nocMatch = allRoles.find((r) => salaryDatabase[r].noc === normalised);
+  if (nocMatch) return nocMatch;
+
+  // 4) Word-overlap scoring
   const inputWords = normalised.split(/[\s/\-_]+/).filter(Boolean);
 
   let bestMatch = null;
@@ -161,63 +252,34 @@ function fuzzyMatchRole(input) {
 }
 
 /**
- * Map a free-text location input to a known region key.
- */
-function matchRegion(location) {
-  if (!location) return 'United States';
-
-  const loc = location.toLowerCase().trim();
-
-  const regionKeywords = {
-    'United States': ['us', 'usa', 'united states', 'america', 'u.s.', 'u.s.a.'],
-    'Canada': ['canada', 'ca', 'canadian', 'toronto', 'vancouver', 'montreal', 'ottawa'],
-    'United Kingdom': ['uk', 'united kingdom', 'britain', 'england', 'london', 'gb', 'scotland', 'wales'],
-    'Remote/Global': ['remote', 'global', 'worldwide', 'anywhere', 'distributed', 'international'],
-  };
-
-  for (const [region, keywords] of Object.entries(regionKeywords)) {
-    if (keywords.some((kw) => loc.includes(kw))) {
-      return region;
-    }
-  }
-
-  // Default to US if nothing matches
-  return 'United States';
-}
-
-/**
- * Get salary insights for a given role and location.
+ * Get salary insights for a given role.
+ * Returns Canada first, then US.
  *
  * @param {string} role - Job title / role (fuzzy matched)
- * @param {string} location - Location or region (fuzzy matched)
  * @returns {object|null} Salary insight data or null if no role match
  */
-export function getSalaryInsights(role, location) {
+export function getSalaryInsights(role) {
   const matchedRole = fuzzyMatchRole(role);
   if (!matchedRole) return null;
 
-  const matchedRegion = matchRegion(location);
   const roleData = salaryDatabase[matchedRole];
 
-  // Primary region data
-  const primary = {
-    region: matchedRegion,
-    ...roleData[matchedRegion],
-  };
+  // Canada first, US second
+  const regions = ['Canada', 'United States'];
 
-  // All regions for comparison
-  const allRegions = Object.entries(roleData).map(([region, data]) => ({
+  const allRegions = regions.map((region) => ({
     region,
-    ...data,
-    isPrimary: region === matchedRegion,
+    ...roleData[region],
+    isPrimary: region === 'Canada',
   }));
 
   return {
     matchedRole,
-    matchedRegion,
-    primary,
+    noc: roleData.noc,
+    category: roleData.category,
+    primary: { region: 'Canada', ...roleData['Canada'] },
     allRegions,
-    availableRoles: allRoles,
+    availableRoles: roleList,
   };
 }
 
