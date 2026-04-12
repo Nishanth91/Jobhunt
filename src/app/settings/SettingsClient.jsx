@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { Eye, EyeOff, Lock, CheckCircle, AlertCircle, Loader2, User } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Eye, EyeOff, Lock, CheckCircle, AlertCircle, Loader2, User, Camera, Trash2 } from 'lucide-react';
 
 export default function SettingsClient({ user }) {
   const [form, setForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
@@ -9,6 +9,74 @@ export default function SettingsClient({ user }) {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
+
+  // Avatar state
+  const [avatar, setAvatar] = useState(null);
+  const [avatarLoading, setAvatarLoading] = useState(false);
+  const [avatarMsg, setAvatarMsg] = useState('');
+  const fileRef = useRef(null);
+
+  // Load avatar on mount
+  useEffect(() => {
+    fetch('/api/users/avatar')
+      .then((r) => r.json())
+      .then((data) => { if (data.avatar) setAvatar(data.avatar); })
+      .catch(() => {});
+  }, []);
+
+  const handleAvatarUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      setAvatarMsg('Please select an image file');
+      return;
+    }
+    if (file.size > 500 * 1024) {
+      setAvatarMsg('Image must be under 500KB');
+      return;
+    }
+
+    setAvatarLoading(true);
+    setAvatarMsg('');
+
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const base64 = reader.result;
+      try {
+        const res = await fetch('/api/users/avatar', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ avatar: base64 }),
+        });
+        if (res.ok) {
+          setAvatar(base64);
+          setAvatarMsg('Photo updated!');
+        } else {
+          const data = await res.json();
+          setAvatarMsg(data.error || 'Upload failed');
+        }
+      } catch {
+        setAvatarMsg('Upload failed');
+      } finally {
+        setAvatarLoading(false);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const removeAvatar = async () => {
+    setAvatarLoading(true);
+    try {
+      await fetch('/api/users/avatar', { method: 'DELETE' });
+      setAvatar(null);
+      setAvatarMsg('Photo removed');
+    } catch {
+      setAvatarMsg('Failed to remove');
+    } finally {
+      setAvatarLoading(false);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -44,6 +112,8 @@ export default function SettingsClient({ user }) {
 
   const toggleShow = (key) => setShowPw((prev) => ({ ...prev, [key]: !prev[key] }));
 
+  const initials = user.name.split(' ').map((n) => n[0]).join('').toUpperCase();
+
   return (
     <div className="max-w-lg space-y-8">
       <div>
@@ -51,18 +121,62 @@ export default function SettingsClient({ user }) {
         <p className="text-sm text-slate-400">Manage your account details</p>
       </div>
 
-      {/* Profile Info */}
+      {/* Profile Info + Avatar Upload */}
       <div className="rounded-2xl bg-white/[0.02] border border-white/10 p-6">
         <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
           <User size={15} className="text-indigo-400" /> Profile
         </h3>
-        <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-full bg-gradient-to-br from-indigo-400 to-violet-500 flex items-center justify-center text-white text-xl font-bold">
-            {user.name.split(' ').map((n) => n[0]).join('').toUpperCase()}
+        <div className="flex items-center gap-5">
+          {/* Avatar with upload overlay */}
+          <div className="relative">
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/*"
+              onChange={handleAvatarUpload}
+              className="hidden"
+            />
+            <button
+              onClick={() => fileRef.current?.click()}
+              disabled={avatarLoading}
+              className="avatar-upload w-20 h-20 rounded-full bg-gradient-to-br from-indigo-400 to-violet-500 flex items-center justify-center text-white text-2xl font-bold overflow-hidden ring-2 ring-white/10 ring-offset-2 ring-offset-[#050510]"
+            >
+              {avatar ? (
+                <img src={avatar} alt="Profile" className="w-full h-full object-cover" />
+              ) : (
+                initials
+              )}
+              <div className="avatar-overlay">
+                {avatarLoading ? <Loader2 size={18} className="animate-spin text-white" /> : <Camera size={18} className="text-white" />}
+              </div>
+            </button>
           </div>
-          <div>
+          <div className="flex-1">
             <p className="text-white font-semibold">{user.name}</p>
             <p className="text-sm text-slate-400">{user.email}</p>
+            <div className="flex items-center gap-3 mt-2">
+              <button
+                onClick={() => fileRef.current?.click()}
+                disabled={avatarLoading}
+                className="text-xs text-indigo-400 hover:text-indigo-300 font-medium transition-colors"
+              >
+                {avatar ? 'Change photo' : 'Upload photo'}
+              </button>
+              {avatar && (
+                <button
+                  onClick={removeAvatar}
+                  disabled={avatarLoading}
+                  className="flex items-center gap-1 text-xs text-red-400 hover:text-red-300 font-medium transition-colors"
+                >
+                  <Trash2 size={10} /> Remove
+                </button>
+              )}
+            </div>
+            {avatarMsg && (
+              <p className={`text-xs mt-1 ${avatarMsg.includes('failed') || avatarMsg.includes('Please') || avatarMsg.includes('must') ? 'text-red-400' : 'text-emerald-400'}`}>
+                {avatarMsg}
+              </p>
+            )}
           </div>
         </div>
       </div>

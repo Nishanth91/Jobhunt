@@ -1,9 +1,23 @@
 const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcryptjs');
 
-const prisma = new PrismaClient();
+async function createPrisma() {
+  // Use Turso adapter if TURSO_DATABASE_URL is set, otherwise plain SQLite
+  if (process.env.TURSO_DATABASE_URL) {
+    const { PrismaLibSql } = await import('@prisma/adapter-libsql');
+    const { createClient } = await import('@libsql/client');
+    const libsql = createClient({
+      url: process.env.TURSO_DATABASE_URL,
+      authToken: process.env.TURSO_AUTH_TOKEN,
+    });
+    const adapter = new PrismaLibSql(libsql);
+    return new PrismaClient({ adapter });
+  }
+  return new PrismaClient();
+}
 
 async function main() {
+  const prisma = await createPrisma();
   console.log('Seeding database...');
 
   const hashedPassword = await bcrypt.hash('changeme123', 12);
@@ -148,13 +162,12 @@ University of Toronto, Canada  2019`,
   console.log('   Nishanth -> nishanth@jobhunt.app / changeme123');
   console.log('   Indhu    -> indhu@jobhunt.app    / changeme123');
   console.log('   Demo     -> demo@jobhunt.app     / demo123');
+
+  await prisma.$disconnect();
 }
 
 main()
   .catch((e) => {
     console.error(e);
     process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
   });

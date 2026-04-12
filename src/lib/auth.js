@@ -27,6 +27,7 @@ export const authOptions = {
           name: user.name,
           email: user.email,
           role: user.role,
+          hasAvatar: !!user.avatar,
         };
       },
     }),
@@ -38,6 +39,7 @@ export const authOptions = {
       if (user) {
         token.id = user.id;
         token.role = user.role;
+        token.hasAvatar = user.hasAvatar;
       }
       return token;
     },
@@ -45,6 +47,7 @@ export const authOptions = {
       if (session.user) {
         session.user.id = token.id;
         session.user.role = token.role;
+        session.user.hasAvatar = token.hasAvatar;
       }
       return session;
     },

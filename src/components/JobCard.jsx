@@ -182,7 +182,7 @@ export default function JobCard({ job, onSave, onUnsave, onDismiss, saved = fals
           </div>
 
           {/* Company + Location */}
-          <p className="text-sm text-indigo-300/80 font-medium mt-0.5">{job.company}</p>
+          <p className="text-sm text-indigo-300 font-medium mt-0.5">{job.company}</p>
           <div className="flex items-center gap-3 mt-1.5 flex-wrap">
             <span className="flex items-center gap-1 text-xs text-slate-400">
               <MapPin size={11} /> {job.location}

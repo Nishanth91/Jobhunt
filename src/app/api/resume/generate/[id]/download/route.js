@@ -36,7 +36,14 @@ export async function GET(request, { params }) {
     additionalText = stored.additional || '';
   } catch { /* ignore */ }
 
-  const { buffer } = await generateTailoredResume(resumeData, doc.job, additionalText);
+  // Retrieve stored LinkedIn URL if available
+  let linkedInUrl = '';
+  try {
+    const storedContent = JSON.parse(doc.content || '{}');
+    linkedInUrl = storedContent.linkedIn || '';
+  } catch { /* ignore */ }
+
+  const { buffer } = await generateTailoredResume(resumeData, doc.job, additionalText, linkedInUrl);
 
   // Filename: Resume_RoleName_CompanyName.docx — clean, no timestamps
   const safeName = (s) => s.replace(/[^a-zA-Z0-9 ]/g, '').replace(/\s+/g, '_');

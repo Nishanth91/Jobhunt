@@ -9,7 +9,7 @@ export async function POST(request) {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: 'Unauthorised' }, { status: 401 });
 
-  const { resumeId, jobId, additionalText = '', downloadNow = false } = await request.json();
+  const { resumeId, jobId, additionalText = '', linkedInUrl = '', downloadNow = false } = await request.json();
 
   const [resume, job] = await Promise.all([
     prisma.resume.findFirst({ where: { id: resumeId, userId: session.user.id } }),
@@ -29,7 +29,7 @@ export async function POST(request) {
       education: JSON.parse(resume.education || '[]'),
     };
 
-    const { buffer, content } = await generateTailoredResume(resumeData, job, additionalText);
+    const { buffer, content } = await generateTailoredResume(resumeData, job, additionalText, linkedInUrl);
 
     // Calculate ATS score
     const atsResult = calculateATSScore(resume.rawText, job.description || '');

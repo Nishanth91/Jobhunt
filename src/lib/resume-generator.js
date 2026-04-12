@@ -218,7 +218,7 @@ function enhanceExperienceBullets(lines, missingKeywords) {
 
 // ─── Main generator ──────────────────────────────────────────
 
-export async function generateTailoredResume(resumeData, jobData, additionalText = '') {
+export async function generateTailoredResume(resumeData, jobData, additionalText = '', linkedInUrl = '') {
   const sections = extractSections(resumeData.rawText || '');
 
   const originalSkills = Array.isArray(resumeData.skills)
@@ -282,6 +282,7 @@ export async function generateTailoredResume(resumeData, jobData, additionalText
     certs: sections.certs || [],
     additional: rephrasedAdditional.length > 0 ? rephrasedAdditional.join('\n') : '',
     additionalBullets: rephrasedAdditional,
+    linkedIn: linkedInUrl || '',
     tailoredFor: { title: jobData.title, company: jobData.company },
   };
 
@@ -297,10 +298,14 @@ export async function generateTailoredResume(resumeData, jobData, additionalText
     }),
   );
 
-  // Role target subtitle
+  // Role target subtitle + optional LinkedIn
+  const subtitleParts = [new TextRun({ text: `${jobData.title} | ${jobData.company}`, size: 20, color: '4b5563', font: 'Calibri' })];
+  if (linkedInUrl) {
+    subtitleParts.push(new TextRun({ text: `  |  ${linkedInUrl}`, size: 18, color: '6366f1', font: 'Calibri' }));
+  }
   children.push(
     new Paragraph({
-      children: [new TextRun({ text: `${jobData.title} | ${jobData.company}`, size: 20, color: '4b5563', font: 'Calibri' })],
+      children: subtitleParts,
       alignment: AlignmentType.LEFT,
       spacing: { after: 160 },
     }),
@@ -395,7 +400,7 @@ export async function generateTailoredResume(resumeData, jobData, additionalText
   const doc = new Document({
     sections: [{
       properties: {
-        page: { margin: { top: 720, bottom: 720, left: 900, right: 900 } },
+        page: { margin: { top: 900, bottom: 720, left: 900, right: 900 } },
       },
       children,
     }],

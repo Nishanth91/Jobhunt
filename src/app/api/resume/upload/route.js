@@ -3,9 +3,6 @@ import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { parseResume } from '@/lib/resume-parser';
 import { NextResponse } from 'next/server';
-import { writeFile, mkdir } from 'fs/promises';
-import { join } from 'path';
-import { existsSync } from 'fs';
 
 export async function POST(request) {
   const session = await getServerSession(authOptions);
@@ -25,17 +22,7 @@ export async function POST(request) {
 
     const buffer = Buffer.from(await file.arrayBuffer());
 
-    // Ensure uploads directory exists
-    const uploadDir = join(process.cwd(), 'public', 'uploads', session.user.id);
-    if (!existsSync(uploadDir)) {
-      await mkdir(uploadDir, { recursive: true });
-    }
-
-    const fileName = `${Date.now()}_${file.name.replace(/\s+/g, '_')}`;
-    const filePath = join(uploadDir, fileName);
-    await writeFile(filePath, buffer);
-
-    // Parse the resume
+    // Parse the resume in memory (no disk write needed — works on serverless)
     const parsed = await parseResume(buffer, file.type);
 
     // Deactivate previous resumes
@@ -44,12 +31,12 @@ export async function POST(request) {
       data: { isActive: false },
     });
 
-    // Save to database
+    // Save to database — store parsed data, filePath is just a reference label
     const resume = await prisma.resume.create({
       data: {
         userId: session.user.id,
         fileName: file.name,
-        filePath: `/uploads/${session.user.id}/${fileName}`,
+        filePath: `memory://${session.user.id}/${file.name}`,
         rawText: parsed.rawText.slice(0, 50000), // cap at 50k chars
         skills: JSON.stringify(parsed.skills),
         experience: JSON.stringify(parsed.experience),

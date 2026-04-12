@@ -848,10 +848,10 @@ export function analyzeSkillGap(userSkills = [], targetRoles = [], resumeJobTitl
     );
   };
 
-  // Categorize missing skills
-  const highPriority = [...allRequired].filter((s) => !hasSkill(s));
-  const goodToHave = [...allAdvanced].filter((s) => !hasSkill(s));
-  const emergingTrends = [...allEmerging].filter((s) => !hasSkill(s));
+  // Categorize missing skills — limit to focused set (5/3/2 = 10 max)
+  const highPriority = [...allRequired].filter((s) => !hasSkill(s)).slice(0, 5);
+  const goodToHave = [...allAdvanced].filter((s) => !hasSkill(s)).slice(0, 3);
+  const emergingTrends = [...allEmerging].filter((s) => !hasSkill(s)).slice(0, 2);
 
   // Calculate coverage
   const totalRequired = allRequired.size;

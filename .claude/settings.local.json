@@ -12,7 +12,14 @@
       "Bash(tee /tmp/build-output.txt)",
       "Bash(echo \"EXIT: $?\")",
       "Bash(node -e ':*)",
-      "WebSearch"
+      "WebSearch",
+      "Read(//tmp/**)",
+      "Bash(node -e \"const m = require\\('@prisma/adapter-libsql'\\); console.log\\(Object.keys\\(m\\)\\)\")",
+      "Bash(node -e \"const d=require\\('fs'\\).readFileSync\\('/dev/stdin','utf8'\\); const p=JSON.parse\\(d\\); console.log\\('adapter version:', p.version\\); console.log\\('peer deps:', JSON.stringify\\(p.peerDependencies\\)\\)\")",
+      "Bash(node -e \"const d=require\\('fs'\\).readFileSync\\('/dev/stdin','utf8'\\); const p=JSON.parse\\(d\\); console.log\\('client version:', p.version\\)\")",
+      "Bash(node -e \"const fs=require\\('fs'\\); console.log\\(JSON.parse\\(fs.readFileSync\\('node_modules/@prisma/adapter-libsql/package.json','utf8'\\)\\).version\\)\")",
+      "Bash(npm view:*)",
+      "Bash(node -e \"const d=require\\('fs'\\).readFileSync\\('/dev/stdin','utf8'\\); const v=JSON.parse\\(d\\); const v5=v.filter\\(x=>x.startsWith\\('5.'\\)\\); console.log\\('v5 versions:', v5.slice\\(-5\\)\\); const v6=v.filter\\(x=>x.startsWith\\('6.'\\)\\); console.log\\('v6 versions:', v6.slice\\(-3\\)\\)\")"
     ]
   }
 }

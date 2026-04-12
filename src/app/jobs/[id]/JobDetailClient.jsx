@@ -124,7 +124,10 @@ function ResumePreviewPanel({ content, documentId, onClose, onDownload, jobTitle
           {/* Name */}
           <div style={{ borderBottom: '2.5px solid #4338ca', paddingBottom: '12px' }}>
             <h2 className="text-2xl font-bold" style={{ color: '#1e1b4b' }}>{content.name}</h2>
-            <p className="text-xs mt-0.5" style={{ color: '#4b5563' }}>{content.tailoredFor.title} | {content.tailoredFor.company}</p>
+            <p className="text-xs mt-0.5" style={{ color: '#4b5563' }}>
+              {content.tailoredFor.title} | {content.tailoredFor.company}
+              {content.linkedIn && <span style={{ color: '#6366f1' }}> | {content.linkedIn}</span>}
+            </p>
           </div>
 
           {/* Summary */}
@@ -280,6 +283,7 @@ export default function JobDetailClient({ job, resumeData, documents, userName }
   const [showDesc, setShowDesc] = useState(false);
   const [tab, setTab] = useState('overview');
   const [additionalText, setAdditionalText] = useState('');
+  const [linkedInUrl, setLinkedInUrl] = useState('');
   const [showAdditional, setShowAdditional] = useState(false);
 
   const handleStatusChange = async (newStatus) => {
@@ -357,7 +361,7 @@ export default function JobDetailClient({ job, resumeData, documents, userName }
       const res = await fetch('/api/resume/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ jobId: job.id, resumeId: resumeData.id, additionalText }),
+        body: JSON.stringify({ jobId: job.id, resumeId: resumeData.id, additionalText, linkedInUrl }),
       });
       const data = await res.json();
       if (res.ok) {
@@ -500,6 +504,16 @@ export default function JobDetailClient({ job, resumeData, documents, userName }
                 placeholder="e.g. Currently leading a team of 5 engineers at XYZ Corp, shipping a new React dashboard..."
                 className="w-full px-3 py-2 bg-white/[0.04] border border-white/10 rounded-xl text-sm text-white placeholder-slate-600 focus:border-blue-500/50 transition-all resize-none"
               />
+              <div>
+                <label className="text-xs text-slate-500 mb-1 block">LinkedIn URL (optional — included on resume header)</label>
+                <input
+                  type="text"
+                  value={linkedInUrl}
+                  onChange={(e) => setLinkedInUrl(e.target.value)}
+                  placeholder="https://linkedin.com/in/yourprofile"
+                  className="w-full px-3 py-2 bg-white/[0.04] border border-white/10 rounded-xl text-sm text-white placeholder-slate-600 focus:border-blue-500/50 transition-all"
+                />
+              </div>
               <button onClick={() => { setShowAdditional(false); generateResume(); }} disabled={generatingResume}
                 className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-500/20 text-blue-300 text-sm font-medium hover:bg-blue-500/30 border border-blue-500/20 transition-all disabled:opacity-50">
                 {generatingResume ? <><Loader2 size={13} className="animate-spin" /> Generating...</> : <><FileText size={13} /> Generate & Preview</>}

@@ -5,8 +5,9 @@ import { usePathname } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
 import {
   LayoutDashboard, Briefcase, Upload, Settings, FileText,
-  LogOut, Users, ChevronRight, Star, UserCog, GraduationCap
+  LogOut, Users, ChevronRight, Star, UserCog, GraduationCap, DollarSign
 } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 const navItems = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -15,12 +16,23 @@ const navItems = [
   { href: '/resumes', icon: FileText, label: 'Tailored Resumes' },
   { href: '/preferences', icon: Settings, label: 'Preferences' },
   { href: '/career', icon: GraduationCap, label: 'Career Guidance' },
+  { href: '/salary', icon: DollarSign, label: 'Salary Insights' },
   { href: '/settings', icon: UserCog, label: 'Account Settings' },
 ];
 
 export default function Sidebar() {
   const pathname = usePathname();
   const { data: session } = useSession();
+  const [avatar, setAvatar] = useState(null);
+
+  useEffect(() => {
+    if (session?.user?.hasAvatar) {
+      fetch('/api/users/avatar')
+        .then((r) => r.json())
+        .then((d) => { if (d.avatar) setAvatar(d.avatar); })
+        .catch(() => {});
+    }
+  }, [session?.user?.hasAvatar]);
 
   const isAdmin = session?.user?.role === 'ADMIN';
   const initials = session?.user?.name
@@ -47,8 +59,8 @@ export default function Sidebar() {
       {/* User Profile */}
       <div className="px-4 py-4 border-b border-white/5">
         <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-white/[0.03]">
-          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-400 to-violet-500 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
-            {initials}
+          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-400 to-violet-500 flex items-center justify-center text-white text-sm font-bold flex-shrink-0 overflow-hidden">
+            {avatar ? <img src={avatar} alt="" className="w-full h-full object-cover" /> : initials}
           </div>
           <div className="min-w-0">
             <p className="text-sm font-medium text-white truncate">{session?.user?.name}</p>
