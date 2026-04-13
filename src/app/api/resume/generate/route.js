@@ -55,11 +55,16 @@ export async function POST(request) {
     await prisma.savedJob.update({ where: { id: job.id }, data: { atsScore: atsResult.total } });
 
     if (downloadNow) {
-      // Return binary for direct download
+      // Filename: {OriginalResumeName}_{Company}.docx
+      const safeResumeName = (resume.title || session.user.name || 'Resume')
+        .replace(/[^a-zA-Z0-9\s\-_]/g, '').trim().replace(/\s+/g, '_');
+      const safeCompany = job.company.replace(/[^a-zA-Z0-9\s\-_]/g, '').trim().replace(/\s+/g, '_');
+      const filename = `${safeResumeName}_${safeCompany}.docx`;
+
       return new Response(buffer, {
         headers: {
           'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-          'Content-Disposition': `attachment; filename="Resume_${job.company}_${job.title}.docx"`.replace(/\s+/g, '_'),
+          'Content-Disposition': `attachment; filename="${filename}"`,
         },
       });
     }

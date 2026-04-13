@@ -183,33 +183,98 @@ function tailorSummary(summary, jobData, matchingSkills, allSkills) {
 
 // ─── Inject keywords into experience bullets ─────────────────
 
+// Strengthen weak action verbs
+const VERB_UPGRADES = {
+  'helped with': 'supported',
+  'helped': 'supported',
+  'worked on': 'delivered',
+  'worked with': 'collaborated with',
+  'did': 'executed',
+  'was responsible for': 'oversaw',
+  'was in charge of': 'directed',
+  'made sure': 'ensured',
+  'took part in': 'contributed to',
+  'participated in': 'actively contributed to',
+  'assisted with': 'facilitated',
+  'assisted in': 'facilitated',
+};
+
+function strengthenVerb(text) {
+  let result = text;
+  for (const [weak, strong] of Object.entries(VERB_UPGRADES)) {
+    const pattern = new RegExp(`^${weak.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
+    if (pattern.test(result)) {
+      result = result.replace(pattern, strong.charAt(0).toUpperCase() + strong.slice(1));
+      break;
+    }
+  }
+  return result;
+}
+
+// Natural keyword insertion — places kw contextually based on action verb
+function buildParaphrase(bulletText, kw) {
+  const body = bulletText.replace(/^[•\-\*]\s*/, '').replace(/\.\s*$/, '');
+  const strengthened = strengthenVerb(body);
+  const lowerBody = strengthened.toLowerCase();
+
+  const leadVerb = lowerBody.match(/^([a-z]+)/)?.[1] || '';
+
+  if (/^(implement|develop|deploy|design|build|creat|establish|introduc)/.test(leadVerb)) {
+    return `• ${strengthened} incorporating ${kw} methodology.`;
+  }
+  if (/^(led|lead|manag|supervis|direct|oversee|oversaw)/.test(leadVerb)) {
+    return `• ${strengthened}, applying ${kw} frameworks to drive results.`;
+  }
+  if (/^(improv|reduc|increas|achiev|deliver|optimiz|streamlin)/.test(leadVerb)) {
+    return `• ${strengthened} through targeted ${kw} practices.`;
+  }
+  if (/^(coordinat|collaborat|facilitat|partner|schedul|plan)/.test(leadVerb)) {
+    return `• ${strengthened}, leveraging ${kw} tools and processes.`;
+  }
+  if (/^(maintain|ensur|monitor|track|audit|inspect|review)/.test(leadVerb)) {
+    return `• ${strengthened} in compliance with ${kw} standards.`;
+  }
+  if (/^(train|coach|mentor|onboard|instruct|develop)/.test(leadVerb)) {
+    return `• ${strengthened}, building proficiency in ${kw}.`;
+  }
+  if (/^(analyz|assess|evaluat|report|measur)/.test(leadVerb)) {
+    return `• ${strengthened} using ${kw} insights.`;
+  }
+
+  // Fallback: strengthen verb if changed, append keyword naturally
+  const wasSame = strengthened === body;
+  return `• ${strengthened}${wasSame ? `, applying ${kw} principles` : ''}.`;
+}
+
 function enhanceExperienceBullets(lines, missingKeywords) {
-  // Filter out any undefined/empty keywords
-  const validKeywords = (missingKeywords || []).filter((k) => k && typeof k === 'string');
+  // Cap at 4 keywords max — fewer is cleaner and less obvious
+  const validKeywords = (missingKeywords || [])
+    .filter((k) => k && typeof k === 'string')
+    .slice(0, 4);
   if (!validKeywords.length || !lines?.length) return lines;
 
   const enhanced = [...lines];
   const usedKeywords = new Set();
+  // Max 3 injections across the whole resume
+  const maxInjections = Math.min(3, validKeywords.length);
 
-  for (let i = 0; i < enhanced.length && usedKeywords.size < Math.min(3, validKeywords.length); i++) {
+  for (let i = 0; i < enhanced.length && usedKeywords.size < maxInjections; i++) {
     const t = enhanced[i].trim();
-    const isBullet = /^[•\-\*]\s/.test(t);
-    if (!isBullet) continue;
+    if (!/^[•\-\*]\s/.test(t)) continue;
 
-    const lineLower = t.toLowerCase();
-    // Find a keyword that could naturally fit but isn't already in the line
+    const bodyLower = t.toLowerCase();
+
+    // Only paraphrase bullets with clear action verbs — skip very short lines
+    const hasAction = /\b(managed|led|supervised|directed|oversaw|coordinated|implemented|developed|maintained|ensured|monitored|tracked|analyzed|scheduled|planned|improved|reduced|increased|achieved|delivered|conducted|performed|handled|configured|facilitated|collaborated|established|designed|built|deployed|streamlined|optimized|trained|coached|mentored|audited|evaluated|reported)\b/i.test(bodyLower);
+    if (!hasAction || t.length < 30) continue;
+
     for (const kw of validKeywords) {
       if (usedKeywords.has(kw)) continue;
-      if (lineLower.includes(kw.toLowerCase())) continue;
+      if (bodyLower.includes(kw.toLowerCase())) continue;
 
-      // Only inject if the bullet describes an action
-      const related = /\b(managed|led|worked|implemented|developed|maintained|support|performed|handled|configured|supervised|directed|conducted|coordinated|ensured|promoted|reduced|achieved|delivered)\b/i.test(lineLower);
-      if (related) {
-        const clean = t.replace(/\.\s*$/, '');
-        enhanced[i] = `${clean}, utilizing ${kw}.`;
-        usedKeywords.add(kw);
-        break;
-      }
+      enhanced[i] = buildParaphrase(t, kw);
+      usedKeywords.add(kw);
+      break;
     }
   }
 
@@ -229,9 +294,10 @@ export async function generateTailoredResume(resumeData, jobData, additionalText
   const matchingSkills = originalSkills.filter((s) =>
     jobSkills.some((js) => js.toLowerCase() === s.toLowerCase())
   );
+  // Cap at 5 targeted missing skills — fewer, cleaner, less obvious keyword-stuffing
   const missingToAdd = jobSkills
     .filter((js) => !originalSkills.some((s) => s.toLowerCase() === js.toLowerCase()))
-    .slice(0, 8);
+    .slice(0, 5);
 
   // Skills: matching first, then rest, then targeted missing
   const enhancedSkills = [...new Set([...matchingSkills, ...originalSkills, ...missingToAdd])];
@@ -382,7 +448,9 @@ export async function generateTailoredResume(resumeData, jobData, additionalText
       } else if (isTitle) {
         children.push(new Paragraph({
           children: [new TextRun({ text: trimmed, bold: true, size: 20, font: 'Calibri', color: '1e1b4b' })],
-          spacing: { before: 100, after: 40 },
+          spacing: { before: 160, after: 40 },
+          keepWithNext: true,   // prevents orphaned company title at top of page 2
+          keepLines: true,
         }));
       } else {
         children.push(body_para(trimmed));
@@ -416,7 +484,8 @@ export async function generateTailoredResume(resumeData, jobData, additionalText
   const doc = new Document({
     sections: [{
       properties: {
-        page: { margin: { top: 1080, bottom: 1080, left: 1080, right: 1080 } },
+        // 1440 twips = 1 inch — standard for all pages incl. page 2
+        page: { margin: { top: 1440, bottom: 1440, left: 1080, right: 1080 } },
       },
       children,
     }],

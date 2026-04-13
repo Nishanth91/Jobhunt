@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { cachedFetch, cacheDelete } from '@/lib/client-cache';
 import { Eye, EyeOff, Lock, CheckCircle, AlertCircle, Loader2, User, Camera, Trash2, Palette, Sun, Moon, Link2, Phone, Mail, MapPin, UserCircle2 } from 'lucide-react';
 import { useTheme, COLOR_SCHEMES } from '@/components/ThemeProvider';
 
@@ -50,11 +51,10 @@ export default function SettingsClient({ user }) {
   const [profileMsg, setProfileMsg] = useState('');
 
   useEffect(() => {
-    fetch('/api/users/avatar')
-      .then((r) => r.json())
+    cachedFetch('/api/users/avatar', undefined, 10 * 60_000)
       .then((d) => { if (d.avatar) setAvatar(d.avatar); })
       .catch(() => {});
-    fetch('/api/users/profile')
+    cachedFetch('/api/users/profile', undefined, 5 * 60_000)
       .then((r) => r.json())
       .then((d) => {
         setProfile({
@@ -80,6 +80,9 @@ export default function SettingsClient({ user }) {
       if (res.ok) {
         setProfileSaved(true);
         setProfileMsg('Saved!');
+        // Bust cache so next visit re-fetches fresh data
+        cacheDelete('/api/users/profile');
+        cacheDelete('/api/users/avatar');
         setTimeout(() => { setProfileSaved(false); setProfileMsg(''); }, 3000);
       } else {
         setProfileMsg('Failed to save');

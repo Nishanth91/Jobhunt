@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Search, Filter, Loader2, RefreshCw, MapPin, Briefcase } from 'lucide-react';
 import JobCard from '@/components/JobCard';
 import { useRouter } from 'next/navigation';
+import { cachedFetch, cacheSet } from '@/lib/client-cache';
 
 const SOURCES = ['all', 'jsearch', 'google', 'adzuna', 'remotive', 'jobicy', 'themuse'];
 const JOB_TYPES = ['any', 'remote', 'full-time', 'part-time', 'contract'];
@@ -22,10 +23,9 @@ export default function JobsClient({ preference, resumeData, savedJobIds, defaul
 
   const savedSet = new Set(savedJobIds.map((j) => j.externalId).filter(Boolean));
 
-  // Load dismissed IDs once on mount
+  // Load dismissed IDs once on mount — cached for 5 min so tab switches don't refetch
   useEffect(() => {
-    fetch('/api/jobs/dismiss')
-      .then((r) => r.json())
+    cachedFetch('/api/jobs/dismiss', undefined, 5 * 60_000)
       .then((ids) => {
         if (Array.isArray(ids)) setDismissedIds(new Set(ids));
       })
