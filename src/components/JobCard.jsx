@@ -25,19 +25,35 @@ function companyToGradient(name) {
   return GRADIENTS[Math.abs(hash) % GRADIENTS.length];
 }
 
-function companyToDomain(name) {
-  // Heuristic: lowercase, remove common suffixes, join words
-  const clean = name.toLowerCase()
-    .replace(/\b(inc|ltd|llc|corp|pvt|co|group|solutions|technologies|services|international|company|india|usa|uk|gmbh|sa|ag)\b\.?/gi, '')
-    .trim().replace(/\s+/g, '').replace(/[^a-z0-9]/g, '');
-  return clean ? `${clean}.com` : null;
+// Generate multiple domain guesses for a company — best-first order
+function companyToDomains(name) {
+  const raw = name.toLowerCase().trim();
+  const stripped = raw
+    .replace(/\b(inc|incorporated|ltd|limited|llc|corp|corporation|pvt|co\.|group|solutions|technologies|services|international|company|india|usa|canada|uk|gmbh|sa|ag|plc|holdings|enterprises|associates|partners|consulting|industries|systems)\b\.?/gi, '')
+    .replace(/[^a-z0-9\s]/g, '')
+    .trim();
+
+  const words = stripped.split(/\s+/).filter((w) => w.length >= 2);
+  if (words.length === 0) return [];
+
+  const seen = new Set();
+  const push = (d) => { if (d && !seen.has(d)) { seen.add(d); } };
+
+  // Ordered from most to least likely to match Clearbit
+  push(`${words.join('')}.com`);                      // fullname.com
+  push(`${words[0]}.com`);                             // firstname.com
+  if (words.length >= 2) push(`${words[0]}${words[1]}.com`); // firstsecond.com
+  if (/canada|canadian/i.test(name)) push(`${words[0]}.ca`);
+
+  return [...seen].slice(0, 3);
 }
 
-// Try Clearbit logo — returns empty array if no domain (falls back to initials)
-function getLogoUrls(company, domain) {
-  if (!domain) return [];
-  // Clearbit returns a clean 404 when no logo is found, triggering onError → initials
-  return [`https://logo.clearbit.com/${domain}?size=128`];
+// Build Clearbit URL list — websiteDomain takes priority, then guesses
+function getLogoUrls(company, websiteDomain) {
+  if (websiteDomain) {
+    return [`https://logo.clearbit.com/${websiteDomain}?size=128`];
+  }
+  return companyToDomains(company).map((d) => `https://logo.clearbit.com/${d}?size=128`);
 }
 
 export default function JobCard({ job, onSave, onUnsave, onDismiss, saved = false, showATS = false }) {
@@ -56,11 +72,11 @@ export default function JobCard({ job, onSave, onUnsave, onDismiss, saved = fals
     .map((w) => w[0]?.toUpperCase())
     .join('');
 
-  // Try to get company logo from website URL or domain guess
-  const logoDomain = job.companyWebsite
-    ? (() => { try { return new URL(job.companyWebsite).hostname.replace('www.', ''); } catch { return companyToDomain(job.company); } })()
-    : companyToDomain(job.company);
-  const logoUrls = getLogoUrls(job.company, logoDomain);
+  // If job has a website URL, extract its hostname; otherwise fall through to domain guesses
+  const websiteDomain = job.companyWebsite
+    ? (() => { try { return new URL(job.companyWebsite).hostname.replace('www.', ''); } catch { return null; } })()
+    : null;
+  const logoUrls = getLogoUrls(job.company, websiteDomain);
   const [logoIdx, setLogoIdx] = useState(0);
   const gradient = companyToGradient(job.company);
 

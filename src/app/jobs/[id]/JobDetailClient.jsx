@@ -31,11 +31,11 @@ function ResumePreviewPanel({ content, documentId, onClose, onDownload, jobTitle
     w.document.write(`
       <html><head><title>${content.name} — Resume</title>
       <style>
-        /* Kill browser headers/footers by removing page margin */
-        @page { margin: 0; size: letter; }
+        /* Page margins apply to ALL pages including page 2 */
+        @page { margin: 60px 64px; size: letter; }
         body {
           font-family: 'Calibri', 'Segoe UI', Arial, sans-serif;
-          margin: 48px 56px;
+          margin: 0;
           color: #111;
           line-height: 1.55;
           font-size: 13px;
@@ -46,19 +46,16 @@ function ResumePreviewPanel({ content, documentId, onClose, onDownload, jobTitle
         h2 {
           font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: #1e1b4b;
           border-bottom: 1px solid #c7d2fe; padding-bottom: 3px; margin: 22px 0 10px;
-          font-weight: 700;
+          font-weight: 700; page-break-after: avoid;
         }
         .body { margin: 3px 0; font-size: 13px; }
         .summary-list { margin: 0; padding-left: 18px; }
         .summary-list li { margin-bottom: 4px; font-size: 13px; }
         .skills { font-size: 13px; }
-        .exp-title { font-weight: 700; color: #1e1b4b; margin: 10px 0 2px; font-size: 13px; }
+        .exp-title { font-weight: 700; color: #1e1b4b; margin: 10px 0 2px; font-size: 13px; page-break-after: avoid; }
         .exp-sub { font-style: italic; color: #4b5563; font-size: 12px; margin: 2px 0; }
         .bullet { margin-left: 18px; margin-bottom: 2px; font-size: 13px; }
         .spacer { height: 8px; }
-        @media print {
-          body { margin: 48px 56px; }
-        }
       </style></head><body>
       <h1>${content.name}</h1>
       <p class="role-line">${content.tailoredFor.title} | ${content.tailoredFor.company}</p>

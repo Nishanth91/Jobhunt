@@ -5,9 +5,10 @@ import { usePathname } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
 import {
   LayoutDashboard, Briefcase, Upload, Settings, FileText,
-  LogOut, Users, ChevronRight, Star, UserCog, GraduationCap, DollarSign
+  LogOut, Users, ChevronRight, UserCog, GraduationCap, DollarSign
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { cachedFetch } from '@/lib/client-cache';
 
 const navItems = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -27,8 +28,8 @@ export default function Sidebar() {
 
   useEffect(() => {
     if (session?.user?.hasAvatar) {
-      fetch('/api/users/avatar')
-        .then((r) => r.json())
+      // Cached for 10 minutes — avatar doesn't change often, no need to re-fetch on every nav
+      cachedFetch('/api/users/avatar', undefined, 10 * 60_000)
         .then((d) => { if (d.avatar) setAvatar(d.avatar); })
         .catch(() => {});
     }
