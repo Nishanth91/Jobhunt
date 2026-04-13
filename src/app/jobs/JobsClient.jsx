@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Search, Filter, Loader2, RefreshCw, MapPin, Briefcase } from 'lucide-react';
 import JobCard from '@/components/JobCard';
 import { useRouter } from 'next/navigation';
-import { cachedFetch, cacheSet } from '@/lib/client-cache';
+import { cachedFetch } from '@/lib/client-cache';
 
 const SOURCES = ['all', 'jsearch', 'google', 'adzuna', 'remotive', 'jobicy', 'themuse'];
 const JOB_TYPES = ['any', 'remote', 'full-time', 'part-time', 'contract'];

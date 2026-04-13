@@ -54,8 +54,7 @@ export default function SettingsClient({ user }) {
     cachedFetch('/api/users/avatar', undefined, 10 * 60_000)
       .then((d) => { if (d.avatar) setAvatar(d.avatar); })
       .catch(() => {});
-    cachedFetch('/api/users/profile', undefined, 5 * 60_000)
-      .then((r) => r.json())
+    cachedFetch('/api/users/profile', undefined, 5 * 60000)
       .then((d) => {
         setProfile({
           name: d.name || user.name || '',

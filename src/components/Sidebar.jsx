@@ -48,7 +48,7 @@ export default function Sidebar() {
       <div className="px-6 py-6 border-b border-white/5">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center shadow-glow-sm">
-            <Star size={16} className="text-white" />
+            <Briefcase size={16} className="text-white" />
           </div>
           <div>
             <h1 className="text-sm font-bold text-white tracking-wide">JobHunt</h1>
