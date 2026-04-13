@@ -7,8 +7,9 @@ export async function DELETE() {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: 'Unauthorised' }, { status: 401 });
 
-  // Delete tailored documents first (they reference resumes via FK)
-  await prisma.document.deleteMany({ where: { userId: session.user.id } });
+  // Delete tailored documents first (FK constraint references savedJob, not resume,
+  // but clean them up since they're useless without the base resume)
+  await prisma.tailoredDocument.deleteMany({ where: { userId: session.user.id } });
 
   // Then delete all resumes
   await prisma.resume.deleteMany({ where: { userId: session.user.id } });

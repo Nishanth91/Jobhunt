@@ -19,7 +19,7 @@ export default async function DashboardPage() {
   const [savedJobs, applications, resume, preference] = await Promise.all([
     prisma.savedJob.findMany({
       where: { userId, NOT: { status: 'DISMISSED' } },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { matchScore: 'desc' },
       take: 6,
     }),
     prisma.application.findMany({ where: { userId }, include: { job: true } }),

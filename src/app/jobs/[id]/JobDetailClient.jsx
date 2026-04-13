@@ -36,26 +36,26 @@ function ResumePreviewPanel({ content, documentId, onClose, onDownload, jobTitle
     w.document.write(`
       <html><head><title>${pdfTitle}</title>
       <style>
-        /*
-         * Page margins: 0.4in top/bottom is small enough that Chrome/Edge
-         * suppress their built-in header/footer chrome, yet large enough
-         * to give proper spacing between pages at page breaks.
-         */
-        @page { margin: 0.4in 0.5in; size: letter; }
+        /* margin:0 is the ONLY reliable way to suppress browser header/footer
+           (date, title, URL, page number) across Chrome, Edge, Firefox.
+           Content spacing is handled via body padding instead. */
+        @page { margin: 0; size: letter; }
         body {
           font-family: 'Calibri', 'Segoe UI', Arial, sans-serif;
           margin: 0;
-          padding: 0;
+          padding: 52px 56px;
           color: #111;
           line-height: 1.55;
           font-size: 13px;
+          /* -webkit-print-color-adjust ensures backgrounds print if present */
+          -webkit-print-color-adjust: exact;
         }
         h1 { font-size: 24px; color: #1e1b4b; margin: 0 0 4px; font-weight: 700; }
         .role-line { color: #4b5563; font-size: 13px; margin-bottom: 16px; }
         .divider { border: none; border-top: 2.5px solid #4338ca; margin: 0 0 18px; }
         h2 {
           font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: #1e1b4b;
-          border-bottom: 1px solid #c7d2fe; padding-bottom: 3px; margin: 22px 0 10px;
+          border-bottom: 1px solid #c7d2fe; padding-bottom: 3px; margin: 28px 0 10px;
           font-weight: 700; page-break-after: avoid;
         }
         .body { margin: 3px 0; font-size: 13px; }
@@ -63,10 +63,10 @@ function ResumePreviewPanel({ content, documentId, onClose, onDownload, jobTitle
         .summary-list li { margin-bottom: 4px; font-size: 13px; }
         .skills { font-size: 13px; }
         .exp-block { page-break-inside: avoid; }
-        .exp-title { font-weight: 700; color: #1e1b4b; margin: 10px 0 2px; font-size: 13px; page-break-after: avoid; }
-        .exp-sub { font-style: italic; color: #4b5563; font-size: 12px; margin: 2px 0; }
+        .exp-title { font-weight: 700; color: #1e1b4b; margin: 14px 0 2px; font-size: 13px; page-break-after: avoid; }
+        .exp-sub { font-style: italic; color: #4b5563; font-size: 12px; margin: 2px 0; page-break-after: avoid; }
         .bullet { margin-left: 18px; margin-bottom: 2px; font-size: 13px; }
-        .spacer { height: 8px; }
+        .spacer { height: 10px; }
       </style></head><body>
       <h1>${content.name}</h1>
       <p class="role-line">${content.tailoredFor.title} | ${content.tailoredFor.company}</p>

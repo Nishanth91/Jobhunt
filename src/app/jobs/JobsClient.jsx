@@ -44,8 +44,10 @@ export default function JobsClient({ preference, resumeData, savedJobIds, defaul
 
       if (!res.ok) throw new Error(data.error || 'Search failed');
 
-      // Filter dismissed jobs client-side
-      const filtered = (data.jobs || []).filter((job) => !dismissedIds.has(job.externalId));
+      // Filter dismissed jobs, then sort by match score (highest first)
+      const filtered = (data.jobs || [])
+        .filter((job) => !dismissedIds.has(job.externalId))
+        .sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0));
 
       setJobs(filtered);
       setTotal(data.total || 0);

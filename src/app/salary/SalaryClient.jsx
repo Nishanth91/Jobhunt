@@ -91,7 +91,7 @@ function ComparisonChart({ regions }) {
     <div className="rounded-2xl bg-white/[0.02] border border-white/10 p-5">
       <div className="flex items-center gap-2 mb-5">
         <BarChart3 className="w-5 h-5 text-teal-400" />
-        <h3 className="text-base font-semibold text-white">Winnipeg vs US Comparison</h3>
+        <h3 className="text-base font-semibold text-white">Winnipeg vs Canada National</h3>
       </div>
 
       <div className="space-y-4">
@@ -117,7 +117,7 @@ function ComparisonChart({ regions }) {
       </div>
 
       <p className="text-[10px] text-slate-500 mt-4">
-        Note: CAD and USD values are not directly comparable without exchange-rate conversion.
+        Winnipeg regional estimates are adjusted from national averages. All values in CAD.
       </p>
     </div>
   );
@@ -222,7 +222,7 @@ export default function SalaryClient() {
         <div className="flex items-center gap-2 mb-4">
           <DollarSign className="w-5 h-5 text-teal-400" />
           <h2 className="text-base font-semibold text-white">Salary Lookup</h2>
-          <span className="ml-auto text-[10px] text-slate-500">Canada & US salary ranges</span>
+          <span className="ml-auto text-[10px] text-slate-500">Canada salary ranges</span>
         </div>
 
         <div className="flex gap-3" ref={wrapperRef}>
@@ -396,7 +396,7 @@ export default function SalaryClient() {
           </div>
           <h3 className="text-lg font-semibold text-white mb-2">Salary Insights</h3>
           <p className="text-sm text-slate-500 max-w-md">
-            Start typing a job title or Canadian NOC code to compare salary ranges across Canada and the US.
+            Start typing a job title or Canadian NOC code to compare regional (Winnipeg) and national salary ranges.
           </p>
         </div>
       )}

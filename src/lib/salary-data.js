@@ -264,21 +264,32 @@ export function getSalaryInsights(role) {
 
   const roleData = salaryDatabase[matchedRole];
 
-  // Canada first (shown as Winnipeg, MB), US second
-  const regions = ['Canada', 'United States'];
+  // Winnipeg (regional) vs Canada National — no US data
+  const canadaData = roleData['Canada'];
 
-  const allRegions = regions.map((region) => ({
-    region: region === 'Canada' ? 'Winnipeg, MB' : region,
-    ...roleData[region],
-    isPrimary: region === 'Canada',
-  }));
+  // Winnipeg regional estimate: ~90-95% of national median for most roles
+  const wpgFactor = 0.92;
+  const winnipeg = {
+    region: 'Winnipeg, MB',
+    min: Math.round(canadaData.min * wpgFactor),
+    median: Math.round(canadaData.median * wpgFactor),
+    max: Math.round(canadaData.max * wpgFactor),
+    currency: 'CAD',
+    isPrimary: true,
+  };
+
+  const national = {
+    region: 'Canada (National)',
+    ...canadaData,
+    isPrimary: false,
+  };
 
   return {
     matchedRole,
     noc: roleData.noc,
     category: roleData.category,
-    primary: { region: 'Winnipeg, MB', ...roleData['Canada'] },
-    allRegions,
+    primary: winnipeg,
+    allRegions: [winnipeg, national],
     availableRoles: roleList,
   };
 }
