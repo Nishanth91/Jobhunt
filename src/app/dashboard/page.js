@@ -100,7 +100,7 @@ export default async function DashboardPage() {
           {/* Stats Row */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <StatsCard icon={Briefcase} label="Jobs Saved" value={totalSaved} sub="Total positions" color="teal" />
-            <AppliedModal appliedJobs={applications.filter((a) => a.status === 'APPLIED').map(({ id, createdAt, job }) => ({ id, createdAt: createdAt.toISOString(), job: { id: job.id, title: job.title, company: job.company } }))} />
+            <AppliedModal appliedJobs={applications.filter((a) => a.status === 'APPLIED').map((a) => ({ id: a.id, appliedAt: (a.appliedAt || a.updatedAt).toISOString(), job: { id: a.job?.id, title: a.job?.title || 'Unknown Role', company: a.job?.company || 'Unknown' } }))} />
             <StatsCard icon={Calendar} label="Interviews" value={interviews} sub="In progress" color="cyan" />
             <StatsCard icon={TrendingUp} label="Match Score" value={`${avgMatch}%`} sub="Avg. fit" color="emerald" />
           </div>

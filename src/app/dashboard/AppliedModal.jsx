@@ -54,7 +54,7 @@ export default function AppliedModal({ appliedJobs }) {
 
             {/* List */}
             <div className="overflow-y-auto max-h-[60vh] divide-y divide-white/5">
-              {appliedJobs.map(({ id, createdAt, job }) => (
+              {appliedJobs.map(({ id, appliedAt, job }) => (
                 <div key={id} className="px-6 py-4 hover:bg-white/[0.02] transition-colors">
                   <div className="flex items-start gap-3">
                     <div className="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -69,7 +69,7 @@ export default function AppliedModal({ appliedJobs }) {
                       <div className="flex items-center gap-1 mt-1">
                         <Calendar size={10} className="text-slate-600" />
                         <span className="text-[11px] text-slate-500">
-                          Applied {format(new Date(createdAt), 'MMM d, yyyy')}
+                          Applied {format(new Date(appliedAt), 'MMM d, yyyy')}
                         </span>
                       </div>
                     </div>
