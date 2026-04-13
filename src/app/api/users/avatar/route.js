@@ -25,8 +25,9 @@ export async function POST(request) {
 
   const { avatar } = await request.json();
 
-  if (avatar && avatar.length > 700000) {
-    return NextResponse.json({ error: 'Image too large' }, { status: 400 });
+  // base64 of a 5MB file ≈ 6.8MB string — allow up to 7MB
+  if (avatar && avatar.length > 7 * 1024 * 1024) {
+    return NextResponse.json({ error: 'Image too large (max 5MB)' }, { status: 400 });
   }
 
   await prisma.user.update({

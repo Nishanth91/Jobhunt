@@ -31,11 +31,12 @@ function ResumePreviewPanel({ content, documentId, onClose, onDownload, jobTitle
     w.document.write(`
       <html><head><title>${content.name} — Resume</title>
       <style>
-        /* Page margins apply to ALL pages including page 2 */
-        @page { margin: 60px 64px; size: letter; }
+        /* margin:0 removes the space where browsers insert their date/URL chrome */
+        @page { margin: 0; size: letter; }
         body {
           font-family: 'Calibri', 'Segoe UI', Arial, sans-serif;
           margin: 0;
+          padding: 60px 64px;
           color: #111;
           line-height: 1.55;
           font-size: 13px;
@@ -312,49 +313,66 @@ export default function JobDetailClient({ job, resumeData, documents, userName }
       const data = await res.json();
       setAtsResult(data);
       setTab('ats');
+      return data;
     } finally {
       setScoringATS(false);
     }
   };
 
-  const fixATS = async () => {
-    if (!resumeData || !atsResult) return;
+  /** Single-click: score → fix → re-score, all in one shot */
+  const optimizeForATS = async () => {
+    if (!resumeData) return;
     setFixingATS(true);
     try {
-      const res = await fetch('/api/resume/fix-ats', {
+      // Step 1: score
+      setScoringATS(true);
+      const scoreRes = await fetch('/api/ats/score', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ jobId: job.id, resumeId: resumeData.id }),
       });
-      const data = await res.json();
-      setFixResult(data);
+      const scored = await scoreRes.json();
+      setAtsResult(scored);
+      setTab('ats');
+      setScoringATS(false);
 
-      // Build the log entries
-      const logEntries = [];
-      if (data.addedKeywords?.length > 0) {
-        logEntries.push({
-          type: 'added',
-          message: `Added ${data.addedKeywords.length} missing keywords to resume`,
-          keywords: data.addedKeywords,
-        });
+      if (!scored.missingKeywords?.length) {
+        // Already fully optimized
+        setAtsFixLog([{ type: 'info', message: 'Resume is already fully optimized for this job!' }]);
+        return;
       }
-      if (data.before !== undefined && data.after !== undefined) {
-        logEntries.push({
-          type: 'improved',
-          message: `ATS score improved from ${data.before}% → ${data.after}% (+${data.after - data.before}%)`,
-        });
-      }
-      logEntries.push({
-        type: 'info',
-        message: 'New resume version created and set as active. Previous version preserved.',
+
+      // Step 2: fix
+      const fixRes = await fetch('/api/resume/fix-ats', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jobId: job.id, resumeId: resumeData.id }),
       });
+      const fixed = await fixRes.json();
+      setFixResult(fixed);
+
+      const logEntries = [];
+      if (fixed.addedKeywords?.length > 0) {
+        logEntries.push({ type: 'added', message: `Injected ${fixed.addedKeywords.length} missing keywords`, keywords: fixed.addedKeywords });
+      }
+      if (fixed.before !== undefined && fixed.after !== undefined) {
+        logEntries.push({ type: 'improved', message: `ATS score: ${fixed.before}% → ${fixed.after}% (+${fixed.after - fixed.before}%)` });
+      }
+      logEntries.push({ type: 'info', message: 'Resume updated in-place — no extra copies created.' });
       setAtsFixLog((prev) => [...logEntries, ...prev]);
 
-      // Re-run ATS score
-      await scoreATS();
+      // Step 3: re-score to reflect the improved resume
+      const reScoreRes = await fetch('/api/ats/score', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jobId: job.id, resumeId: resumeData.id }),
+      });
+      const reScored = await reScoreRes.json();
+      setAtsResult(reScored);
       router.refresh();
     } finally {
       setFixingATS(false);
+      setScoringATS(false);
     }
   };
 
@@ -473,10 +491,10 @@ export default function JobDetailClient({ job, resumeData, documents, userName }
 
             {resumeData ? (
               <>
-                <button onClick={scoreATS} disabled={scoringATS}
+                <button onClick={optimizeForATS} disabled={fixingATS || scoringATS}
                   className="flex items-center gap-2 px-4 py-2 rounded-xl bg-cyan-500/20 text-cyan-300 text-sm font-medium hover:bg-cyan-500/30 border border-cyan-500/20 transition-all disabled:opacity-50">
-                  {scoringATS ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle size={14} />}
-                  ATS Score
+                  {(fixingATS || scoringATS) ? <Loader2 size={14} className="animate-spin" /> : <Wand2 size={14} />}
+                  {fixingATS ? 'Optimizing…' : 'Optimize for ATS'}
                 </button>
                 <button onClick={() => setShowAdditional(!showAdditional)}
                   className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-500/20 text-blue-300 text-sm font-medium hover:bg-blue-500/30 border border-blue-500/20 transition-all">
@@ -595,6 +613,16 @@ export default function JobDetailClient({ job, resumeData, documents, userName }
                 </div>
               )}
 
+              {!atsResult && resumeData && (
+                <div className="flex flex-col items-center gap-3 py-4">
+                  <p className="text-xs text-slate-400 text-center">Run a one-click analysis + optimization to maximize your ATS score for this job.</p>
+                  <button onClick={optimizeForATS} disabled={fixingATS || scoringATS}
+                    className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-teal-500/20 to-cyan-500/20 text-teal-200 text-sm font-medium hover:from-teal-500/30 hover:to-cyan-500/30 border border-teal-500/20 transition-all disabled:opacity-50">
+                    {(fixingATS || scoringATS) ? <><Loader2 size={14} className="animate-spin" /> Optimizing…</> : <><Wand2 size={14} /> Optimize Resume for ATS</>}
+                  </button>
+                </div>
+              )}
+
               {display.breakdown && (
                 <div className="space-y-3">
                   <ScoreBar value={display.breakdown.skills} label="Skills Match" color="teal" />
@@ -610,19 +638,9 @@ export default function JobDetailClient({ job, resumeData, documents, userName }
                 </div>
               )}
 
-              {/* Fix ATS Button */}
-              {atsResult && atsResult.missingKeywords?.length > 0 && (
-                <div className="pt-3 border-t border-white/5 space-y-2">
-                  <p className="text-xs text-slate-400">Auto-fix adds missing keywords to your resume and creates an updated version.</p>
-                  <button onClick={fixATS} disabled={fixingATS}
-                    className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-gradient-to-r from-teal-500/20 to-cyan-500/20 text-teal-200 text-sm font-medium hover:from-teal-500/30 hover:to-cyan-500/30 border border-teal-500/20 transition-all disabled:opacity-50">
-                    {fixingATS ? <><Loader2 size={14} className="animate-spin" /> Fixing resume...</> : <><Wand2 size={14} /> Auto-Fix Resume Keywords</>}
-                  </button>
-                  {fixResult && (
-                    <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-300">
-                      ✓ ATS score improved: {fixResult.before}% → {fixResult.after}%
-                    </div>
-                  )}
+              {fixResult && (
+                <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-300">
+                  ✓ Optimized: {fixResult.before}% → {fixResult.after}%
                 </div>
               )}
             </div>

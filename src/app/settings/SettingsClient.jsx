@@ -97,7 +97,7 @@ export default function SettingsClient({ user }) {
     const file = e.target.files?.[0];
     if (!file) return;
     if (!file.type.startsWith('image/')) { setAvatarMsg('Please select an image file'); return; }
-    if (file.size > 500 * 1024) { setAvatarMsg('Image must be under 500KB'); return; }
+    if (file.size > 5 * 1024 * 1024) { setAvatarMsg('Image must be under 5MB'); return; }
 
     setAvatarLoading(true);
     setAvatarMsg('');

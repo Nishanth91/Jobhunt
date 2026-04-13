@@ -48,12 +48,14 @@ function companyToDomains(name) {
   return [...seen].slice(0, 3);
 }
 
-// Build Clearbit URL list — websiteDomain takes priority, then guesses
+// Build logo URL list — Clearbit first, Google favicon as reliable fallback
 function getLogoUrls(company, websiteDomain) {
-  if (websiteDomain) {
-    return [`https://logo.clearbit.com/${websiteDomain}?size=128`];
-  }
-  return companyToDomains(company).map((d) => `https://logo.clearbit.com/${d}?size=128`);
+  const domains = websiteDomain ? [websiteDomain] : companyToDomains(company);
+  if (domains.length === 0) return [];
+  const urls = domains.map((d) => `https://logo.clearbit.com/${d}?size=128`);
+  // Google favicon always returns a valid image — ensures we always show something
+  urls.push(`https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://${domains[0]}&size=128`);
+  return urls;
 }
 
 export default function JobCard({ job, onSave, onUnsave, onDismiss, saved = false, showATS = false }) {
@@ -149,7 +151,6 @@ export default function JobCard({ job, onSave, onUnsave, onDismiss, saved = fals
                 }
               }}
               loading="lazy"
-              referrerPolicy="no-referrer"
             />
           ) : (
             companyInitials || '?'

@@ -29,23 +29,10 @@ export async function POST(request) {
   // Calculate new ATS score
   const after = calculateATSScore(fixedText, job.description || '');
 
-  // Save fixed resume as a new version
-  await prisma.resume.updateMany({ where: { userId: session.user.id }, data: { isActive: false } });
-
-  const fixedResume = await prisma.resume.create({
-    data: {
-      userId: session.user.id,
-      fileName: `${resume.fileName} (ATS Fixed)`,
-      filePath: resume.filePath,
-      rawText: fixedText,
-      skills: resume.skills,
-      experience: resume.experience,
-      education: resume.education,
-      summary: resume.summary,
-      jobTitle: resume.jobTitle,
-      yearsExp: resume.yearsExp,
-      isActive: true,
-    },
+  // Update the existing resume in-place — no copies created
+  await prisma.resume.update({
+    where: { id: resumeId },
+    data: { rawText: fixedText },
   });
 
   // Update job ATS score
@@ -55,6 +42,6 @@ export async function POST(request) {
     before: before.total,
     after: after.total,
     addedKeywords: before.missingKeywords,
-    resumeId: fixedResume.id,
+    resumeId,
   });
 }
