@@ -28,15 +28,24 @@ function ResumePreviewPanel({ content, documentId, onClose, onDownload, jobTitle
       ? `<ul class="summary-list">${summaryHtml}</ul>`
       : summaryHtml;
 
+    // Build filename: User_Company_resume — also used as <title> for Save-as-PDF default
+    const safeName = (content.name || 'Resume').replace(/[^a-zA-Z0-9 ]/g, '').trim().replace(/\s+/g, '_');
+    const safeCompany = (content.tailoredFor?.company || 'Company').replace(/[^a-zA-Z0-9 ]/g, '').trim().replace(/\s+/g, '_');
+    const pdfTitle = `${safeName}_${safeCompany}_resume`;
+
     w.document.write(`
-      <html><head><title>${content.name} — Resume</title>
+      <html><head><title>${pdfTitle}</title>
       <style>
-        /* margin:0 removes the space where browsers insert their date/URL chrome */
-        @page { margin: 0; size: letter; }
+        /*
+         * Page margins: 0.4in top/bottom is small enough that Chrome/Edge
+         * suppress their built-in header/footer chrome, yet large enough
+         * to give proper spacing between pages at page breaks.
+         */
+        @page { margin: 0.4in 0.5in; size: letter; }
         body {
           font-family: 'Calibri', 'Segoe UI', Arial, sans-serif;
           margin: 0;
-          padding: 60px 64px;
+          padding: 0;
           color: #111;
           line-height: 1.55;
           font-size: 13px;
@@ -53,6 +62,7 @@ function ResumePreviewPanel({ content, documentId, onClose, onDownload, jobTitle
         .summary-list { margin: 0; padding-left: 18px; }
         .summary-list li { margin-bottom: 4px; font-size: 13px; }
         .skills { font-size: 13px; }
+        .exp-block { page-break-inside: avoid; }
         .exp-title { font-weight: 700; color: #1e1b4b; margin: 10px 0 2px; font-size: 13px; page-break-after: avoid; }
         .exp-sub { font-style: italic; color: #4b5563; font-size: 12px; margin: 2px 0; }
         .bullet { margin-left: 18px; margin-bottom: 2px; font-size: 13px; }
@@ -68,7 +78,7 @@ function ResumePreviewPanel({ content, documentId, onClose, onDownload, jobTitle
       ${content.summary ? `<h2>Professional Summary</h2>${summaryWrapper}` : ''}
 
       <h2>Technical Skills</h2>
-      <p class="skills">${content.skills.join('  |  ')}</p>
+      <p class="skills">${content.skills.join(', ')}</p>
 
       ${content.experience?.length ? `<h2>Professional Experience</h2>
         ${content.experience.map((l) => {
@@ -404,7 +414,7 @@ export default function JobDetailClient({ job, resumeData, documents, userName }
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `Resume_${job.title}_${job.company}.docx`.replace(/\s+/g, '_');
+      a.download = `${(userName || 'Resume').replace(/\s+/g, '_')}_${(job.company || 'Company').replace(/\s+/g, '_')}_resume.docx`;
       a.click();
       URL.revokeObjectURL(url);
     }

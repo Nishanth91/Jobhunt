@@ -1,19 +1,84 @@
 'use client';
 
-import { FileText, Download, ExternalLink, Building, Clock } from 'lucide-react';
+import { useState } from 'react';
+import { FileText, ExternalLink, Building, Clock, Trash2, AlertTriangle, Loader2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ScoreRing } from '@/components/ScoreBadge';
 
 export default function ResumesClient({ documents }) {
+  const router = useRouter();
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  const handleDeleteAll = async () => {
+    setDeleting(true);
+    try {
+      const res = await fetch('/api/resume/all', { method: 'DELETE' });
+      if (res.ok) {
+        setShowConfirm(false);
+        router.refresh();
+      }
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-xl font-semibold text-white mb-1">Tailored Resumes</h2>
-        <p className="text-sm text-slate-400">
-          Resumes customised for specific job openings. Each is optimised with the right keywords for that job's ATS.
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h2 className="text-xl font-semibold text-white mb-1">Tailored Resumes</h2>
+          <p className="text-sm text-slate-400">
+            Resumes customised for specific job openings. Each is optimised with the right keywords for that job's ATS.
+          </p>
+        </div>
+        {documents.length > 0 && (
+          <button
+            onClick={() => setShowConfirm(true)}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-500/10 text-red-400 text-sm font-medium hover:bg-red-500/20 border border-red-500/20 transition-all flex-shrink-0"
+          >
+            <Trash2 size={14} /> Remove All
+          </button>
+        )}
       </div>
+
+      {/* Confirmation modal */}
+      {showConfirm && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)' }}
+          onClick={(e) => e.target === e.currentTarget && setShowConfirm(false)}
+        >
+          <div className="bg-[#0d0d1a] border border-white/10 rounded-2xl w-full max-w-sm p-6 shadow-2xl space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-red-500/20 flex items-center justify-center flex-shrink-0">
+                <AlertTriangle size={18} className="text-red-400" />
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-white">Delete all resumes?</h3>
+                <p className="text-xs text-slate-400 mt-0.5">This will permanently remove all {documents.length} tailored resume{documents.length !== 1 ? 's' : ''} and uploaded resumes. This cannot be undone.</p>
+              </div>
+            </div>
+            <div className="flex gap-3 pt-2">
+              <button
+                onClick={() => setShowConfirm(false)}
+                className="flex-1 py-2.5 rounded-xl bg-white/[0.04] text-slate-300 text-sm font-medium hover:bg-white/[0.08] border border-white/10 transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteAll}
+                disabled={deleting}
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-red-500/20 text-red-300 text-sm font-medium hover:bg-red-500/30 border border-red-500/30 transition-all disabled:opacity-50"
+              >
+                {deleting ? <><Loader2 size={14} className="animate-spin" /> Deleting...</> : <><Trash2 size={14} /> Delete All</>}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {documents.length === 0 ? (
         <div className="text-center py-20">

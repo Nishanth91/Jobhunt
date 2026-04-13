@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Search, Filter, Loader2, RefreshCw, MapPin, Briefcase } from 'lucide-react';
 import JobCard from '@/components/JobCard';
 import { useRouter } from 'next/navigation';
@@ -25,7 +25,7 @@ export default function JobsClient({ preference, resumeData, savedJobIds, defaul
 
   // Load dismissed IDs once on mount — cached for 5 min so tab switches don't refetch
   useEffect(() => {
-    cachedFetch('/api/jobs/dismiss', undefined, 5 * 60_000)
+    cachedFetch('/api/jobs/dismiss', undefined, 5 * 60000)
       .then((ids) => {
         if (Array.isArray(ids)) setDismissedIds(new Set(ids));
       })
@@ -68,9 +68,13 @@ export default function JobsClient({ preference, resumeData, savedJobIds, defaul
     }
   }, [query, location, source, dismissedIds]);
 
-  // Auto-search if user has preferences
+  // Auto-search on first mount only — guard prevents re-firing on tab switch
+  const didAutoSearch = useRef(false);
   useEffect(() => {
-    if (defaultQuery) search(defaultQuery, defaultLocation, 'all');
+    if (defaultQuery && !didAutoSearch.current) {
+      didAutoSearch.current = true;
+      search(defaultQuery, defaultLocation, 'all');
+    }
   }, []);
 
   const handleSave = async (job) => {

@@ -8,6 +8,7 @@ import StatsCard from '@/components/StatsCard';
 import JobCard from '@/components/JobCard';
 import { Briefcase, CheckCircle, Calendar, TrendingUp, Upload, Settings, Sparkles, ArrowRight, Zap, Target } from 'lucide-react';
 import Link from 'next/link';
+import AppliedModal from './AppliedModal';
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
@@ -99,7 +100,7 @@ export default async function DashboardPage() {
           {/* Stats Row */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <StatsCard icon={Briefcase} label="Jobs Saved" value={totalSaved} sub="Total positions" color="teal" />
-            <StatsCard icon={CheckCircle} label="Applications" value={totalApplied} sub="Sent out" color="blue" />
+            <AppliedModal appliedJobs={applications.filter((a) => a.status === 'APPLIED').map(({ id, createdAt, job }) => ({ id, createdAt: createdAt.toISOString(), job: { id: job.id, title: job.title, company: job.company } }))} />
             <StatsCard icon={Calendar} label="Interviews" value={interviews} sub="In progress" color="cyan" />
             <StatsCard icon={TrendingUp} label="Match Score" value={`${avgMatch}%`} sub="Avg. fit" color="emerald" />
           </div>

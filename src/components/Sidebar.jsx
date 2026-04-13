@@ -29,7 +29,7 @@ export default function Sidebar() {
   useEffect(() => {
     if (session?.user?.hasAvatar) {
       // Cached for 10 minutes — avatar doesn't change often, no need to re-fetch on every nav
-      cachedFetch('/api/users/avatar', undefined, 10 * 60_000)
+      cachedFetch('/api/users/avatar', undefined, 10 * 60000)
         .then((d) => { if (d.avatar) setAvatar(d.avatar); })
         .catch(() => {});
     }

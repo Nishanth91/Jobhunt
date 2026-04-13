@@ -26,7 +26,7 @@ export function cacheGet(key) {
  * @param {*} value
  * @param {number} ttlMs  Time-to-live in ms (default 2 minutes)
  */
-export function cacheSet(key, value, ttlMs = 120_000) {
+export function cacheSet(key, value, ttlMs = 120000) {
   store.set(key, { value, expiresAt: Date.now() + ttlMs });
 }
 
@@ -46,7 +46,7 @@ export function cacheDelete(key) {
  */
 const inflight = new Map();
 
-export async function cachedFetch(url, options, ttlMs = 120_000) {
+export async function cachedFetch(url, options, ttlMs = 120000) {
   const cached = cacheGet(url);
   if (cached !== null) return cached;
 

@@ -1,5 +1,6 @@
 'use client';
 
+import { memo } from 'react';
 import { MapPin, Clock, ExternalLink, Bookmark, BookmarkCheck, ArrowRight, X } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import Link from 'next/link';
@@ -58,7 +59,7 @@ function getLogoUrls(company, websiteDomain) {
   return urls;
 }
 
-export default function JobCard({ job, onSave, onUnsave, onDismiss, saved = false, showATS = false }) {
+function JobCard({ job, onSave, onUnsave, onDismiss, saved = false, showATS = false }) {
   const router = useRouter();
   const [isSaved, setIsSaved] = useState(saved);
   const [saving, setSaving] = useState(false);
@@ -266,3 +267,5 @@ export default function JobCard({ job, onSave, onUnsave, onDismiss, saved = fals
     </div>
   );
 }
+
+export default memo(JobCard);

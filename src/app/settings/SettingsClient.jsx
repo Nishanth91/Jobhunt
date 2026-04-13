@@ -51,7 +51,7 @@ export default function SettingsClient({ user }) {
   const [profileMsg, setProfileMsg] = useState('');
 
   useEffect(() => {
-    cachedFetch('/api/users/avatar', undefined, 10 * 60_000)
+    cachedFetch('/api/users/avatar', undefined, 10 * 60000)
       .then((d) => { if (d.avatar) setAvatar(d.avatar); })
       .catch(() => {});
     cachedFetch('/api/users/profile', undefined, 5 * 60000)
