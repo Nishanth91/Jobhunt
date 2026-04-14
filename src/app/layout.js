@@ -1,6 +1,7 @@
 import './globals.css';
 import AuthProvider from '@/components/AuthProvider';
 import ThemeProvider from '@/components/ThemeProvider';
+import SidebarProvider from '@/components/SidebarProvider';
 
 export const metadata = {
   title: 'JobHunt — Your Career Command Center',
@@ -21,9 +22,11 @@ export default function RootLayout({ children }) {
         <div className="bg-mesh" aria-hidden="true" />
         <AuthProvider>
           <ThemeProvider>
-            <div className="relative z-10">
-              {children}
-            </div>
+            <SidebarProvider>
+              <div className="relative z-10">
+                {children}
+              </div>
+            </SidebarProvider>
           </ThemeProvider>
         </AuthProvider>
       </body>

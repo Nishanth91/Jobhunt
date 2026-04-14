@@ -75,7 +75,7 @@ export default function AdminClient({ users }) {
             </div>
           )}
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs text-slate-400 mb-1.5">Full Name</label>
               <input
@@ -139,7 +139,8 @@ export default function AdminClient({ users }) {
 
       {/* Users Table */}
       <div className="rounded-2xl bg-white/[0.02] border border-white/10 overflow-hidden">
-        <div className="grid grid-cols-5 px-5 py-3 border-b border-white/5 text-xs font-medium text-slate-500 uppercase tracking-wider">
+        {/* Table header — hidden on mobile */}
+        <div className="hidden md:grid grid-cols-5 px-5 py-3 border-b border-white/5 text-xs font-medium text-slate-500 uppercase tracking-wider">
           <span className="col-span-2">User</span>
           <span>Jobs Saved</span>
           <span>Applied</span>
@@ -147,32 +148,42 @@ export default function AdminClient({ users }) {
         </div>
 
         {users.map((user) => (
-          <div key={user.id} className="grid grid-cols-5 px-5 py-4 border-b border-white/5 last:border-0 hover:bg-white/[0.02] transition-colors items-center">
-            <div className="col-span-2 flex items-center gap-3">
+          <div key={user.id} className="flex flex-col md:grid md:grid-cols-5 px-4 md:px-5 py-4 border-b border-white/5 last:border-0 hover:bg-white/[0.02] transition-colors md:items-center gap-3 md:gap-0">
+            <div className="md:col-span-2 flex items-center gap-3">
               <div className="w-9 h-9 rounded-full bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
                 {user.name.split(' ').map((n) => n[0]).join('').toUpperCase()}
               </div>
-              <div>
-                <p className="text-sm font-medium text-white">{user.name}</p>
-                <p className="text-xs text-slate-500">{user.email}</p>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium text-white truncate">{user.name}</p>
+                <p className="text-xs text-slate-500 truncate">{user.email}</p>
                 {user.role === 'ADMIN' && (
                   <span className="text-[10px] px-1.5 py-0.5 rounded bg-teal-500/20 text-teal-300">ADMIN</span>
                 )}
               </div>
+              {/* Delete button — inline on mobile */}
+              <button
+                onClick={() => handleDelete(user.id, user.name)}
+                className="md:hidden w-7 h-7 rounded-lg bg-red-500/10 text-red-400 flex items-center justify-center hover:bg-red-500/20 transition-colors flex-shrink-0"
+                title="Delete user"
+              >
+                <Trash2 size={12} />
+              </button>
             </div>
-            <div className="flex items-center gap-1 text-sm text-slate-300">
-              <Briefcase size={12} className="text-slate-500" /> {user._count.savedJobs}
-            </div>
-            <div className="flex items-center gap-1 text-sm text-slate-300">
-              <FileText size={12} className="text-slate-500" /> {user._count.applications}
-            </div>
-            <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4 md:contents pl-12 md:pl-0">
+              <div className="flex items-center gap-1 text-sm text-slate-300">
+                <Briefcase size={12} className="text-slate-500" /> {user._count.savedJobs} <span className="md:hidden text-xs text-slate-500">saved</span>
+              </div>
+              <div className="flex items-center gap-1 text-sm text-slate-300">
+                <FileText size={12} className="text-slate-500" /> {user._count.applications} <span className="md:hidden text-xs text-slate-500">applied</span>
+              </div>
               <span className="text-xs text-slate-500">
                 {formatDistanceToNow(new Date(user.createdAt), { addSuffix: true })}
               </span>
+            </div>
+            <div className="hidden md:flex items-center justify-end">
               <button
                 onClick={() => handleDelete(user.id, user.name)}
-                className="w-7 h-7 rounded-lg bg-red-500/10 text-red-400 flex items-center justify-center hover:bg-red-500/20 transition-colors ml-2"
+                className="w-7 h-7 rounded-lg bg-red-500/10 text-red-400 flex items-center justify-center hover:bg-red-500/20 transition-colors"
                 title="Delete user"
               >
                 <Trash2 size={12} />

@@ -1,16 +1,18 @@
 'use client';
 
-import { Bell, Search, Sun, Moon } from 'lucide-react';
+import { Bell, Search, Sun, Moon, Menu } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTheme } from './ThemeProvider';
+import { useSidebar } from './SidebarProvider';
 
 export default function Navbar({ title = '' }) {
   const { data: session } = useSession();
   const [query, setQuery] = useState('');
   const router = useRouter();
   const { theme, toggle } = useTheme();
+  const { toggle: toggleSidebar } = useSidebar();
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -26,16 +28,25 @@ export default function Navbar({ title = '' }) {
     'Good evening';
 
   return (
-    <header className="sticky top-0 z-30 bg-navy-900/80 backdrop-blur-md border-b border-white/5 px-6 py-3">
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h2 className="text-base font-semibold text-white">{title || `${greeting}, ${session?.user?.name?.split(' ')[0]} 👋`}</h2>
-          <p className="text-xs text-slate-500">
+    <header className="sticky top-0 z-30 bg-navy-900/80 backdrop-blur-md border-b border-white/5 px-4 md:px-6 py-3">
+      <div className="flex items-center justify-between gap-3 md:gap-4">
+        {/* Hamburger — mobile only */}
+        <button
+          onClick={toggleSidebar}
+          className="md:hidden w-9 h-9 rounded-xl bg-white/[0.04] border border-white/10 flex items-center justify-center text-slate-400 hover:text-white transition-all flex-shrink-0"
+          aria-label="Toggle menu"
+        >
+          <Menu size={18} />
+        </button>
+
+        <div className="min-w-0">
+          <h2 className="text-sm md:text-base font-semibold text-white truncate">{title || `${greeting}, ${session?.user?.name?.split(' ')[0]} 👋`}</h2>
+          <p className="text-xs text-slate-500 hidden sm:block">
             {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
           </p>
         </div>
 
-        <form onSubmit={handleSearch} className="flex-1 max-w-md">
+        <form onSubmit={handleSearch} className="flex-1 max-w-md hidden sm:block">
           <div className="relative">
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
             <input
@@ -48,7 +59,7 @@ export default function Navbar({ title = '' }) {
           </div>
         </form>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-shrink-0">
           <button
             onClick={toggle}
             className="w-9 h-9 rounded-xl bg-white/[0.04] border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:border-teal-500/30 transition-all"

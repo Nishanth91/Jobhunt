@@ -126,7 +126,7 @@ function JobCard({ job, onSave, onUnsave, onDismiss, saved = false, showATS = fa
   const isNew = job.postedAt && differenceInDays(new Date(), new Date(job.postedAt)) <= 7;
 
   return (
-    <div className="group relative rounded-2xl bg-gradient-to-br from-white/[0.04] to-white/[0.02] border border-white/10 p-5 hover:border-teal-500/40 hover:shadow-glow transition-all duration-300 hover:-translate-y-0.5">
+    <div className="group relative rounded-2xl bg-gradient-to-br from-white/[0.04] to-white/[0.02] border border-white/10 p-4 md:p-5 hover:border-teal-500/40 hover:shadow-glow transition-all duration-300 hover:-translate-y-0.5">
       {/* "New" badge — top-right corner */}
       {isNew && (
         <span className="absolute top-3 right-3 px-2 py-0.5 rounded-md bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-[10px] font-bold uppercase tracking-wider shadow-sm z-10">
@@ -229,7 +229,7 @@ function JobCard({ job, onSave, onUnsave, onDismiss, saved = false, showATS = fa
       </div>
 
       {/* Score Row + Actions */}
-      <div className="flex items-center gap-3 mt-4 pt-4 border-t border-white/5">
+      <div className="flex items-center gap-2 md:gap-3 mt-3 md:mt-4 pt-3 md:pt-4 border-t border-white/5 flex-wrap">
         {job.matchScore > 0 && (
           <div className="flex items-center gap-1.5">
             <ScoreRing score={Math.round(job.matchScore)} size={48} />

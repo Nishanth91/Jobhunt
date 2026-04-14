@@ -178,7 +178,7 @@ export default function JobsClient({ preference, resumeData, savedJobIds, defaul
 
           {/* Quick role suggestions from preferences */}
           {preference.jobRoles.length > 0 && (
-            <div className="flex items-center gap-2 ml-auto">
+            <div className="flex items-center gap-2 sm:ml-auto flex-wrap">
               <span className="text-xs text-slate-600">Quick:</span>
               {preference.jobRoles.slice(0, 3).map((role) => (
                 <button

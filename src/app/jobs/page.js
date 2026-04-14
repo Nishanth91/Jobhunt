@@ -36,9 +36,9 @@ export default async function JobsPage({ searchParams }) {
   return (
     <div className="flex min-h-screen">
       <Sidebar />
-      <div className="ml-64 flex-1 flex flex-col">
+      <div className="md:ml-64 flex-1 flex flex-col">
         <Navbar title="Job Search" />
-        <main className="flex-1 px-8 py-7">
+        <main className="flex-1 px-4 md:px-8 py-5 md:py-7">
           <JobsClient
             preference={prefData}
             resumeData={resumeData}

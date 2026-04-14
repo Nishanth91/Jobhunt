@@ -121,26 +121,26 @@ function ResumePreviewPanel({ content, documentId, onClose, onDownload, jobTitle
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-gray-900 border border-white/10 rounded-3xl w-full max-w-3xl max-h-[90vh] flex flex-col shadow-2xl">
+    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-2 md:p-4">
+      <div className="bg-gray-900 border border-white/10 rounded-2xl md:rounded-3xl w-full max-w-3xl max-h-[95vh] md:max-h-[90vh] flex flex-col shadow-2xl">
         {/* Header — always dark */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-white/10">
-          <div>
-            <h3 className="text-base font-semibold" style={{ color: '#fff' }}>Tailored Resume Preview</h3>
-            <p className="text-xs" style={{ color: '#94a3b8' }}>For: {content.tailoredFor.title} at {content.tailoredFor.company}</p>
+        <div className="flex items-center justify-between px-4 md:px-6 py-3 md:py-4 border-b border-white/10 gap-2">
+          <div className="min-w-0">
+            <h3 className="text-sm md:text-base font-semibold truncate" style={{ color: '#fff' }}>Tailored Resume Preview</h3>
+            <p className="text-xs truncate" style={{ color: '#94a3b8' }}>For: {content.tailoredFor.title} at {content.tailoredFor.company}</p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-1.5 md:gap-2 flex-shrink-0">
             <button
               onClick={handlePrint}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-500/20 text-emerald-300 text-xs font-medium hover:bg-emerald-500/30 border border-emerald-500/20 transition-all"
+              className="flex items-center gap-1.5 px-2 md:px-3 py-1.5 md:py-2 rounded-xl bg-emerald-500/20 text-emerald-300 text-xs font-medium hover:bg-emerald-500/30 border border-emerald-500/20 transition-all"
             >
-              <Printer size={13} /> Save as PDF
+              <Printer size={13} /> <span className="hidden sm:inline">Save as PDF</span><span className="sm:hidden">PDF</span>
             </button>
             <button
               onClick={onDownload}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-blue-500/20 text-blue-300 text-xs font-medium hover:bg-blue-500/30 border border-blue-500/20 transition-all"
+              className="flex items-center gap-1.5 px-2 md:px-3 py-1.5 md:py-2 rounded-xl bg-blue-500/20 text-blue-300 text-xs font-medium hover:bg-blue-500/30 border border-blue-500/20 transition-all"
             >
-              <Download size={13} /> Download Word
+              <Download size={13} /> <span className="hidden sm:inline">Download Word</span><span className="sm:hidden">Word</span>
             </button>
             <button onClick={onClose} className="w-8 h-8 rounded-xl bg-white/[0.04] flex items-center justify-center text-slate-400 hover:text-white border border-white/10">
               <X size={14} />
@@ -149,7 +149,7 @@ function ResumePreviewPanel({ content, documentId, onClose, onDownload, jobTitle
         </div>
 
         {/* Resume content — always WHITE background like a real document */}
-        <div className="resume-preview-panel overflow-y-auto flex-1 px-8 py-6 space-y-5 text-sm rounded-b-3xl" style={{ background: '#fff', color: '#111827' }}>
+        <div className="resume-preview-panel overflow-y-auto flex-1 px-4 md:px-8 py-4 md:py-6 space-y-4 md:space-y-5 text-sm rounded-b-2xl md:rounded-b-3xl" style={{ background: '#fff', color: '#111827' }}>
           {/* Name */}
           <div style={{ borderBottom: '2.5px solid #4338ca', paddingBottom: '12px' }}>
             <h2 className="text-2xl font-bold" style={{ color: '#1e1b4b' }}>{content.name}</h2>
@@ -492,34 +492,34 @@ export default function JobDetailClient({ job, resumeData, documents, userName }
 
       <div className="max-w-5xl space-y-6">
         {/* Header */}
-        <div className="rounded-2xl bg-gradient-to-br from-white/[0.04] to-white/[0.02] border border-white/10 p-6">
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex items-start gap-4">
-              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
+        <div className="rounded-2xl bg-gradient-to-br from-white/[0.04] to-white/[0.02] border border-white/10 p-4 md:p-6">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+            <div className="flex items-start gap-3 md:gap-4">
+              <div className="w-11 h-11 md:w-14 md:h-14 rounded-xl bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center text-white font-bold text-sm md:text-lg flex-shrink-0">
                 {job.company.slice(0, 2).toUpperCase()}
               </div>
-              <div>
-                <h1 className="text-xl font-bold text-white">{job.title}</h1>
-                <p className="text-teal-300 font-medium mt-0.5">{job.company}</p>
-                <div className="flex items-center gap-3 mt-2 flex-wrap">
-                  <span className="flex items-center gap-1 text-sm text-slate-400"><MapPin size={13} />{job.location}</span>
-                  {job.postedAt && <span className="flex items-center gap-1 text-sm text-slate-500"><Clock size={13} />{formatDistanceToNow(new Date(job.postedAt), { addSuffix: true })}</span>}
-                  {job.salary && <span className="text-sm text-emerald-400 font-medium">{job.salary}</span>}
+              <div className="min-w-0">
+                <h1 className="text-lg md:text-xl font-bold text-white">{job.title}</h1>
+                <p className="text-teal-300 font-medium mt-0.5 text-sm md:text-base">{job.company}</p>
+                <div className="flex items-center gap-2 md:gap-3 mt-2 flex-wrap">
+                  <span className="flex items-center gap-1 text-xs md:text-sm text-slate-400"><MapPin size={13} />{job.location}</span>
+                  {job.postedAt && <span className="flex items-center gap-1 text-xs md:text-sm text-slate-500"><Clock size={13} />{formatDistanceToNow(new Date(job.postedAt), { addSuffix: true })}</span>}
+                  {job.salary && <span className="text-xs md:text-sm text-emerald-400 font-medium">{job.salary}</span>}
                   <SourceBadge source={job.source} />
                 </div>
               </div>
             </div>
-            <div className="flex flex-col items-end gap-3">
-              <div className="flex items-center gap-3">
-                <ScoreRing score={Math.round(job.matchScore)} size={64} label="Match" />
-                {display.total > 0 && <ScoreRing score={display.total} size={64} label="ATS" />}
+            <div className="flex sm:flex-col items-center sm:items-end gap-3">
+              <div className="flex items-center gap-2 md:gap-3">
+                <ScoreRing score={Math.round(job.matchScore)} size={56} label="Match" />
+                {display.total > 0 && <ScoreRing score={display.total} size={56} label="ATS" />}
               </div>
               <StatusBadge status={status} />
             </div>
           </div>
 
           {/* Actions */}
-          <div className="flex flex-wrap gap-2 mt-5 pt-5 border-t border-white/5">
+          <div className="flex flex-wrap gap-2 mt-4 md:mt-5 pt-4 md:pt-5 border-t border-white/5">
             <a href={job.url} target="_blank" rel="noopener noreferrer"
               className="flex items-center gap-2 px-4 py-2 rounded-xl bg-teal-500/20 text-teal-300 text-sm font-medium hover:bg-teal-500/30 border border-teal-500/20 transition-all">
               <ExternalLink size={14} /> View Original
@@ -597,10 +597,10 @@ export default function JobDetailClient({ job, resumeData, documents, userName }
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-1 border-b border-white/5">
+        <div className="flex gap-1 border-b border-white/5 overflow-x-auto no-scrollbar">
           {['overview', 'ats', 'documents', 'interview'].map((t) => (
             <button key={t} onClick={() => { setTab(t); if (t === 'interview' && !interviewPrep && !loadingPrep) generateInterviewPrep(); }}
-              className={`px-4 py-2.5 text-sm font-medium transition-all border-b-2 -mb-px ${
+              className={`px-3 md:px-4 py-2 md:py-2.5 text-xs md:text-sm font-medium transition-all border-b-2 -mb-px whitespace-nowrap flex-shrink-0 ${
                 tab === t ? 'text-teal-300 border-teal-500' : 'text-slate-500 border-transparent hover:text-slate-300'
               }`}>
               {t === 'overview' ? 'Job Details' : t === 'ats' ? 'ATS Analysis' : t === 'documents' ? 'Documents' : 'Interview Prep'}

@@ -267,7 +267,7 @@ export default function SettingsClient({ user }) {
             {/* Color swatches */}
             <div>
               <p className="text-sm text-white font-medium mb-3">Accent Color</p>
-              <div className="grid grid-cols-5 gap-3">
+              <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
                 {COLOR_SCHEMES.map((scheme) => (
                   <button
                     key={scheme.id}

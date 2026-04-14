@@ -12,9 +12,9 @@ export default async function SettingsPage() {
   return (
     <div className="flex min-h-screen">
       <Sidebar />
-      <div className="ml-64 flex-1 flex flex-col">
+      <div className="md:ml-64 flex-1 flex flex-col">
         <Navbar title="Settings" />
-        <main className="flex-1 px-8 py-7">
+        <main className="flex-1 px-4 md:px-8 py-5 md:py-7">
           <SettingsClient user={{ id: session.user.id, name: session.user.name, email: session.user.email }} />
         </main>
       </div>

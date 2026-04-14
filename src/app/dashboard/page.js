@@ -53,16 +53,16 @@ export default async function DashboardPage() {
   return (
     <div className="flex min-h-screen">
       <Sidebar />
-      <div className="ml-64 flex-1 flex flex-col min-h-screen">
+      <div className="md:ml-64 flex-1 flex flex-col min-h-screen">
         <Navbar title="Dashboard" />
-        <main className="flex-1 px-8 py-7 space-y-8">
+        <main className="flex-1 px-4 md:px-8 py-5 md:py-7 space-y-6 md:space-y-8">
 
           {/* Welcome Banner */}
-          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-teal-500/10 via-cyan-500/8 to-teal-500/10 border border-teal-500/20 p-6">
+          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-teal-500/10 via-cyan-500/8 to-teal-500/10 border border-teal-500/20 p-4 md:p-6">
             <div className="relative z-10">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div>
-                  <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                  <h2 className="text-lg md:text-xl font-bold text-white flex items-center gap-2">
                     <Sparkles size={20} className="text-teal-400" />
                     Welcome back, {userName}
                   </h2>
@@ -72,19 +72,19 @@ export default async function DashboardPage() {
                       : 'Complete your profile to get personalised job matches.'}
                   </p>
                 </div>
-                <div className="flex gap-3 flex-shrink-0">
+                <div className="flex gap-2 sm:gap-3 flex-shrink-0 flex-wrap">
                   {!hasResume && (
-                    <Link href="/resumes" className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-teal-500 to-cyan-600 text-white text-sm font-medium hover:shadow-glow transition-all">
+                    <Link href="/resumes" className="flex items-center gap-2 px-3 md:px-4 py-2 md:py-2.5 rounded-xl bg-gradient-to-r from-teal-500 to-cyan-600 text-white text-xs md:text-sm font-medium hover:shadow-glow transition-all">
                       <Upload size={14} /> Upload Resume
                     </Link>
                   )}
                   {!hasPreferences && (
-                    <Link href="/preferences" className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-cyan-500/20 text-cyan-300 text-sm font-medium hover:bg-cyan-500/30 border border-cyan-500/20 transition-all">
+                    <Link href="/preferences" className="flex items-center gap-2 px-3 md:px-4 py-2 md:py-2.5 rounded-xl bg-cyan-500/20 text-cyan-300 text-xs md:text-sm font-medium hover:bg-cyan-500/30 border border-cyan-500/20 transition-all">
                       <Settings size={14} /> Set Preferences
                     </Link>
                   )}
                   {hasResume && hasPreferences && (
-                    <Link href="/jobs" className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-teal-500 to-cyan-600 text-white text-sm font-medium hover:shadow-glow transition-all">
+                    <Link href="/jobs" className="flex items-center gap-2 px-3 md:px-4 py-2 md:py-2.5 rounded-xl bg-gradient-to-r from-teal-500 to-cyan-600 text-white text-xs md:text-sm font-medium hover:shadow-glow transition-all">
                       <Zap size={14} /> Search Jobs <ArrowRight size={12} />
                     </Link>
                   )}
@@ -97,7 +97,7 @@ export default async function DashboardPage() {
           </div>
 
           {/* Stats Row */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
             <StatsCard icon={Briefcase} label="Jobs Saved" value={totalSaved} sub="Total positions" color="teal" />
             <AppliedModal appliedJobs={applications.filter((a) => a.status === 'APPLIED').map((a) => ({ id: a.id, appliedAt: (a.appliedAt || a.updatedAt).toISOString(), job: { id: a.job?.id, title: a.job?.title || 'Unknown Role', company: a.job?.company || 'Unknown' } }))} />
             <StatsCard icon={Calendar} label="Interviews" value={interviews} sub="In progress" color="cyan" />
@@ -106,15 +106,15 @@ export default async function DashboardPage() {
 
           {/* Pipeline Progress Bar */}
           {totalApplied > 0 && (
-            <div className="rounded-2xl bg-white/[0.02] border border-white/10 p-5">
-              <div className="flex items-center justify-between mb-4">
+            <div className="rounded-2xl bg-white/[0.02] border border-white/10 p-4 md:p-5">
+              <div className="flex items-center justify-between mb-3 md:mb-4">
                 <h3 className="text-sm font-semibold text-white flex items-center gap-2">
                   <Target size={14} className="text-teal-400" /> Application Pipeline
                 </h3>
                 <span className="text-xs text-slate-500">{totalApplied} total</span>
               </div>
               {/* Progress bar */}
-              <div className="flex h-3 rounded-full overflow-hidden bg-white/5 mb-4">
+              <div className="flex h-3 rounded-full overflow-hidden bg-white/5 mb-3 md:mb-4">
                 {pipeline.map(({ status, color, count }) => (
                   count > 0 && (
                     <div
@@ -140,7 +140,7 @@ export default async function DashboardPage() {
           )}
 
           {/* Main Content */}
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 md:gap-6">
 
             {/* Recent Saved Jobs */}
             <div className="xl:col-span-2 space-y-4">
