@@ -3,6 +3,12 @@ import AuthProvider from '@/components/AuthProvider';
 import ThemeProvider from '@/components/ThemeProvider';
 import SidebarProvider from '@/components/SidebarProvider';
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+};
+
 export const metadata = {
   title: 'JobHunt — Your Career Command Center',
   description: 'Personalized job search dashboard with AI-powered resume tailoring and ATS scoring',
@@ -23,7 +29,7 @@ export default function RootLayout({ children }) {
         <AuthProvider>
           <ThemeProvider>
             <SidebarProvider>
-              <div className="relative z-10">
+              <div className="relative z-10 overflow-x-hidden w-full max-w-[100vw]">
                 {children}
               </div>
             </SidebarProvider>
