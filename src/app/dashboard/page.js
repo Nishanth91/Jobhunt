@@ -16,7 +16,7 @@ export default async function DashboardPage() {
 
   const userId = session.user.id;
 
-  const [savedJobs, applications, resume, preference] = await Promise.all([
+  const [savedJobs, applications, resume, preference, totalSaved, totalApplied] = await Promise.all([
     prisma.savedJob.findMany({
       where: { userId, NOT: { status: 'DISMISSED' } },
       orderBy: { matchScore: 'desc' },
@@ -25,10 +25,9 @@ export default async function DashboardPage() {
     prisma.application.findMany({ where: { userId }, include: { job: true } }),
     prisma.resume.findFirst({ where: { userId, isActive: true }, orderBy: { createdAt: 'desc' } }),
     prisma.preference.findUnique({ where: { userId } }),
+    prisma.savedJob.count({ where: { userId, NOT: { status: 'DISMISSED' } } }),
+    prisma.application.count({ where: { userId } }),
   ]);
-
-  const totalSaved = await prisma.savedJob.count({ where: { userId, NOT: { status: 'DISMISSED' } } });
-  const totalApplied = await prisma.application.count({ where: { userId } });
   const interviews = applications.filter((a) =>
     ['INTERVIEW', 'FINAL_ROUND'].includes(a.status)
   ).length;

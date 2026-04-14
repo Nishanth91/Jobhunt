@@ -409,6 +409,28 @@ input:focus, textarea:focus, select:focus {
 [data-theme="light"] .text-teal-300\/80 { color: #115e59 !important; }
 [data-theme="light"] .text-teal-200\/80 { color: #0f766e !important; }
 
+/* ── NOC dropdown — light mode ── */
+[data-theme="light"] .noc-dropdown {
+  background: #ffffff !important;
+  border-color: #d1e7e5 !important;
+}
+[data-theme="light"] .noc-cat {
+  background: #f0fdfa !important;
+  color: #374151 !important;
+}
+[data-theme="light"] .noc-item:hover {
+  background: rgba(20,184,166,0.08) !important;
+}
+
+/* ── StatusBadge "Saved" — dark bg fix for light mode ── */
+[data-theme="light"] .bg-slate-700 {
+  background-color: #e2e8f0 !important;
+}
+[data-theme="light"] .bg-slate-700 .text-slate-300,
+[data-theme="light"] .bg-slate-700.text-slate-300 {
+  color: #475569 !important;
+}
+
 /* ── Sidebar/nav background — prevent dark flash on light theme ── */
 [data-theme="light"] .bg-navy-800 { background-color: #ffffff !important; }
 [data-theme="light"] .bg-navy-900 { background-color: #f8fffe !important; }

@@ -442,8 +442,15 @@ export async function generateTailoredResume(resumeData, jobData, additionalText
     .filter((js) => !originalSkills.some((s) => s.toLowerCase() === js.toLowerCase()))
     .slice(0, 5);
 
-  // Skills: matching first, then rest, then targeted missing
-  const enhancedSkills = [...new Set([...matchingSkills, ...originalSkills, ...missingToAdd])];
+  // Skills: matching first, then rest, then targeted missing — capitalize each
+  const capitalizeSkill = (s) => {
+    // Don't capitalize known acronyms/abbreviations or already-capitalized terms
+    if (/^[A-Z]/.test(s) || /^[a-z]+[A-Z]/.test(s)) return s; // already capitalized or camelCase
+    if (/^(aws|gcp|ci\/cd|html|css|sql|api|jwt|oauth|tdd|bdd|sap|erp|gmp|osha|iso|tpm|pcb|nlp|ios)\b/i.test(s)) return s.toUpperCase();
+    // Capitalize first letter of each word
+    return s.replace(/\b[a-z]/g, (c) => c.toUpperCase());
+  };
+  const enhancedSkills = [...new Set([...matchingSkills, ...originalSkills, ...missingToAdd])].map(capitalizeSkill);
 
   const rawSummary = sections.summary.join(' ').trim() || resumeData.summary || '';
   const summaryText = tailorSummary(rawSummary, jobData, matchingSkills, enhancedSkills);

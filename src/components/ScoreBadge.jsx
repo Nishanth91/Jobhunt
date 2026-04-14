@@ -44,7 +44,7 @@ export function ScoreRing({ score, size = 72, label = '' }) {
 
 export function StatusBadge({ status }) {
   const styles = {
-    SAVED:       'bg-slate-700 text-slate-300',
+    SAVED:       'bg-slate-500/20 text-slate-300 border border-slate-500/30',
     APPLIED:     'bg-blue-500/20 text-blue-300 border border-blue-500/30',
     INTERVIEW:   'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30',
     FINAL_ROUND: 'bg-teal-500/20 text-teal-300 border border-teal-500/30',

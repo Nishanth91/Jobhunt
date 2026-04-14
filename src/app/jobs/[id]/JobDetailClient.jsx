@@ -33,7 +33,7 @@ function ResumePreviewPanel({ content, documentId, onClose, onDownload, jobTitle
     const pdfTitle = `${safeName}_${safeCompany}_resume`;
 
     const htmlContent = `<!DOCTYPE html>
-      <html><head><title>${pdfTitle}</title>
+      <html><head><meta charset="utf-8"><title>${pdfTitle}</title>
       <style>
         /* margin:0 suppresses browser header/footer chrome (date, URL, page#).
            Content spacing is handled via body padding instead.
@@ -100,7 +100,7 @@ function ResumePreviewPanel({ content, documentId, onClose, onDownload, jobTitle
         ${content.experience.map((l) => {
           const t = l.trim();
           if (!t) return '<div class="spacer"></div>';
-          if (/^[•\-\*]\s/.test(t)) return `<p class="bullet">${t}</p>`;
+          if (/^[•\-\*]\s/.test(t)) return `<p class="bullet">&bull; ${t.replace(/^[•\-\*]\s*/, '')}</p>`;
           return `<p class="exp-title">${t}</p>`;
         }).join('')}` : ''}
 
@@ -114,7 +114,7 @@ function ResumePreviewPanel({ content, documentId, onClose, onDownload, jobTitle
       </body></html>`;
 
     // Use Blob URL instead of about:blank to avoid "about:blank" showing in Chrome print header
-    const blob = new Blob([htmlContent], { type: 'text/html' });
+    const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
     const blobUrl = URL.createObjectURL(blob);
     const w = window.open(blobUrl, '_blank');
     w.addEventListener('load', () => { w.focus(); setTimeout(() => w.print(), 300); });
@@ -318,6 +318,8 @@ export default function JobDetailClient({ job, resumeData, documents, userName }
   const [additionalText, setAdditionalText] = useState('');
   const [linkedInUrl, setLinkedInUrl] = useState('');
   const [showAdditional, setShowAdditional] = useState(false);
+  const [interviewPrep, setInterviewPrep] = useState(null);
+  const [loadingPrep, setLoadingPrep] = useState(false);
 
   const handleStatusChange = async (newStatus) => {
     setStatus(newStatus);
@@ -456,6 +458,24 @@ export default function JobDetailClient({ job, resumeData, documents, userName }
     }
   };
 
+  const generateInterviewPrep = async () => {
+    setLoadingPrep(true);
+    try {
+      const res = await fetch('/api/interview-prep', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jobId: job.id, resumeId: resumeData?.id }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setInterviewPrep(data);
+        setTab('interview');
+      }
+    } finally {
+      setLoadingPrep(false);
+    }
+  };
+
   const display = atsResult || { total: Math.round(job.atsScore), breakdown: null, matchedSkills: [], missingSkills: [], missingKeywords: [], suggestions: [] };
 
   return (
@@ -578,12 +598,12 @@ export default function JobDetailClient({ job, resumeData, documents, userName }
 
         {/* Tabs */}
         <div className="flex gap-1 border-b border-white/5">
-          {['overview', 'ats', 'documents'].map((t) => (
-            <button key={t} onClick={() => setTab(t)}
+          {['overview', 'ats', 'documents', 'interview'].map((t) => (
+            <button key={t} onClick={() => { setTab(t); if (t === 'interview' && !interviewPrep && !loadingPrep) generateInterviewPrep(); }}
               className={`px-4 py-2.5 text-sm font-medium transition-all border-b-2 -mb-px ${
                 tab === t ? 'text-teal-300 border-teal-500' : 'text-slate-500 border-transparent hover:text-slate-300'
               }`}>
-              {t === 'overview' ? 'Job Details' : t === 'ats' ? 'ATS Analysis' : 'Documents'}
+              {t === 'overview' ? 'Job Details' : t === 'ats' ? 'ATS Analysis' : t === 'documents' ? 'Documents' : 'Interview Prep'}
             </button>
           ))}
         </div>
@@ -719,8 +739,8 @@ export default function JobDetailClient({ job, resumeData, documents, userName }
                     </button>
                     <button
                       onClick={() => {
-                        const clHtml = `<!DOCTYPE html><html><head><title>Cover Letter</title><style>@page{margin:0;size:letter}@page:first{margin:0}*{margin:0;padding:0}body{font-family:Calibri,Arial,sans-serif;padding:64px 72px;font-size:12pt;line-height:1.6;color:#111}pre{white-space:pre-wrap;font-family:inherit}@media print{html,body{margin:0!important}.no-print{display:none!important}}.no-print{position:fixed;top:0;left:0;right:0;z-index:999;background:#fffbeb;border-bottom:2px solid #f59e0b;padding:10px 20px;font-size:13px;color:#92400e;text-align:center}</style></head><body><div class="no-print"><strong>Tip:</strong> Uncheck <b>"Headers and footers"</b> in More settings, set Margins to <b>None</b>.</div><pre>${coverLetter.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</pre></body></html>`;
-                        const clBlob = new Blob([clHtml], { type: 'text/html' });
+                        const clHtml = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Cover Letter</title><style>@page{margin:0;size:letter}@page:first{margin:0}*{margin:0;padding:0}body{font-family:Calibri,Arial,sans-serif;padding:64px 72px;font-size:12pt;line-height:1.6;color:#111}pre{white-space:pre-wrap;font-family:inherit}@media print{html,body{margin:0!important}.no-print{display:none!important}}.no-print{position:fixed;top:0;left:0;right:0;z-index:999;background:#fffbeb;border-bottom:2px solid #f59e0b;padding:10px 20px;font-size:13px;color:#92400e;text-align:center}</style></head><body><div class="no-print"><strong>Tip:</strong> Uncheck <b>"Headers and footers"</b> in More settings, set Margins to <b>None</b>.</div><pre>${coverLetter.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</pre></body></html>`;
+                        const clBlob = new Blob([clHtml], { type: 'text/html;charset=utf-8' });
                         const clUrl = URL.createObjectURL(clBlob);
                         const w = window.open(clUrl, '_blank');
                         w.addEventListener('load', () => { setTimeout(() => w.print(), 300); });
@@ -776,6 +796,137 @@ export default function JobDetailClient({ job, resumeData, documents, userName }
                 <p className="text-slate-400 font-medium">No documents yet</p>
                 <p className="text-sm text-slate-500 mt-1">Generate a tailored resume or cover letter using the buttons above</p>
               </div>
+            )}
+          </div>
+        )}
+
+        {/* Interview Prep Tab */}
+        {tab === 'interview' && (
+          <div className="space-y-6">
+            {loadingPrep && (
+              <div className="flex flex-col items-center gap-3 py-16">
+                <Loader2 size={28} className="animate-spin text-teal-400" />
+                <p className="text-sm text-slate-400">Generating interview prep for {job.title}...</p>
+              </div>
+            )}
+
+            {interviewPrep && (
+              <>
+                {/* Behavioral Questions */}
+                <div className="rounded-2xl bg-white/[0.02] border border-white/10 p-6 space-y-4">
+                  <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+                    <Briefcase size={14} className="text-teal-400" /> Likely Behavioral Questions
+                  </h3>
+                  <div className="space-y-3">
+                    {interviewPrep.behavioral.map((q, i) => (
+                      <div key={i} className="p-4 rounded-xl bg-white/[0.03] border border-white/5 space-y-2">
+                        <p className="text-sm text-white font-medium">Q: {q.question}</p>
+                        <p className="text-xs text-teal-300 flex items-center gap-1.5">
+                          <Sparkles size={10} /> {q.tip}
+                        </p>
+                        {q.context && (
+                          <p className="text-[10px] text-slate-600 italic">Based on: "{q.context.slice(0, 100)}..."</p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Technical Questions */}
+                <div className="rounded-2xl bg-white/[0.02] border border-white/10 p-6 space-y-4">
+                  <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+                    <Wand2 size={14} className="text-cyan-400" /> Technical & Role-Specific
+                  </h3>
+                  <div className="space-y-3">
+                    {interviewPrep.technical.map((q, i) => (
+                      <div key={i} className={`p-4 rounded-xl border space-y-2 ${
+                        q.type === 'strength' ? 'bg-emerald-500/[0.04] border-emerald-500/15' :
+                        q.type === 'gap' ? 'bg-amber-500/[0.04] border-amber-500/15' :
+                        'bg-white/[0.03] border-white/5'
+                      }`}>
+                        <div className="flex items-start justify-between gap-2">
+                          <p className="text-sm text-white font-medium">Q: {q.question}</p>
+                          {q.type === 'strength' && <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex-shrink-0">Your Strength</span>}
+                          {q.type === 'gap' && <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 flex-shrink-0">Prepare</span>}
+                        </div>
+                        <p className="text-xs text-slate-400">{q.tip}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* STAR Talking Points */}
+                {interviewPrep.starPoints.length > 0 && (
+                  <div className="rounded-2xl bg-gradient-to-br from-teal-500/[0.06] to-cyan-500/[0.04] border border-teal-500/20 p-6 space-y-4">
+                    <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+                      <CheckCircle size={14} className="text-emerald-400" /> STAR Talking Points (from your resume)
+                    </h3>
+                    <div className="space-y-3">
+                      {interviewPrep.starPoints.map((s, i) => (
+                        <div key={i} className="p-4 rounded-xl bg-white/[0.04] border border-white/5 space-y-2">
+                          <p className="text-xs text-slate-500">{s.situation}</p>
+                          <p className="text-sm text-white">Your experience: {s.action}</p>
+                          <p className="text-xs text-teal-300">{s.tip}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Questions to Ask */}
+                  <div className="rounded-2xl bg-white/[0.02] border border-white/10 p-6 space-y-3">
+                    <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+                      <PenLine size={14} className="text-blue-400" /> Questions to Ask the Interviewer
+                    </h3>
+                    <ul className="space-y-2">
+                      {interviewPrep.askInterviewer.map((q, i) => (
+                        <li key={i} className="text-sm text-slate-300 leading-relaxed flex items-start gap-2">
+                          <span className="text-blue-400 mt-0.5 flex-shrink-0">•</span> {q}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  {/* Research Tips */}
+                  <div className="rounded-2xl bg-white/[0.02] border border-white/10 p-6 space-y-3">
+                    <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+                      <Globe size={14} className="text-amber-400" /> Company Research Tips
+                    </h3>
+                    <ul className="space-y-2">
+                      {interviewPrep.researchTips.map((t, i) => (
+                        <li key={i} className="text-sm text-slate-300 leading-relaxed flex items-start gap-2">
+                          <span className="text-amber-400 mt-0.5 flex-shrink-0">•</span> {t}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+
+                {/* Skills Summary */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  {interviewPrep.matchedSkills.length > 0 && (
+                    <div className="rounded-xl bg-emerald-500/[0.05] border border-emerald-500/15 p-4">
+                      <p className="text-xs font-semibold text-emerald-400 mb-2">Skills You Can Highlight ({interviewPrep.matchedSkills.length})</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {interviewPrep.matchedSkills.map((s) => (
+                          <span key={s} className="px-2 py-0.5 rounded text-xs bg-emerald-500/15 text-emerald-300 border border-emerald-500/20">{s}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {interviewPrep.missingSkills.length > 0 && (
+                    <div className="rounded-xl bg-amber-500/[0.05] border border-amber-500/15 p-4">
+                      <p className="text-xs font-semibold text-amber-400 mb-2">Skills to Prepare For ({interviewPrep.missingSkills.length})</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {interviewPrep.missingSkills.map((s) => (
+                          <span key={s} className="px-2 py-0.5 rounded text-xs bg-amber-500/15 text-amber-300 border border-amber-500/20">{s}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </>
             )}
           </div>
         )}

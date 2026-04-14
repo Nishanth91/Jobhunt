@@ -242,10 +242,10 @@ export default function SalaryClient() {
 
             {/* Autocomplete dropdown */}
             {showSuggestions && suggestions.length > 0 && (
-              <div className="absolute top-full left-0 right-0 mt-1 max-h-72 overflow-y-auto rounded-xl bg-white dark:bg-[#111] border border-slate-200 dark:border-white/10 shadow-2xl z-50">
+              <div className="noc-dropdown absolute top-full left-0 right-0 mt-1 max-h-72 overflow-y-auto rounded-xl border border-white/10 shadow-2xl z-50" style={{ background: 'var(--bg-card, #111)' }}>
                 {Object.entries(grouped).map(([cat, roles]) => (
                   <div key={cat}>
-                    <div className="px-3 py-1.5 text-[10px] font-semibold text-slate-500 uppercase tracking-wider bg-slate-50 dark:bg-white/[0.02] sticky top-0">
+                    <div className="noc-cat px-3 py-1.5 text-[10px] font-semibold text-slate-500 uppercase tracking-wider sticky top-0" style={{ background: 'var(--bg-secondary, #0c1515)' }}>
                       {cat}
                     </div>
                     {roles.map((r) => (
@@ -253,9 +253,9 @@ export default function SalaryClient() {
                         key={r.role}
                         type="button"
                         onClick={() => handleSelect(r)}
-                        className="w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-colors"
+                        className="noc-item w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-white/[0.06] transition-colors"
                       >
-                        <span className="text-sm text-slate-900 dark:text-white flex-1">{r.role}</span>
+                        <span className="text-sm text-white flex-1">{r.role}</span>
                         <span className="text-[10px] text-slate-500 font-mono">NOC {r.noc}</span>
                       </button>
                     ))}
