@@ -2,7 +2,7 @@
 
 import { memo } from 'react';
 import { MapPin, Clock, ExternalLink, Bookmark, BookmarkCheck, ArrowRight, X } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow, differenceInDays } from 'date-fns';
 import Link from 'next/link';
 import { ScoreRing, SourceBadge, StatusBadge } from './ScoreBadge';
 import { useState } from 'react';
@@ -122,14 +122,23 @@ function JobCard({ job, onSave, onUnsave, onDismiss, saved = false, showATS = fa
 
   if (dismissed) return null;
 
+  // "New" badge — show for jobs posted within the last 7 days
+  const isNew = job.postedAt && differenceInDays(new Date(), new Date(job.postedAt)) <= 7;
+
   return (
     <div className="group relative rounded-2xl bg-gradient-to-br from-white/[0.04] to-white/[0.02] border border-white/10 p-5 hover:border-teal-500/40 hover:shadow-glow transition-all duration-300 hover:-translate-y-0.5">
-      {/* Dismiss button — top-right corner, only on hover */}
+      {/* "New" badge — top-right corner */}
+      {isNew && (
+        <span className="absolute top-3 right-3 px-2 py-0.5 rounded-md bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-[10px] font-bold uppercase tracking-wider shadow-sm z-10">
+          New
+        </span>
+      )}
+      {/* Dismiss button — top-right corner, only on hover, offset if New badge present */}
       {onDismiss && (
         <button
           onClick={handleDismiss}
           title="Dismiss this job"
-          className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-lg text-slate-600 hover:text-red-400 hover:bg-red-500/10"
+          className={`absolute ${isNew ? 'top-3 right-14' : 'top-3 right-3'} opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-lg text-slate-600 hover:text-red-400 hover:bg-red-500/10`}
         >
           <X size={13} />
         </button>

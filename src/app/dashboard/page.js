@@ -5,10 +5,10 @@ import { prisma } from '@/lib/prisma';
 import Sidebar from '@/components/Sidebar';
 import Navbar from '@/components/Navbar';
 import StatsCard from '@/components/StatsCard';
-import JobCard from '@/components/JobCard';
 import { Briefcase, CheckCircle, Calendar, TrendingUp, Upload, Settings, Sparkles, ArrowRight, Zap, Target } from 'lucide-react';
 import Link from 'next/link';
 import AppliedModal from './AppliedModal';
+import SavedJobsList from './SavedJobsList';
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
@@ -75,7 +75,7 @@ export default async function DashboardPage() {
                 </div>
                 <div className="flex gap-3 flex-shrink-0">
                   {!hasResume && (
-                    <Link href="/upload" className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-teal-500 to-cyan-600 text-white text-sm font-medium hover:shadow-glow transition-all">
+                    <Link href="/resumes" className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-teal-500 to-cyan-600 text-white text-sm font-medium hover:shadow-glow transition-all">
                       <Upload size={14} /> Upload Resume
                     </Link>
                   )}
@@ -164,11 +164,7 @@ export default async function DashboardPage() {
                   </Link>
                 </div>
               ) : (
-                <div className="grid gap-3">
-                  {savedJobs.map((job) => (
-                    <JobCard key={job.id} job={job} saved showATS />
-                  ))}
-                </div>
+                <SavedJobsList savedJobs={savedJobs} />
               )}
             </div>
 
@@ -220,8 +216,8 @@ export default async function DashboardPage() {
                   <Link href="/jobs" className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg bg-white/[0.03] hover:bg-white/[0.06] text-sm text-slate-300 transition-colors">
                     <Briefcase size={14} className="text-teal-400" /> Search new jobs
                   </Link>
-                  <Link href="/upload" className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg bg-white/[0.03] hover:bg-white/[0.06] text-sm text-slate-300 transition-colors">
-                    <Upload size={14} className="text-cyan-400" /> Update resume
+                  <Link href="/resumes" className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg bg-white/[0.03] hover:bg-white/[0.06] text-sm text-slate-300 transition-colors">
+                    <Upload size={14} className="text-cyan-400" /> Manage resumes
                   </Link>
                   <Link href="/career" className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg bg-white/[0.03] hover:bg-white/[0.06] text-sm text-slate-300 transition-colors">
                     <Sparkles size={14} className="text-amber-400" /> Career guidance

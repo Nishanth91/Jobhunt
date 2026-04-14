@@ -311,7 +311,7 @@ export default function CareerClient({
         </p>
         <div className="flex gap-3 justify-center">
           <Link
-            href="/upload"
+            href="/resumes"
             className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-teal-500/20 text-teal-300 text-sm font-medium hover:bg-teal-500/30 border border-teal-500/20 transition-all"
           >
             <Upload size={14} /> Upload Resume

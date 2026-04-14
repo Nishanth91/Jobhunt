@@ -168,20 +168,27 @@ function rephraseAdditionalContext(rawText, jobTitle) {
 // ─── Enhance summary ─────────────────────────────────────────
 
 function tailorSummary(summary, jobData, matchingSkills, allSkills) {
+  const topSkills = matchingSkills.length > 0 ? matchingSkills.slice(0, 4) : allSkills.slice(0, 4);
+
   if (!summary) {
-    const topSkills = matchingSkills.length > 0 ? matchingSkills.slice(0, 4) : allSkills.slice(0, 4);
-    return `Results-driven professional with expertise in ${topSkills.join(', ')}. Proven track record of delivering measurable outcomes in fast-paced environments. Seeking to leverage deep domain knowledge in the ${jobData.title} role at ${jobData.company}.`;
+    return `Results-driven professional with expertise in ${topSkills.join(', ')}. Proven track record of delivering measurable outcomes in dynamic environments, with capabilities directly aligned to the ${jobData.title} role at ${jobData.company}.`;
   }
 
-  // If summary doesn't mention the target role, append a tailored sentence
-  const alreadyMentionsJob = jobData.title.split(' ').some((w) =>
-    w.length > 3 && summary.toLowerCase().includes(w.toLowerCase())
+  // If summary already mentions the target role keywords, return as-is
+  const titleWords = jobData.title.split(' ').filter((w) => w.length > 3);
+  const alreadyMentionsJob = titleWords.some((w) =>
+    summary.toLowerCase().includes(w.toLowerCase())
   );
   if (alreadyMentionsJob) return summary;
-  return `${summary.trim()} Actively seeking to contribute as a ${jobData.title} at ${jobData.company}.`;
+
+  // Append a concise tailored line that references matching skills
+  const skillNote = matchingSkills.length >= 2
+    ? ` with strong proficiency in ${matchingSkills.slice(0, 3).join(', ')}`
+    : '';
+  return `${summary.trim().replace(/\.\s*$/, '')}${skillNote}, well-positioned for the ${jobData.title} role at ${jobData.company}.`;
 }
 
-// ─── Inject keywords into experience bullets ─────────────────
+// ─── JD analysis & smart bullet enhancement ─────────────────
 
 // Strengthen weak action verbs
 const VERB_UPGRADES = {
@@ -211,70 +218,206 @@ function strengthenVerb(text) {
   return result;
 }
 
-// Natural keyword insertion — places kw contextually based on action verb
-function buildParaphrase(bulletText, kw) {
-  const body = bulletText.replace(/^[•\-\*]\s*/, '').replace(/\.\s*$/, '');
-  const strengthened = strengthenVerb(body);
-  const lowerBody = strengthened.toLowerCase();
+/**
+ * Extract actionable requirement phrases from the job description.
+ * Returns an array of { phrase, keywords } objects — each represents
+ * one duty or requirement the employer is looking for.
+ */
+function extractJDRequirements(description) {
+  if (!description) return [];
+  const sentences = description
+    .split(/[.;•\n\r]+/)
+    .map((s) => s.trim())
+    .filter((s) => s.length > 15 && s.length < 250);
 
-  const leadVerb = lowerBody.match(/^([a-z]+)/)?.[1] || '';
-
-  if (/^(implement|develop|deploy|design|build|creat|establish|introduc)/.test(leadVerb)) {
-    return `• ${strengthened} incorporating ${kw} methodology.`;
+  const reqs = [];
+  for (const sentence of sentences) {
+    const lower = sentence.toLowerCase();
+    // Only keep lines that describe duties, requirements, or qualifications
+    if (/\b(responsible|experience|proficiency|knowledge|ability|skilled|manage|develop|implement|design|lead|coordinate|ensure|maintain|monitor|analyze|conduct|perform|support|deliver|collaborate|oversee|familiarity|understanding|proven)\b/i.test(lower)) {
+      const words = lower.split(/\s+/).filter((w) => w.length > 3);
+      reqs.push({ phrase: sentence, words: new Set(words) });
+    }
   }
-  if (/^(led|lead|manag|supervis|direct|oversee|oversaw)/.test(leadVerb)) {
-    return `• ${strengthened}, applying ${kw} frameworks to drive results.`;
-  }
-  if (/^(improv|reduc|increas|achiev|deliver|optimiz|streamlin)/.test(leadVerb)) {
-    return `• ${strengthened} through targeted ${kw} practices.`;
-  }
-  if (/^(coordinat|collaborat|facilitat|partner|schedul|plan)/.test(leadVerb)) {
-    return `• ${strengthened}, leveraging ${kw} tools and processes.`;
-  }
-  if (/^(maintain|ensur|monitor|track|audit|inspect|review)/.test(leadVerb)) {
-    return `• ${strengthened} in compliance with ${kw} standards.`;
-  }
-  if (/^(train|coach|mentor|onboard|instruct|develop)/.test(leadVerb)) {
-    return `• ${strengthened}, building proficiency in ${kw}.`;
-  }
-  if (/^(analyz|assess|evaluat|report|measur)/.test(leadVerb)) {
-    return `• ${strengthened} using ${kw} insights.`;
-  }
-
-  // Fallback: strengthen verb if changed, append keyword naturally
-  const wasSame = strengthened === body;
-  return `• ${strengthened}${wasSame ? `, applying ${kw} principles` : ''}.`;
+  return reqs.slice(0, 20);
 }
 
-function enhanceExperienceBullets(lines, missingKeywords) {
-  // Cap at 4 keywords max — fewer is cleaner and less obvious
+/**
+ * Score how well a resume bullet aligns with a JD requirement.
+ * Higher score = stronger semantic overlap.
+ */
+function scoreBulletReqMatch(bulletLower, reqWords) {
+  const bulletWords = bulletLower.split(/\s+/).filter((w) => w.length > 3);
+  let overlap = 0;
+  for (const w of bulletWords) {
+    if (reqWords.has(w)) overlap++;
+  }
+  return overlap;
+}
+
+/**
+ * Find the JD requirement phrases that the given keyword appears in.
+ * This lets us rewrite using actual JD language rather than generic templates.
+ */
+function findJDContextForKeyword(kw, jdRequirements) {
+  const kwLower = kw.toLowerCase();
+  for (const req of jdRequirements) {
+    if (req.phrase.toLowerCase().includes(kwLower)) return req.phrase;
+  }
+  return null;
+}
+
+/**
+ * Rewrite a bullet to naturally incorporate a missing keyword.
+ *
+ * Strategy priority:
+ *   1. Replace a generic/vague term in the bullet with the keyword
+ *   2. Mirror JD phrasing — use the actual JD sentence context to inform rewrite
+ *   3. Contextual mid-sentence insertion at a natural break point
+ *   4. Skip — if none of the above produce a natural result, leave the bullet untouched
+ */
+function buildParaphrase(bulletText, kw, jdContext) {
+  const body = bulletText.replace(/^[•\-\*]\s*/, '').replace(/\.\s*$/, '');
+  const strengthened = strengthenVerb(body);
+
+  // 1. Replace generic terms with the keyword when contextually appropriate
+  const genericSwaps = [
+    [/\bvarious tools\b/i, kw],
+    [/\brelated tools\b/i, `${kw} tools`],
+    [/\bvarious systems\b/i, `${kw} systems`],
+    [/\bindustry standards\b/i, `${kw} standards`],
+    [/\bcompany standards\b/i, `${kw} standards`],
+    [/\bbest practices\b/i, `${kw} best practices`],
+    [/\bexisting processes\b/i, `${kw} processes`],
+    [/\bcross-functional teams?\b/i, `cross-functional ${kw} teams`],
+    [/\bproduction processes\b/i, `${kw} production processes`],
+    [/\bquality standards\b/i, `${kw} quality standards`],
+    [/\bvarious (?:methods|methodologies|approaches)\b/i, `${kw} methodologies`],
+    [/\brelevant (?:processes|procedures|protocols)\b/i, `${kw} procedures`],
+    [/\bkey (?:metrics|measures|indicators)\b/i, `${kw} metrics`],
+    [/\bstandard (?:operating )?procedures?\b/i, `${kw} standard operating procedures`],
+  ];
+
+  for (const [pattern, replacement] of genericSwaps) {
+    if (pattern.test(strengthened)) {
+      return `• ${strengthened.replace(pattern, replacement)}.`;
+    }
+  }
+
+  // 2. Use JD context to build a natural rewrite
+  //    If the JD says "experience managing quality assurance programs",
+  //    and the bullet says "Managed production workflows and ensured compliance",
+  //    rephrase to mirror the JD language naturally.
+  if (jdContext) {
+    const jdLower = jdContext.toLowerCase();
+    // Extract a short action phrase from JD context that includes the keyword
+    const kwLower = kw.toLowerCase();
+    const kwIdx = jdLower.indexOf(kwLower);
+    if (kwIdx !== -1) {
+      // Get a few words around the keyword from the JD
+      const before = jdLower.slice(Math.max(0, kwIdx - 30), kwIdx).trim();
+      const after = jdLower.slice(kwIdx + kwLower.length, kwIdx + kwLower.length + 30).trim();
+
+      // Build a natural bridging phrase from the JD context
+      const preposition = before.match(/\b(with|in|for|through|using|via|across|within)\s*$/)?.[1];
+      const postPhrase = after.match(/^(\s*\w+(?:\s+\w+){0,2})/)?.[1]?.trim();
+
+      if (preposition) {
+        return `• ${strengthened} ${preposition} ${kw}${postPhrase ? ' ' + postPhrase : ''}.`;
+      }
+    }
+  }
+
+  // 3. Insert before a trailing purpose clause ("to improve/reduce/ensure...")
+  const trailingMatch = strengthened.match(/^(.+?),?\s+(to\s+(?:improve|reduce|ensure|meet|achieve|support|drive|increase|maintain|enhance|deliver|optimize|streamline|strengthen))\s+(.+)$/i);
+  if (trailingMatch) {
+    const [, before, connector, after] = trailingMatch;
+    return `• ${before}, leveraging ${kw}, ${connector} ${after}.`;
+  }
+
+  // 4. Return null to signal "skip" — don't force an unnatural insertion
+  return null;
+}
+
+/**
+ * Walk through experience bullets and enhance them based on the
+ * full job description — not just missing keywords but actual JD
+ * requirements. Prioritises bullets that naturally align with JD
+ * duties and rewrites them using JD-aligned language.
+ */
+function enhanceExperienceBullets(lines, missingKeywords, jobDescription) {
   const validKeywords = (missingKeywords || [])
     .filter((k) => k && typeof k === 'string')
-    .slice(0, 4);
-  if (!validKeywords.length || !lines?.length) return lines;
+    .slice(0, 6);
+  if (!lines?.length) return lines;
 
+  const jdReqs = extractJDRequirements(jobDescription);
   const enhanced = [...lines];
-  const usedKeywords = new Set();
-  // Max 3 injections across the whole resume
-  const maxInjections = Math.min(3, validKeywords.length);
 
-  for (let i = 0; i < enhanced.length && usedKeywords.size < maxInjections; i++) {
+  // Step 1: Strengthen weak verbs in ALL bullets (always improves quality)
+  for (let i = 0; i < enhanced.length; i++) {
     const t = enhanced[i].trim();
-    if (!/^[•\-\*]\s/.test(t)) continue;
+    if (/^[•\-\*]\s/.test(t)) {
+      const body = t.replace(/^[•\-\*]\s*/, '').replace(/\.\s*$/, '');
+      const strengthened = strengthenVerb(body);
+      if (strengthened !== body) {
+        enhanced[i] = `• ${strengthened}.`;
+      }
+    }
+  }
 
-    const bodyLower = t.toLowerCase();
+  if (!validKeywords.length) return enhanced;
 
-    // Only paraphrase bullets with clear action verbs — skip very short lines
-    const hasAction = /\b(managed|led|supervised|directed|oversaw|coordinated|implemented|developed|maintained|ensured|monitored|tracked|analyzed|scheduled|planned|improved|reduced|increased|achieved|delivered|conducted|performed|handled|configured|facilitated|collaborated|established|designed|built|deployed|streamlined|optimized|trained|coached|mentored|audited|evaluated|reported)\b/i.test(bodyLower);
-    if (!hasAction || t.length < 30) continue;
+  // Step 2: For each missing keyword, find the best bullet to weave it into
+  const usedBullets = new Set();
+  const maxInjections = Math.min(4, validKeywords.length);
+  let injected = 0;
 
-    for (const kw of validKeywords) {
-      if (usedKeywords.has(kw)) continue;
+  for (const kw of validKeywords) {
+    if (injected >= maxInjections) break;
+
+    const jdContext = findJDContextForKeyword(kw, jdReqs);
+
+    // Score each bullet for how well it fits this keyword
+    let bestIdx = -1;
+    let bestScore = 0;
+
+    for (let i = 0; i < enhanced.length; i++) {
+      const t = enhanced[i].trim();
+      if (!/^[•\-\*]\s/.test(t) || t.length < 35) continue;
+      if (usedBullets.has(i)) continue;
+
+      const bodyLower = t.toLowerCase();
+
+      // Skip if keyword already present
       if (bodyLower.includes(kw.toLowerCase())) continue;
 
-      enhanced[i] = buildParaphrase(t, kw);
-      usedKeywords.add(kw);
-      break;
+      // Must have a real action verb
+      const hasAction = /\b(managed|led|supervised|directed|oversaw|coordinated|implemented|developed|maintained|ensured|monitored|tracked|analyzed|scheduled|planned|improved|reduced|increased|achieved|delivered|conducted|performed|handled|configured|facilitated|collaborated|established|designed|built|deployed|streamlined|optimized|trained|coached|mentored|audited|evaluated|reported|assisted|supported|operated|prepared|resolved|executed|initiated|organized|reviewed)\b/i.test(bodyLower);
+      if (!hasAction) continue;
+
+      // Score: prefer bullets that share domain words with the JD context
+      let score = 1;
+      if (jdContext) {
+        score += scoreBulletReqMatch(bodyLower, new Set(jdContext.toLowerCase().split(/\s+/)));
+      }
+      // Prefer longer, more detailed bullets (more room to weave in naturally)
+      if (t.length > 60) score += 1;
+      if (t.length > 90) score += 1;
+
+      if (score > bestScore) {
+        bestScore = score;
+        bestIdx = i;
+      }
+    }
+
+    if (bestIdx === -1) continue;
+
+    const result = buildParaphrase(enhanced[bestIdx], kw, jdContext);
+    if (result) {
+      enhanced[bestIdx] = result;
+      usedBullets.add(bestIdx);
+      injected++;
     }
   }
 
@@ -323,8 +466,9 @@ export async function generateTailoredResume(resumeData, jobData, additionalText
     }
   }
 
-  // Inject missing keywords naturally into some experience bullets
-  experienceLines = enhanceExperienceBullets(experienceLines, missingToAdd);
+  // Enhance experience bullets using JD analysis — rewrites using JD language,
+  // not just keyword insertion
+  experienceLines = enhanceExperienceBullets(experienceLines, missingToAdd, jobData.description || '');
 
   // Blend rephrased additional context INTO experience section (not as a separate section)
   const rephrasedAdditional = rephraseAdditionalContext(additionalText, jobData.title);

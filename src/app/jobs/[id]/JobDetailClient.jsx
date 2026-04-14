@@ -20,7 +20,6 @@ function ResumePreviewPanel({ content, documentId, onClose, onDownload, jobTitle
   if (!content) return null;
 
   const handlePrint = () => {
-    const w = window.open('', '_blank');
     const summaryHtml = content.summaryBullets?.length > 1
       ? content.summaryBullets.map((b) => `<li>${b}</li>`).join('')
       : `<p class="body">${content.summary || ''}</p>`;
@@ -33,13 +32,17 @@ function ResumePreviewPanel({ content, documentId, onClose, onDownload, jobTitle
     const safeCompany = (content.tailoredFor?.company || 'Company').replace(/[^a-zA-Z0-9 ]/g, '').trim().replace(/\s+/g, '_');
     const pdfTitle = `${safeName}_${safeCompany}_resume`;
 
-    w.document.write(`
+    const htmlContent = `<!DOCTYPE html>
       <html><head><title>${pdfTitle}</title>
       <style>
-        /* margin:0 is the ONLY reliable way to suppress browser header/footer
-           (date, title, URL, page number) across Chrome, Edge, Firefox.
-           Content spacing is handled via body padding instead. */
+        /* margin:0 suppresses browser header/footer chrome (date, URL, page#).
+           Content spacing is handled via body padding instead.
+           For proper page-break spacing, use Chrome > More Settings > uncheck "Headers and footers". */
         @page { margin: 0; size: letter; }
+        @page :first { margin: 0; }
+        @page :left { margin: 0; }
+        @page :right { margin: 0; }
+        * { margin: 0; padding: 0; }
         body {
           font-family: 'Calibri', 'Segoe UI', Arial, sans-serif;
           margin: 0;
@@ -47,8 +50,13 @@ function ResumePreviewPanel({ content, documentId, onClose, onDownload, jobTitle
           color: #111;
           line-height: 1.55;
           font-size: 13px;
-          /* -webkit-print-color-adjust ensures backgrounds print if present */
           -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+        @media print {
+          html, body { margin: 0 !important; }
+          body { padding: 52px 56px !important; }
+          .no-print { display: none !important; }
         }
         h1 { font-size: 24px; color: #1e1b4b; margin: 0 0 4px; font-weight: 700; }
         .role-line { color: #4b5563; font-size: 13px; margin-bottom: 16px; }
@@ -67,7 +75,15 @@ function ResumePreviewPanel({ content, documentId, onClose, onDownload, jobTitle
         .exp-sub { font-style: italic; color: #4b5563; font-size: 12px; margin: 2px 0; page-break-after: avoid; }
         .bullet { margin-left: 18px; margin-bottom: 2px; font-size: 13px; }
         .spacer { height: 10px; }
+        .print-tip {
+          position: fixed; top: 0; left: 0; right: 0; z-index: 999;
+          background: #fffbeb; border-bottom: 2px solid #f59e0b; padding: 10px 20px;
+          font-size: 13px; color: #92400e; text-align: center;
+        }
       </style></head><body>
+      <div class="no-print print-tip">
+        <strong>Tip:</strong> In the print dialog, click <b>More settings</b> and <b>uncheck "Headers and footers"</b> to remove the date/URL watermark, then set Margins to <b>None</b>.
+      </div>
       <h1>${content.name}</h1>
       <p class="role-line">${content.tailoredFor.title} | ${content.tailoredFor.company}</p>
       ${[content.contactEmail, content.phone, content.linkedIn].filter(Boolean).length > 0
@@ -95,11 +111,13 @@ function ResumePreviewPanel({ content, documentId, onClose, onDownload, jobTitle
         ${content.certs.map((l) => `<p class="body">${l}</p>`).join('')}` : ''}
 
       ${content.additional ? `<h2>Additional Experience</h2><p class="body">${content.additional.replace(/\n/g, '<br/>')}</p>` : ''}
-      </body></html>
-    `);
-    w.document.close();
-    w.focus();
-    setTimeout(() => { w.print(); }, 500);
+      </body></html>`;
+
+    // Use Blob URL instead of about:blank to avoid "about:blank" showing in Chrome print header
+    const blob = new Blob([htmlContent], { type: 'text/html' });
+    const blobUrl = URL.createObjectURL(blob);
+    const w = window.open(blobUrl, '_blank');
+    w.addEventListener('load', () => { w.focus(); setTimeout(() => w.print(), 300); });
   };
 
   return (
@@ -517,7 +535,7 @@ export default function JobDetailClient({ job, resumeData, documents, userName }
                 </button>
               </>
             ) : (
-              <Link href="/upload" className="flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-500/20 text-amber-300 text-sm font-medium border border-amber-500/20">
+              <Link href="/resumes" className="flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-500/20 text-amber-300 text-sm font-medium border border-amber-500/20">
                 <Briefcase size={14} /> Upload Resume First
               </Link>
             )}
@@ -701,11 +719,11 @@ export default function JobDetailClient({ job, resumeData, documents, userName }
                     </button>
                     <button
                       onClick={() => {
-                        const w = window.open('', '_blank');
-                        w.document.write(`<html><head><title>Cover Letter</title><style>@page{margin:0}body{font-family:Calibri,Arial,sans-serif;margin:64px 72px;font-size:12pt;line-height:1.6;color:#111}pre{white-space:pre-wrap;font-family:inherit}@media print{body{margin:64px 72px}}</style></head><body><pre>${coverLetter.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</pre></body></html>`);
-                        w.document.close();
-                        w.focus();
-                        setTimeout(() => w.print(), 400);
+                        const clHtml = `<!DOCTYPE html><html><head><title>Cover Letter</title><style>@page{margin:0;size:letter}@page:first{margin:0}*{margin:0;padding:0}body{font-family:Calibri,Arial,sans-serif;padding:64px 72px;font-size:12pt;line-height:1.6;color:#111}pre{white-space:pre-wrap;font-family:inherit}@media print{html,body{margin:0!important}.no-print{display:none!important}}.no-print{position:fixed;top:0;left:0;right:0;z-index:999;background:#fffbeb;border-bottom:2px solid #f59e0b;padding:10px 20px;font-size:13px;color:#92400e;text-align:center}</style></head><body><div class="no-print"><strong>Tip:</strong> Uncheck <b>"Headers and footers"</b> in More settings, set Margins to <b>None</b>.</div><pre>${coverLetter.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</pre></body></html>`;
+                        const clBlob = new Blob([clHtml], { type: 'text/html' });
+                        const clUrl = URL.createObjectURL(clBlob);
+                        const w = window.open(clUrl, '_blank');
+                        w.addEventListener('load', () => { setTimeout(() => w.print(), 300); });
                       }}
                       className="flex items-center gap-1.5 text-xs text-emerald-300 px-3 py-1.5 rounded-lg border border-emerald-500/20 bg-emerald-500/10 hover:bg-emerald-500/20 transition-all"
                     >

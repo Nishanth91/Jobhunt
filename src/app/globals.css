@@ -409,6 +409,12 @@ input:focus, textarea:focus, select:focus {
 [data-theme="light"] .text-teal-300\/80 { color: #115e59 !important; }
 [data-theme="light"] .text-teal-200\/80 { color: #0f766e !important; }
 
+/* ── Sidebar/nav background — prevent dark flash on light theme ── */
+[data-theme="light"] .bg-navy-800 { background-color: #ffffff !important; }
+[data-theme="light"] .bg-navy-900 { background-color: #f8fffe !important; }
+[data-theme="light"] .bg-\[#050510\] { background-color: #ffffff !important; }
+[data-theme="light"] .bg-\[#0d0d1a\] { background-color: #ffffff !important; }
+
 /* ── Profile avatar ── */
 .avatar-upload {
   position: relative;
