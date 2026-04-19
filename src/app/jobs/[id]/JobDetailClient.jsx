@@ -126,7 +126,7 @@ function ResumePreviewPanel({ content, documentId, onClose, onDownload, jobTitle
         {/* Header — always dark */}
         <div className="flex items-center justify-between px-4 md:px-6 py-3 md:py-4 border-b border-white/10 gap-2">
           <div className="min-w-0">
-            <h3 className="text-sm md:text-base font-semibold truncate" style={{ color: '#fff' }}>Tailored Resume Preview</h3>
+            <h3 className="text-sm md:text-base font-semibold truncate" style={{ color: '#fff' }}>Customized Resume Preview</h3>
             <p className="text-xs truncate" style={{ color: '#94a3b8' }}>For: {content.tailoredFor.title} at {content.tailoredFor.company}</p>
           </div>
           <div className="flex gap-1.5 md:gap-2 flex-shrink-0">
@@ -566,7 +566,7 @@ export default function JobDetailClient({ job, resumeData, documents, userName }
                 </button>
                 <button onClick={() => setShowAdditional(!showAdditional)}
                   className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-500/20 text-blue-300 text-sm font-medium hover:bg-blue-500/30 border border-blue-500/20 transition-all">
-                  <Sparkles size={14} /> Tailored Resume
+                  <Sparkles size={14} /> Customized Resume
                 </button>
                 <button onClick={generateCoverLetter} disabled={generatingCover}
                   className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500/20 text-emerald-300 text-sm font-medium hover:bg-emerald-500/30 border border-emerald-500/20 transition-all disabled:opacity-50">
@@ -814,7 +814,7 @@ export default function JobDetailClient({ job, resumeData, documents, userName }
               <div className="text-center py-16">
                 <FileText size={40} className="text-slate-700 mx-auto mb-4" />
                 <p className="text-slate-400 font-medium">No documents yet</p>
-                <p className="text-sm text-slate-500 mt-1">Generate a tailored resume or cover letter using the buttons above</p>
+                <p className="text-sm text-slate-500 mt-1">Generate a customized resume or cover letter using the buttons above</p>
               </div>
             )}
           </div>

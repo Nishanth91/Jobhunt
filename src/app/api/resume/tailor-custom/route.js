@@ -71,7 +71,7 @@ export async function POST(request) {
     if (download) {
       const safeCompany = (company || 'JobDescription').replace(/[^a-zA-Z0-9\s\-_]/g, '').trim().replace(/\s+/g, '_') || 'JobDescription';
       const safeResume = (session.user.name || 'Resume').replace(/[^a-zA-Z0-9\s\-_]/g, '').trim().replace(/\s+/g, '_');
-      const filename = `${safeResume}_${safeCompany}_Tailored.docx`;
+      const filename = `${safeResume}_${safeCompany}_Customized.docx`;
       return new Response(buffer, {
         headers: {
           'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',

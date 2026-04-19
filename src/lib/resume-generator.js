@@ -176,6 +176,20 @@ function parseExperienceBlocks(lines) {
     }
 
     if (isJobTitleLine(t)) {
+      // Wrapped title: prev block has a title but no meta/bullets, AND
+      // this "title" carries a date range. Merge them and peel off the
+      // meta after the last pipe (where the date sits).
+      if (cur && cur.title && !cur.meta && !cur.bullets.length && DATE_RX.test(t)) {
+        const combined = (cur.title.trim() + ' ' + t.trim()).replace(/\s+/g, ' ');
+        const lastPipe = combined.lastIndexOf('|');
+        if (lastPipe > -1 && DATE_RX.test(combined.slice(lastPipe))) {
+          cur.title = combined.slice(0, lastPipe).trim();
+          cur.meta = combined.slice(lastPipe + 1).trim();
+        } else {
+          cur.title = combined;
+        }
+        continue;
+      }
       if (cur && (cur.title || cur.bullets.length)) blocks.push(cur);
       cur = { title: t, meta: '', bullets: [] };
       continue;
@@ -604,7 +618,7 @@ export async function generateTailoredResume(
   children.push(
     new Paragraph({
       children: [new TextRun({
-        text: `Tailored for: ${jobData.title} — ${jobData.company}`,
+        text: `Customized for: ${jobData.title} — ${jobData.company}`,
         size: 18, color: '64748b', italics: true, font: 'Calibri',
       })],
       spacing: { after: 120 },

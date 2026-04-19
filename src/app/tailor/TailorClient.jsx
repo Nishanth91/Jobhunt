@@ -27,7 +27,7 @@ export default function TailorClient({ activeResume }) {
           <h2 className="text-lg font-semibold text-white">No active resume</h2>
         </div>
         <p className="text-sm text-slate-300">
-          Upload a resume and mark it <span className="text-emerald-400">active</span> on the Resumes page before tailoring.
+          Upload a resume and mark it <span className="text-emerald-400">active</span> on the Resumes page before customizing.
         </p>
         <Link href="/resumes" className="inline-flex items-center gap-1.5 mt-2 px-4 py-2 rounded-xl bg-teal-500/20 text-teal-300 text-sm font-medium hover:bg-teal-500/30 border border-teal-500/20 transition-all">
           Go to Resumes <ArrowRight size={14} />
@@ -56,7 +56,7 @@ export default function TailorClient({ activeResume }) {
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Tailoring failed');
+      if (!res.ok) throw new Error(data.error || 'Customization failed');
       setResult(data);
     } catch (e) {
       setError(e.message);
@@ -88,7 +88,7 @@ export default function TailorClient({ activeResume }) {
       const a = document.createElement('a');
       a.href = url;
       const safeCo = (company || 'JobDescription').replace(/[^a-zA-Z0-9]/g, '_');
-      a.download = `Tailored_${safeCo}.docx`;
+      a.download = `Customized_${safeCo}.docx`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -114,7 +114,7 @@ export default function TailorClient({ activeResume }) {
       {/* Header */}
       <div>
         <h2 className="text-xl font-semibold text-white mb-1 flex items-center gap-2">
-          <Sparkles size={20} className="text-teal-400" /> Tailor Resume to a Job Description
+          <Sparkles size={20} className="text-teal-400" /> Customize Resume to a Job Description
         </h2>
         <p className="text-sm text-slate-400">
           Paste any job description — we'll rewrite your active resume to match and give you a downloadable Word file with an ATS score.
@@ -175,7 +175,7 @@ export default function TailorClient({ activeResume }) {
               value={jobDescription}
               onChange={(e) => setJobDescription(e.target.value)}
               rows={14}
-              placeholder="Paste the full job description here — responsibilities, requirements, qualifications. The more context, the better the tailoring."
+              placeholder="Paste the full job description here — responsibilities, requirements, qualifications. The more context, the better the customization."
               className="w-full px-3 py-3 rounded-xl bg-white/[0.04] text-sm text-white border border-white/10 focus:border-teal-500/40 focus:outline-none resize-y font-mono"
             />
             <p className="mt-1 text-[11px] text-slate-500">{jobDescription.length.toLocaleString()} characters</p>
@@ -206,9 +206,9 @@ export default function TailorClient({ activeResume }) {
               className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-br from-teal-500 to-cyan-600 text-white text-sm font-semibold hover:shadow-glow disabled:opacity-50 transition-all"
             >
               {generating ? (
-                <><Loader2 size={16} className="animate-spin" /> Tailoring…</>
+                <><Loader2 size={16} className="animate-spin" /> Customizing…</>
               ) : (
-                <><Sparkles size={16} /> Generate Tailored Resume</>
+                <><Sparkles size={16} /> Generate Customized Resume</>
               )}
             </button>
           </div>
@@ -221,7 +221,7 @@ export default function TailorClient({ activeResume }) {
               <div className="w-14 h-14 rounded-2xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center mx-auto">
                 <Target size={22} className="text-teal-400" />
               </div>
-              <p className="text-sm font-semibold text-white">Your tailored resume will appear here</p>
+              <p className="text-sm font-semibold text-white">Your customized resume will appear here</p>
               <p className="text-xs text-slate-400 max-w-xs mx-auto">
                 Paste a job description on the left and hit Generate. You'll get an ATS score, matched skills, and a downloadable Word doc.
               </p>
@@ -248,7 +248,7 @@ export default function TailorClient({ activeResume }) {
                       {result.atsScore >= 80 ? 'Strong match' : result.atsScore >= 65 ? 'Good match' : 'Needs more alignment'}
                     </p>
                     <p className="text-xs text-slate-400 mt-0.5">
-                      Scored against the tailored resume, not the original.
+                      Scored against the customized resume, not the original.
                     </p>
                   </div>
                 </div>
@@ -313,7 +313,7 @@ export default function TailorClient({ activeResume }) {
                 {downloading ? (
                   <><Loader2 size={16} className="animate-spin" /> Preparing download…</>
                 ) : (
-                  <><Download size={16} /> Download Tailored Resume (.docx)</>
+                  <><Download size={16} /> Download Customized Resume (.docx)</>
                 )}
               </button>
             </>

@@ -15,7 +15,7 @@ const navItems = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { href: '/jobs', icon: Briefcase, label: 'Jobs' },
   { href: '/resumes', icon: FileText, label: 'Resumes' },
-  { href: '/tailor', icon: Sparkles, label: 'Tailor Resume' },
+  { href: '/tailor', icon: Sparkles, label: 'Customize Resume' },
   { href: '/preferences', icon: Settings, label: 'Preferences' },
   { href: '/career', icon: GraduationCap, label: 'Career Guidance' },
   { href: '/salary', icon: DollarSign, label: 'Salary Insights' },

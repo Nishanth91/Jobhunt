@@ -23,7 +23,7 @@ export default async function TailorPage() {
     <div className="flex min-h-screen">
       <Sidebar />
       <div className="md:ml-64 flex-1 flex flex-col">
-        <Navbar title="Tailor Resume" />
+        <Navbar title="Customize Resume" />
         <main className="flex-1 px-4 md:px-8 py-5 md:py-7">
           <TailorClient activeResume={resume} />
         </main>

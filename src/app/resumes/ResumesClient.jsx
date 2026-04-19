@@ -68,7 +68,7 @@ export default function ResumesClient({ resumes, documents }) {
         <div>
           <h2 className="text-xl font-semibold text-white mb-1">Resumes</h2>
           <p className="text-sm text-slate-400">
-            Manage your uploaded resumes and job-specific tailored versions.
+            Manage your uploaded resumes and job-specific customized versions.
           </p>
         </div>
         {totalItems > 0 && (
@@ -101,7 +101,7 @@ export default function ResumesClient({ resumes, documents }) {
               : 'text-slate-500 border-transparent hover:text-slate-300'
           }`}
         >
-          Tailored ({documents.length})
+          Customized ({documents.length})
         </button>
       </div>
 
@@ -119,7 +119,7 @@ export default function ResumesClient({ resumes, documents }) {
               <div>
                 <h3 className="text-sm font-semibold text-white">Delete all resumes?</h3>
                 <p className="text-xs text-slate-400 mt-0.5">
-                  This will permanently remove all {resumes.length} uploaded resume{resumes.length !== 1 ? 's' : ''} and {documents.length} tailored resume{documents.length !== 1 ? 's' : ''}. This cannot be undone.
+                  This will permanently remove all {resumes.length} uploaded resume{resumes.length !== 1 ? 's' : ''} and {documents.length} customized resume{documents.length !== 1 ? 's' : ''}. This cannot be undone.
                 </p>
               </div>
             </div>
@@ -248,9 +248,9 @@ export default function ResumesClient({ resumes, documents }) {
               <div className="w-20 h-20 rounded-2xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center mx-auto mb-5">
                 <FileText size={32} className="text-teal-400" />
               </div>
-              <p className="text-white font-semibold text-lg">No tailored resumes yet</p>
+              <p className="text-white font-semibold text-lg">No customized resumes yet</p>
               <p className="text-sm text-slate-400 mt-2 max-w-sm mx-auto">
-                Go to a saved job and click "Tailored Resume" to generate one optimised for that specific role.
+                Go to a saved job and click "Customized Resume" to generate one optimised for that specific role.
               </p>
               <Link href="/jobs" className="inline-flex items-center gap-2 mt-5 px-4 py-2 rounded-xl bg-teal-500/20 text-teal-300 text-sm font-medium hover:bg-teal-500/30 border border-teal-500/20 transition-all">
                 Browse Jobs →
@@ -269,7 +269,7 @@ export default function ResumesClient({ resumes, documents }) {
                       <button
                         onClick={() => handleDeleteDoc(doc.id)}
                         className="w-7 h-7 rounded-lg bg-red-500/10 text-red-400 flex items-center justify-center hover:bg-red-500/20 transition-colors"
-                        title="Delete this tailored resume"
+                        title="Delete this customized resume"
                       >
                         <Trash2 size={12} />
                       </button>
