@@ -1,30 +1,71 @@
 import {
   Document, Paragraph, TextRun, AlignmentType,
-  BorderStyle, Packer,
+  BorderStyle, Packer, ExternalHyperlink, ImageRun,
 } from 'docx';
+import fs from 'fs';
+import path from 'path';
 import { extractSkills } from './skill-extractor.js';
+
+// Load the LinkedIn logo once — small PNG shipped in /public.
+let LINKEDIN_LOGO = null;
+try {
+  LINKEDIN_LOGO = fs.readFileSync(path.join(process.cwd(), 'public', 'linkedin.png'));
+} catch { /* logo optional */ }
+
+// Normalise any LinkedIn input (bare handle, linkedin.com/in/..., http(s), trailing slash)
+// into a clickable https URL.
+function normaliseLinkedInUrl(raw) {
+  if (!raw) return '';
+  let u = raw.trim();
+  if (!u) return '';
+  if (!/^https?:\/\//i.test(u)) {
+    if (/^linkedin\.com/i.test(u) || /^www\.linkedin\.com/i.test(u)) u = 'https://' + u;
+    else if (/^\/?in\//i.test(u)) u = 'https://www.linkedin.com' + (u.startsWith('/') ? u : '/' + u);
+    else u = 'https://www.linkedin.com/in/' + u.replace(/^\/+/, '');
+  }
+  return u;
+}
+
+// Friendly label shown next to the logo: "linkedin.com/in/handle"
+function linkedInDisplayLabel(url) {
+  if (!url) return '';
+  return url.replace(/^https?:\/\//i, '').replace(/\/$/, '');
+}
 
 // ─── Section parser ────────────────────────────────────────────
 const SECTION_PATTERNS = [
-  [/^(summary|professional summary|profile|objective|about me|career objective|professional profile)/i, 'summary'],
-  [/^(work experience|experience|employment|professional experience|career history|work history|relevant experience)/i, 'experience'],
-  [/^(education|academic|qualifications|academic background|educational background|alma mater)/i, 'education'],
-  [/^(skills|technical skills|competencies|technologies|expertise|key skills|core competencies|computer expertise)/i, 'skills'],
-  [/^(certifications?|certificates?|licenses?|credentials|professional development)/i, 'certs'],
-  [/^(projects?|key projects?|personal projects?)/i, 'projects'],
-  [/^(achievements?|accomplishments?|awards?|honors?)/i, 'achievements'],
+  [/^(summary|professional summary|profile|objective|about me|career objective|professional profile)\b/i, 'summary'],
+  [/^(work experience|experience|employment|professional experience|career history|work history|relevant experience)\b/i, 'experience'],
+  [/^(education|academic|qualifications|academic background|educational background|alma mater)(\s*&\s*(technical\s+)?skills)?\s*$/i, 'education'],
+  [/^(skills|technical skills|competencies|technologies|expertise|key skills|core competencies|computer expertise)\b/i, 'skills'],
+  [/^(certifications?|certificates?|licenses?|credentials|professional development)\b/i, 'certs'],
+  [/^(projects?|key projects?|personal projects?)\b/i, 'projects'],
+  [/^(achievements?|accomplishments?|awards?|honors?)\b/i, 'achievements'],
 ];
 
+/**
+ * Split a resume's raw text into named sections. Uses short-line
+ * heading detection and known section patterns. The first block
+ * before any heading is `header` (name + contact).
+ *
+ * Also detects composite headings like "EDUCATION & TECHNICAL SKILLS"
+ * and splits them into two sections so the generator can render each
+ * properly.
+ */
 function extractSections(rawText) {
   const lines = (rawText || '').split(/\r?\n/);
-  const sections = { header: [], summary: [], experience: [], education: [], skills: [], certs: [], projects: [], achievements: [] };
+  const sections = {
+    header: [], summary: [], experience: [], education: [],
+    skills: [], certs: [], projects: [], achievements: [],
+  };
   let current = 'header';
 
-  for (const line of lines) {
-    const t = line.trim();
-    let matched = false;
+  for (const rawLine of lines) {
+    const t = rawLine.trim();
 
-    if (t.length > 0 && t.length < 60) {
+    // Heading detection — short, not a bullet, matches a section pattern
+    if (t.length > 0 && t.length < 80 && !/^[•\-\*]/.test(t)) {
+      let matched = false;
       for (const [pattern, section] of SECTION_PATTERNS) {
         if (pattern.test(t)) {
           current = section;
@@ -32,74 +73,80 @@ function extractSections(rawText) {
           break;
         }
       }
+      // Composite "EDUCATION & SKILLS" heading — enter education first
+      if (matched) continue;
     }
 
-    if (!matched && t) {
-      sections[current].push(line);
-    }
+    if (t) sections[current].push(rawLine);
   }
 
   return sections;
 }
 
-// ─── Pre-process helpers ──────────────────────────────────────
+// ─── Experience block parser ──────────────────────────────────
+// Splits the experience section into distinct job blocks, each with
+// a title line (company | role), a meta line (location | dates), and
+// bullet achievements. This is the critical fix for v5 — previously
+// the generator just dumped lines in order, which produced the
+// collapsed-into-summary bug when AI output had no clear separators.
 
-/** Detect if a line is a job title / company / date header */
-function isExperienceTitleLine(line) {
+const DATE_RX = /\b(19|20)\d{2}\b|\bpresent\b|\bcurrent\b|\btill\s+date\b/i;
+const TITLE_SEP_RX = /[|•]|\s-\s|\s—\s|\s–\s/;
+const TITLE_WORD_RX = /\b(engineer|manager|analyst|developer|administrator|specialist|consultant|coordinator|supervisor|trainee|associate|director|lead|senior|junior|intern|apprentice|assembler|technician|officer|executive|assistant|designer|architect|scientist|operator|planner|scheduler|accountant|clerk|representative|agent)\b/i;
+const COMPANY_WORD_RX = /\b(ltd|inc|corp|pvt|llc|limited|company|technologies|solutions|systems|group|electronics|industries|services|enterprises|co\.?)\b/i;
+
+function isJobTitleLine(line) {
   const t = line.trim();
-  if (!t || t.length > 120) return false;
+  if (!t || t.length > 140) return false;
   if (/^[•\-\*]/.test(t)) return false;
-  const hasDate = /\b(19|20)\d{2}\b|present|current|till date/i.test(t);
-  const hasTitleWord = /\b(engineer|manager|analyst|developer|administrator|specialist|consultant|coordinator|supervisor|trainee|associate|director|lead|senior|junior|intern|apprentice|assembler)\b/i.test(t);
-  const hasCompany = /\b(ltd|inc|corp|pvt|llc|technologies|solutions|systems|group|company|electronics)\b/i.test(t);
-  // Only treat as title if it has concrete signals — date, title word, or company name
-  // Don't use the "starts with uppercase" heuristic as it catches continuation text
-  return hasDate || hasTitleWord || hasCompany;
+  // Strong signal: title separator with at least one descriptor
+  if (TITLE_SEP_RX.test(t) && (TITLE_WORD_RX.test(t) || COMPANY_WORD_RX.test(t))) return true;
+  // Mostly-uppercase header line (COMPANY NAME)
+  const letters = t.replace(/[^A-Za-z]/g, '');
+  if (letters.length >= 3) {
+    const upperRatio = t.replace(/[^A-Z]/g, '').length / letters.length;
+    if (upperRatio > 0.75 && t.length < 80 && !DATE_RX.test(t)) return true;
+  }
+  return false;
 }
 
-/** Detect sub-headers inside experience */
-function isSubheader(line) {
+function isMetaLine(line) {
   const t = line.trim();
-  return /^(clients?|responsibilities|job description|technical environment|key achievements|projects?):?\s*$/i.test(t) ||
-    (t.endsWith(':') && t.length < 40 && !t.startsWith('•'));
+  if (!t || /^[•\-\*]/.test(t)) return false;
+  // Meta = location/date line, usually has date or city descriptor
+  if (DATE_RX.test(t) && t.length < 100) return true;
+  // Short location-only line (e.g. "Winnipeg, MB, Canada")
+  if (t.length < 80 && /[A-Z][a-z]+,/.test(t) && !TITLE_WORD_RX.test(t)) return true;
+  return false;
 }
 
-/** Merge lone bullet markers AND continuation lines back into their parent bullet.
- *  PDF text extraction often wraps long bullet lines across multiple lines.
- *  e.g. "• Led daily shift huddles to align teams with production targets, assigned tasks, and provided\n
- *        status updates."
- *  → "• Led daily shift huddles to align teams with production targets, assigned tasks, and provided status updates."
- */
-function mergeExperienceLines(lines) {
+function isBulletLine(line) {
+  return /^[•\-\*]\s+/.test(line.trim());
+}
+
+/** Merge lone bullet markers and continuation lines into the parent bullet. */
+function mergeBulletContinuations(lines) {
   const merged = [];
   for (let i = 0; i < lines.length; i++) {
     const t = lines[i].trim();
 
-    // Lone bullet marker (•, -, *) on its own — merge with next line
+    // Lone bullet marker -> merge with next line
     if (/^[•\-\*]$/.test(t) && i + 1 < lines.length && lines[i + 1].trim()) {
       merged.push(`• ${lines[i + 1].trim()}`);
       i++;
       continue;
     }
 
-    // Check if this line is a continuation of the previous bullet:
-    // It's a continuation if: (a) there IS a previous line that was a bullet,
-    // (b) this line does NOT start with a bullet marker,
-    // (c) this line is NOT a title/company/date header,
-    // (d) this line is NOT a section sub-header,
-    // (e) line is short-ish text (< 120 chars, no bullet prefix)
+    // Continuation of a prior bullet (non-bullet, not a title/meta)
     if (
       t && merged.length > 0 &&
-      !/^[•\-\*]\s/.test(t) &&
-      !isExperienceTitleLine(t) &&
-      !isSubheader(t)
+      !isBulletLine(t) &&
+      !isJobTitleLine(t) &&
+      !isMetaLine(t)
     ) {
-      const prevTrimmed = merged[merged.length - 1].trim();
-      // Only merge into a bullet line (not into title lines)
-      if (/^[•\-\*]\s/.test(prevTrimmed)) {
-        // Remove trailing period from previous if we're continuing
-        const prevClean = prevTrimmed.replace(/\.\s*$/, '');
-        merged[merged.length - 1] = `${prevClean} ${t}`;
+      const prev = merged[merged.length - 1].trim();
+      if (isBulletLine(prev)) {
+        merged[merged.length - 1] = `${prev.replace(/\.\s*$/, '')} ${t}`;
         continue;
       }
     }
@@ -109,86 +156,52 @@ function mergeExperienceLines(lines) {
   return merged;
 }
 
-/** Split summary that has inline bullets (• separated) */
-function splitSummaryBullets(text) {
-  if (!text) return [];
-  if (/\s•\s/.test(text) || text.startsWith('•')) {
-    return text.split(/\s*•\s*/).filter((p) => p.trim()).map((p) => p.trim());
-  }
-  return [text.trim()];
-}
+/**
+ * Parse experience lines into an array of job blocks.
+ * Each block: { title: string, meta?: string, bullets: string[] }
+ */
+function parseExperienceBlocks(lines) {
+  const merged = mergeBulletContinuations(lines);
+  const blocks = [];
+  let cur = null;
 
-// ─── Rephrase additional context ──────────────────────────────
-// Instead of dumping raw user text, rephrase into professional bullets
+  for (const raw of merged) {
+    const t = raw.trim();
+    if (!t) continue;
 
-function rephraseAdditionalContext(rawText, jobTitle) {
-  if (!rawText || !rawText.trim()) return [];
-  const lines = rawText.split(/\n/).map((l) => l.trim()).filter(Boolean);
-  const bullets = [];
-
-  for (const line of lines) {
-    let rephrased = line;
-
-    // Pattern: "Currently working as X at Y from Z to present"
-    const workingMatch = line.match(/currently\s+working\s+(?:as\s+)?(?:an?\s+)?(.+?)\s+(?:at|in|for)\s+(.+?)\s+(?:from|since)\s+(.+?)(?:\s+to\s+present)?$/i);
-    if (workingMatch) {
-      const [, role, company, startDate] = workingMatch;
-      rephrased = `Presently serving as ${role} at ${company} since ${startDate}, contributing to operations and team objectives`;
-      if (jobTitle) {
-        rephrased += ` with skills directly transferable to the ${jobTitle} role`;
-      }
-      bullets.push(rephrased);
+    if (isBulletLine(t)) {
+      if (!cur) cur = { title: '', meta: '', bullets: [] };
+      cur.bullets.push(t.replace(/^[•\-\*]\s*/, '').trim());
       continue;
     }
 
-    // Pattern: "I have/I am ..."
-    const iHaveMatch = line.match(/^i\s+(have|am|was|did|do)\s+/i);
-    if (iHaveMatch) {
-      rephrased = line.replace(/^i\s+(have|am|was|did|do)\s+/i, (_, verb) => {
-        const map = { have: 'Possesses ', am: 'Currently ', was: 'Previously ', did: 'Successfully ', do: 'Regularly ' };
-        return map[verb.toLowerCase()] || '';
-      });
+    if (isJobTitleLine(t)) {
+      if (cur && (cur.title || cur.bullets.length)) blocks.push(cur);
+      cur = { title: t, meta: '', bullets: [] };
+      continue;
     }
 
-    // Ensure starts with capital, remove trailing period if missing
-    rephrased = rephrased.charAt(0).toUpperCase() + rephrased.slice(1);
-    if (!rephrased.endsWith('.')) rephrased += '.';
-
-    // Add professional framing if it's a short note
-    if (rephrased.length < 40 && !rephrased.toLowerCase().includes('experience')) {
-      rephrased = `Demonstrated capability in ${rephrased.charAt(0).toLowerCase()}${rephrased.slice(1)}`;
+    if (isMetaLine(t) && cur && !cur.meta && !cur.bullets.length) {
+      cur.meta = t;
+      continue;
     }
 
-    bullets.push(rephrased);
+    // Unclassified line in experience — treat as title if no block yet
+    if (!cur) {
+      cur = { title: t, meta: '', bullets: [] };
+    } else if (cur.bullets.length) {
+      // trailing paragraph after bullets — keep as bullet
+      cur.bullets.push(t);
+    } else if (!cur.meta) {
+      cur.meta = t;
+    }
   }
 
-  return bullets;
+  if (cur && (cur.title || cur.bullets.length)) blocks.push(cur);
+  return blocks;
 }
 
-// ─── Enhance summary ─────────────────────────────────────────
-
-function tailorSummary(summary, jobData, matchingSkills, allSkills) {
-  const topSkills = matchingSkills.length > 0 ? matchingSkills.slice(0, 4) : allSkills.slice(0, 4);
-
-  if (!summary) {
-    return `Results-driven professional with expertise in ${topSkills.join(', ')}. Proven track record of delivering measurable outcomes in dynamic environments, with capabilities directly aligned to the ${jobData.title} role at ${jobData.company}.`;
-  }
-
-  // If summary already mentions the target role keywords, return as-is
-  const titleWords = jobData.title.split(' ').filter((w) => w.length > 3);
-  const alreadyMentionsJob = titleWords.some((w) =>
-    summary.toLowerCase().includes(w.toLowerCase())
-  );
-  if (alreadyMentionsJob) return summary;
-
-  // Append a concise tailored line that references matching skills
-  const skillNote = matchingSkills.length >= 2
-    ? ` with strong proficiency in ${matchingSkills.slice(0, 3).join(', ')}`
-    : '';
-  return `${summary.trim().replace(/\.\s*$/, '')}${skillNote}, well-positioned for the ${jobData.title} role at ${jobData.company}.`;
-}
-
-// ─── JD analysis & smart bullet enhancement ─────────────────
+// ─── Bullet enhancement ───────────────────────────────────────
 
 // Strengthen weak action verbs
 const VERB_UPGRADES = {
@@ -218,47 +231,24 @@ function strengthenVerb(text) {
   return result;
 }
 
-/**
- * Extract actionable requirement phrases from the job description.
- * Returns an array of { phrase, keywords } objects — each represents
- * one duty or requirement the employer is looking for.
- */
 function extractJDRequirements(description) {
   if (!description) return [];
   const sentences = description
     .split(/[.;•\n\r]+/)
     .map((s) => s.trim())
-    .filter((s) => s.length > 15 && s.length < 250);
+    .filter((s) => s.length > 15 && s.length < 260);
 
   const reqs = [];
   for (const sentence of sentences) {
     const lower = sentence.toLowerCase();
-    // Only keep lines that describe duties, requirements, or qualifications
-    if (/\b(responsible|experience|proficiency|knowledge|ability|skilled|manage|develop|implement|design|lead|coordinate|ensure|maintain|monitor|analyze|conduct|perform|support|deliver|collaborate|oversee|familiarity|understanding|proven)\b/i.test(lower)) {
+    if (/\b(responsible|experience|proficiency|knowledge|ability|skilled|manage|develop|implement|design|lead|coordinate|ensure|maintain|monitor|analyze|conduct|perform|support|deliver|collaborate|oversee|familiarity|understanding|proven|required|must\s+have|candidate)\b/i.test(lower)) {
       const words = lower.split(/\s+/).filter((w) => w.length > 3);
       reqs.push({ phrase: sentence, words: new Set(words) });
     }
   }
-  return reqs.slice(0, 20);
+  return reqs.slice(0, 25);
 }
 
-/**
- * Score how well a resume bullet aligns with a JD requirement.
- * Higher score = stronger semantic overlap.
- */
-function scoreBulletReqMatch(bulletLower, reqWords) {
-  const bulletWords = bulletLower.split(/\s+/).filter((w) => w.length > 3);
-  let overlap = 0;
-  for (const w of bulletWords) {
-    if (reqWords.has(w)) overlap++;
-  }
-  return overlap;
-}
-
-/**
- * Find the JD requirement phrases that the given keyword appears in.
- * This lets us rewrite using actual JD language rather than generic templates.
- */
 function findJDContextForKeyword(kw, jdRequirements) {
   const kwLower = kw.toLowerCase();
   for (const req of jdRequirements) {
@@ -267,20 +257,12 @@ function findJDContextForKeyword(kw, jdRequirements) {
   return null;
 }
 
-/**
- * Rewrite a bullet to naturally incorporate a missing keyword.
- *
- * Strategy priority:
- *   1. Replace a generic/vague term in the bullet with the keyword
- *   2. Mirror JD phrasing — use the actual JD sentence context to inform rewrite
- *   3. Contextual mid-sentence insertion at a natural break point
- *   4. Skip — if none of the above produce a natural result, leave the bullet untouched
- */
+/** Rewrite a bullet to naturally incorporate a missing keyword. Returns null to skip. */
 function buildParaphrase(bulletText, kw, jdContext) {
   const body = bulletText.replace(/^[•\-\*]\s*/, '').replace(/\.\s*$/, '');
   const strengthened = strengthenVerb(body);
 
-  // 1. Replace generic terms with the keyword when contextually appropriate
+  // 1. Replace generic terms with the keyword
   const genericSwaps = [
     [/\bvarious tools\b/i, kw],
     [/\brelated tools\b/i, `${kw} tools`],
@@ -292,143 +274,200 @@ function buildParaphrase(bulletText, kw, jdContext) {
     [/\bcross-functional teams?\b/i, `cross-functional ${kw} teams`],
     [/\bproduction processes\b/i, `${kw} production processes`],
     [/\bquality standards\b/i, `${kw} quality standards`],
-    [/\bvarious (?:methods|methodologies|approaches)\b/i, `${kw} methodologies`],
-    [/\brelevant (?:processes|procedures|protocols)\b/i, `${kw} procedures`],
-    [/\bkey (?:metrics|measures|indicators)\b/i, `${kw} metrics`],
     [/\bstandard (?:operating )?procedures?\b/i, `${kw} standard operating procedures`],
   ];
 
   for (const [pattern, replacement] of genericSwaps) {
     if (pattern.test(strengthened)) {
-      return `• ${strengthened.replace(pattern, replacement)}.`;
+      return strengthened.replace(pattern, replacement);
     }
   }
 
-  // 2. Use JD context to build a natural rewrite
-  //    If the JD says "experience managing quality assurance programs",
-  //    and the bullet says "Managed production workflows and ensured compliance",
-  //    rephrase to mirror the JD language naturally.
-  if (jdContext) {
-    const jdLower = jdContext.toLowerCase();
-    // Extract a short action phrase from JD context that includes the keyword
-    const kwLower = kw.toLowerCase();
-    const kwIdx = jdLower.indexOf(kwLower);
-    if (kwIdx !== -1) {
-      // Get a few words around the keyword from the JD
-      const before = jdLower.slice(Math.max(0, kwIdx - 30), kwIdx).trim();
-      const after = jdLower.slice(kwIdx + kwLower.length, kwIdx + kwLower.length + 30).trim();
-
-      // Build a natural bridging phrase from the JD context
-      const preposition = before.match(/\b(with|in|for|through|using|via|across|within)\s*$/)?.[1];
-      const postPhrase = after.match(/^(\s*\w+(?:\s+\w+){0,2})/)?.[1]?.trim();
-
-      if (preposition) {
-        return `• ${strengthened} ${preposition} ${kw}${postPhrase ? ' ' + postPhrase : ''}.`;
-      }
-    }
-  }
-
-  // 3. Insert before a trailing purpose clause ("to improve/reduce/ensure...")
+  // 2. Insert before a trailing purpose clause ("to improve/reduce/ensure...")
   const trailingMatch = strengthened.match(/^(.+?),?\s+(to\s+(?:improve|reduce|ensure|meet|achieve|support|drive|increase|maintain|enhance|deliver|optimize|streamline|strengthen))\s+(.+)$/i);
   if (trailingMatch) {
     const [, before, connector, after] = trailingMatch;
-    return `• ${before}, leveraging ${kw}, ${connector} ${after}.`;
+    return `${before}, leveraging ${kw}, ${connector} ${after}`;
   }
 
-  // 4. Return null to signal "skip" — don't force an unnatural insertion
   return null;
 }
 
-/**
- * Walk through experience bullets and enhance them based on the
- * full job description — not just missing keywords but actual JD
- * requirements. Prioritises bullets that naturally align with JD
- * duties and rewrites them using JD-aligned language.
- */
-function enhanceExperienceBullets(lines, missingKeywords, jobDescription) {
+/** Enhance bullets across all experience blocks with missing keywords. */
+function enhanceBlocks(blocks, missingKeywords, jobDescription) {
   const validKeywords = (missingKeywords || [])
     .filter((k) => k && typeof k === 'string')
     .slice(0, 6);
-  if (!lines?.length) return lines;
+  if (!blocks?.length) return blocks;
 
   const jdReqs = extractJDRequirements(jobDescription);
-  const enhanced = [...lines];
 
-  // Step 1: Strengthen weak verbs in ALL bullets (always improves quality)
-  for (let i = 0; i < enhanced.length; i++) {
-    const t = enhanced[i].trim();
-    if (/^[•\-\*]\s/.test(t)) {
-      const body = t.replace(/^[•\-\*]\s*/, '').replace(/\.\s*$/, '');
-      const strengthened = strengthenVerb(body);
-      if (strengthened !== body) {
-        enhanced[i] = `• ${strengthened}.`;
-      }
-    }
+  // Strengthen verbs in all bullets first
+  for (const block of blocks) {
+    block.bullets = block.bullets.map((b) => {
+      const strengthened = strengthenVerb(b.replace(/\.\s*$/, ''));
+      return strengthened + (strengthened.endsWith('.') ? '' : '.');
+    });
   }
 
-  if (!validKeywords.length) return enhanced;
+  if (!validKeywords.length) return blocks;
 
-  // Step 2: For each missing keyword, find the best bullet to weave it into
-  const usedBullets = new Set();
+  // Inject missing keywords into the best-fit bullet once per keyword
+  const used = new Set(); // "blockIdx:bulletIdx"
   const maxInjections = Math.min(4, validKeywords.length);
   let injected = 0;
 
+  const ACTION_RX = /\b(managed|led|supervised|directed|oversaw|coordinated|implemented|developed|maintained|ensured|monitored|tracked|analyzed|scheduled|planned|improved|reduced|increased|achieved|delivered|conducted|performed|handled|configured|facilitated|collaborated|established|designed|built|deployed|streamlined|optimized|trained|coached|mentored|audited|evaluated|reported|assisted|supported|operated|prepared|resolved|executed|initiated|organized|reviewed)\b/i;
+
   for (const kw of validKeywords) {
     if (injected >= maxInjections) break;
+    const jdCtx = findJDContextForKeyword(kw, jdReqs);
 
-    const jdContext = findJDContextForKeyword(kw, jdReqs);
+    let best = { score: 0, bi: -1, li: -1 };
+    for (let bi = 0; bi < blocks.length; bi++) {
+      for (let li = 0; li < blocks[bi].bullets.length; li++) {
+        const key = `${bi}:${li}`;
+        if (used.has(key)) continue;
+        const body = blocks[bi].bullets[li];
+        if (body.length < 40) continue;
+        const lower = body.toLowerCase();
+        if (lower.includes(kw.toLowerCase())) continue;
+        if (!ACTION_RX.test(lower)) continue;
 
-    // Score each bullet for how well it fits this keyword
-    let bestIdx = -1;
-    let bestScore = 0;
+        let score = 1;
+        if (jdCtx) {
+          const ctxWords = new Set(jdCtx.toLowerCase().split(/\s+/));
+          for (const w of lower.split(/\s+/)) if (ctxWords.has(w)) score++;
+        }
+        if (body.length > 70) score++;
+        if (body.length > 100) score++;
 
-    for (let i = 0; i < enhanced.length; i++) {
-      const t = enhanced[i].trim();
-      if (!/^[•\-\*]\s/.test(t) || t.length < 35) continue;
-      if (usedBullets.has(i)) continue;
-
-      const bodyLower = t.toLowerCase();
-
-      // Skip if keyword already present
-      if (bodyLower.includes(kw.toLowerCase())) continue;
-
-      // Must have a real action verb
-      const hasAction = /\b(managed|led|supervised|directed|oversaw|coordinated|implemented|developed|maintained|ensured|monitored|tracked|analyzed|scheduled|planned|improved|reduced|increased|achieved|delivered|conducted|performed|handled|configured|facilitated|collaborated|established|designed|built|deployed|streamlined|optimized|trained|coached|mentored|audited|evaluated|reported|assisted|supported|operated|prepared|resolved|executed|initiated|organized|reviewed)\b/i.test(bodyLower);
-      if (!hasAction) continue;
-
-      // Score: prefer bullets that share domain words with the JD context
-      let score = 1;
-      if (jdContext) {
-        score += scoreBulletReqMatch(bodyLower, new Set(jdContext.toLowerCase().split(/\s+/)));
-      }
-      // Prefer longer, more detailed bullets (more room to weave in naturally)
-      if (t.length > 60) score += 1;
-      if (t.length > 90) score += 1;
-
-      if (score > bestScore) {
-        bestScore = score;
-        bestIdx = i;
+        if (score > best.score) best = { score, bi, li };
       }
     }
 
-    if (bestIdx === -1) continue;
-
-    const result = buildParaphrase(enhanced[bestIdx], kw, jdContext);
-    if (result) {
-      enhanced[bestIdx] = result;
-      usedBullets.add(bestIdx);
+    if (best.bi === -1) continue;
+    const rewritten = buildParaphrase(blocks[best.bi].bullets[best.li], kw, jdCtx);
+    if (rewritten) {
+      blocks[best.bi].bullets[best.li] = rewritten.replace(/\.\s*$/, '') + '.';
+      used.add(`${best.bi}:${best.li}`);
       injected++;
     }
   }
 
-  return enhanced;
+  return blocks;
+}
+
+// ─── Summary tailoring ────────────────────────────────────────
+
+function tailorSummary(summary, jobData, matchingSkills, allSkills) {
+  const topSkills = matchingSkills.length > 0 ? matchingSkills.slice(0, 4) : allSkills.slice(0, 4);
+
+  if (!summary) {
+    return `Results-driven professional with expertise in ${topSkills.join(', ')}. Proven track record of delivering measurable outcomes in dynamic environments, with capabilities directly aligned to the ${jobData.title} role at ${jobData.company}.`;
+  }
+
+  const titleWords = jobData.title.split(' ').filter((w) => w.length > 3);
+  const alreadyMentionsJob = titleWords.some((w) =>
+    summary.toLowerCase().includes(w.toLowerCase())
+  );
+  if (alreadyMentionsJob) return summary;
+
+  const skillNote = matchingSkills.length >= 2
+    ? ` with strong proficiency in ${matchingSkills.slice(0, 3).join(', ')}`
+    : '';
+  return `${summary.trim().replace(/\.\s*$/, '')}${skillNote}, well-positioned for the ${jobData.title} role at ${jobData.company}.`;
+}
+
+function splitSummaryBullets(text) {
+  if (!text) return [];
+  if (/\s•\s/.test(text) || text.startsWith('•')) {
+    return text.split(/\s*•\s*/).filter((p) => p.trim()).map((p) => p.trim());
+  }
+  return [text.trim()];
+}
+
+// ─── Additional context rephrasing ────────────────────────────
+
+function rephraseAdditionalContext(rawText, jobTitle) {
+  if (!rawText || !rawText.trim()) return [];
+  const lines = rawText.split(/\n/).map((l) => l.trim()).filter(Boolean);
+  const bullets = [];
+
+  for (const line of lines) {
+    let rephrased = line;
+
+    const workingMatch = line.match(/currently\s+working\s+(?:as\s+)?(?:an?\s+)?(.+?)\s+(?:at|in|for)\s+(.+?)\s+(?:from|since)\s+(.+?)(?:\s+to\s+present)?$/i);
+    if (workingMatch) {
+      const [, role, company, startDate] = workingMatch;
+      rephrased = `Presently serving as ${role} at ${company} since ${startDate}, contributing to operations and team objectives`;
+      if (jobTitle) rephrased += ` with skills directly transferable to the ${jobTitle} role`;
+      bullets.push(rephrased + '.');
+      continue;
+    }
+
+    const iHaveMatch = line.match(/^i\s+(have|am|was|did|do)\s+/i);
+    if (iHaveMatch) {
+      rephrased = line.replace(/^i\s+(have|am|was|did|do)\s+/i, (_, verb) => {
+        const map = { have: 'Possesses ', am: 'Currently ', was: 'Previously ', did: 'Successfully ', do: 'Regularly ' };
+        return map[verb.toLowerCase()] || '';
+      });
+    }
+
+    rephrased = rephrased.charAt(0).toUpperCase() + rephrased.slice(1);
+    if (!rephrased.endsWith('.')) rephrased += '.';
+    bullets.push(rephrased);
+  }
+
+  return bullets;
+}
+
+// ─── Contact / header extraction from source resume ───────────
+
+const EMAIL_RX = /[\w.+-]+@[\w-]+\.[\w.-]+/;
+const PHONE_RX = /(?:\+?\d[\d\s\-().]{7,}\d)/;
+const LINKEDIN_RX = /(?:https?:\/\/)?(?:www\.)?linkedin\.com\/[\w\-/?=&.%]+/i;
+const URL_RX = /https?:\/\/\S+/i;
+
+function extractHeaderFromResume(headerLines, fallbackName) {
+  const text = (headerLines || []).join('\n');
+  const email = (text.match(EMAIL_RX) || [])[0] || '';
+  const phone = (text.match(PHONE_RX) || [])[0] || '';
+  const linkedIn = (text.match(LINKEDIN_RX) || [])[0] || '';
+
+  // Name: first non-empty line that doesn't look like contact info
+  let name = '';
+  for (const raw of headerLines) {
+    const l = raw.trim();
+    if (!l) continue;
+    if (EMAIL_RX.test(l) || PHONE_RX.test(l) || URL_RX.test(l)) continue;
+    // skip pure address / date lines
+    if (DATE_RX.test(l)) continue;
+    // prefer short, title-cased lines with 2-6 words
+    const words = l.split(/\s+/);
+    if (words.length <= 6 && words.length >= 1) { name = l; break; }
+  }
+  if (!name) name = fallbackName || '';
+
+  return { name, email, phone, linkedIn };
 }
 
 // ─── Main generator ──────────────────────────────────────────
 
-export async function generateTailoredResume(resumeData, jobData, additionalText = '', linkedInUrl = '', phone = '', contactEmail = '') {
+export async function generateTailoredResume(
+  resumeData, jobData, additionalText = '',
+  linkedInUrl = '', phone = '', contactEmail = '',
+) {
   const sections = extractSections(resumeData.rawText || '');
 
+  // ── Header: preserve user's original identity; fall back to profile ──
+  const extracted = extractHeaderFromResume(sections.header, resumeData.name);
+  const displayName = resumeData.name || extracted.name || 'Your Name';
+  const displayEmail = contactEmail || extracted.email || '';
+  const displayPhone = phone || extracted.phone || '';
+  const displayLinkedIn = linkedInUrl || extracted.linkedIn || '';
+
+  // ── Skills: match + original + missing injected ──
   const originalSkills = Array.isArray(resumeData.skills)
     ? resumeData.skills
     : JSON.parse(resumeData.skills || '[]');
@@ -437,118 +476,140 @@ export async function generateTailoredResume(resumeData, jobData, additionalText
   const matchingSkills = originalSkills.filter((s) =>
     jobSkills.some((js) => js.toLowerCase() === s.toLowerCase())
   );
-  // Cap at 5 targeted missing skills — fewer, cleaner, less obvious keyword-stuffing
   const missingToAdd = jobSkills
     .filter((js) => !originalSkills.some((s) => s.toLowerCase() === js.toLowerCase()))
     .slice(0, 5);
 
-  // Skills: matching first, then rest, then targeted missing — capitalize each
   const capitalizeSkill = (s) => {
-    // Don't capitalize known acronyms/abbreviations or already-capitalized terms
-    if (/^[A-Z]/.test(s) || /^[a-z]+[A-Z]/.test(s)) return s; // already capitalized or camelCase
-    if (/^(aws|gcp|ci\/cd|html|css|sql|api|jwt|oauth|tdd|bdd|sap|erp|gmp|osha|iso|tpm|pcb|nlp|ios)\b/i.test(s)) return s.toUpperCase();
-    // Capitalize first letter of each word
+    if (/^[A-Z]/.test(s) || /^[a-z]+[A-Z]/.test(s)) return s;
+    if (/^(aws|gcp|ci\/cd|html|css|sql|api|jwt|oauth|tdd|bdd|sap|erp|gmp|osha|iso|tpm|pcb|nlp|ios|5s)\b/i.test(s)) return s.toUpperCase();
     return s.replace(/\b[a-z]/g, (c) => c.toUpperCase());
   };
   const enhancedSkills = [...new Set([...matchingSkills, ...originalSkills, ...missingToAdd])].map(capitalizeSkill);
 
-  const rawSummary = sections.summary.join(' ').trim() || resumeData.summary || '';
-  const summaryText = tailorSummary(rawSummary, jobData, matchingSkills, enhancedSkills);
+  // ── Summary ──
+  // Separate the opening body paragraph from any supporting bullet points
+  // so the document keeps the original layout.
+  const summaryBodyLines = [];
+  const summaryBulletLines = [];
+  for (const raw of sections.summary) {
+    const t = raw.trim();
+    if (!t) continue;
+    if (isBulletLine(t)) summaryBulletLines.push(t.replace(/^[•\-\*]\s*/, '').trim());
+    else summaryBodyLines.push(t);
+  }
+  const rawSummaryBody = summaryBodyLines.join(' ').trim() || resumeData.summary || '';
+  const summaryText = tailorSummary(rawSummaryBody, jobData, matchingSkills, enhancedSkills);
 
-  // Experience: merge lone bullets, enhance with keywords
-  let experienceLines = mergeExperienceLines(sections.experience);
-  if (experienceLines.length < 3 && resumeData.experience) {
+  // ── Experience: parse into blocks, then enhance ──
+  let expBlocks = parseExperienceBlocks(sections.experience);
+  if (expBlocks.length === 0 && resumeData.experience) {
     const parsed = Array.isArray(resumeData.experience)
       ? resumeData.experience
       : JSON.parse(resumeData.experience || '[]');
-    if (parsed.length > 0) {
-      experienceLines = parsed.flatMap((exp) => {
-        const l = [];
-        if (exp.title) l.push(exp.title);
-        if (exp.company) l.push(exp.company);
-        if (exp.bullets?.length) l.push(...exp.bullets.map((b) => `• ${b}`));
-        l.push('');
-        return l;
-      });
-    }
+    expBlocks = (parsed || []).map((exp) => ({
+      title: [exp.title, exp.company].filter(Boolean).join(' | '),
+      meta: '',
+      bullets: exp.bullets || [],
+    }));
   }
+  expBlocks = enhanceBlocks(expBlocks, missingToAdd, jobData.description || '');
 
-  // Enhance experience bullets using JD analysis — rewrites using JD language,
-  // not just keyword insertion
-  experienceLines = enhanceExperienceBullets(experienceLines, missingToAdd, jobData.description || '');
-
-  // Blend rephrased additional context INTO experience section (not as a separate section)
+  // Additional context → appended as a final "Recent Updates" block
   const rephrasedAdditional = rephraseAdditionalContext(additionalText, jobData.title);
   if (rephrasedAdditional.length > 0) {
-    // Append after the last experience entry as new bullets
-    experienceLines = [
-      ...experienceLines,
-      '',
-      ...rephrasedAdditional.map((b) => `• ${b}`),
-    ];
+    expBlocks.push({
+      title: 'Recent Updates',
+      meta: '',
+      bullets: rephrasedAdditional,
+    });
   }
 
+  // ── Education ──
   const educationLines = sections.education.length
-    ? sections.education
+    ? sections.education.map((l) => l.trim()).filter(Boolean)
     : (Array.isArray(resumeData.education)
         ? resumeData.education
         : JSON.parse(resumeData.education || '[]')).map((e) => (typeof e === 'string' ? e : e.degree || ''));
 
-  // ─── Build content object for preview ─────────────────────────
+  // ── Content object for preview ──
   const content = {
-    name: resumeData.name || 'Your Name',
+    name: displayName,
     summary: summaryText,
-    summaryBullets: splitSummaryBullets(summaryText),
+    summaryBullets: summaryBulletLines.length ? summaryBulletLines : splitSummaryBullets(summaryText),
+    summaryBody: summaryText,
     skills: enhancedSkills,
     matchingSkills,
     addedSkills: missingToAdd,
-    experience: experienceLines,
+    experienceBlocks: expBlocks,
+    // Back-compat flat experience lines used by legacy preview components
+    experience: flattenBlocksToLines(expBlocks),
     education: educationLines,
     certs: sections.certs || [],
     additional: '',
     additionalBullets: [],
-    linkedIn: linkedInUrl || '',
-    phone: phone || '',
-    contactEmail: contactEmail || '',
+    linkedIn: displayLinkedIn,
+    phone: displayPhone,
+    contactEmail: displayEmail,
     tailoredFor: { title: jobData.title, company: jobData.company },
   };
 
-  // ─── Build Word document ───────────────────────────────────────
+  // ── DOCX output ──
   const children = [];
 
-  // Name
+  // Name header
   children.push(
     new Paragraph({
-      children: [new TextRun({ text: resumeData.name || 'Your Name', bold: true, size: 36, color: '1e1b4b', font: 'Calibri' })],
+      children: [new TextRun({ text: displayName, bold: true, size: 36, color: '1e1b4b', font: 'Calibri' })],
       alignment: AlignmentType.LEFT,
       spacing: { after: 40 },
     }),
   );
 
-  // Contact line: email | phone | linkedin
-  const contactParts = [];
-  if (contactEmail) contactParts.push(contactEmail);
-  if (phone) contactParts.push(phone);
-  if (linkedInUrl) contactParts.push(linkedInUrl);
-  const contactLine = contactParts.join('  |  ');
-
-  const subtitleParts = [new TextRun({ text: `${jobData.title} | ${jobData.company}`, size: 20, color: '4b5563', font: 'Calibri' })];
-  children.push(
-    new Paragraph({
-      children: subtitleParts,
-      alignment: AlignmentType.LEFT,
-      spacing: { after: contactLine ? 60 : 160 },
-    }),
-  );
-  if (contactLine) {
+  // Contact line: email | phone  [ logo ]  LinkedIn-hyperlink
+  const textParts = [displayEmail, displayPhone].filter(Boolean);
+  const liUrl = normaliseLinkedInUrl(displayLinkedIn);
+  if (textParts.length > 0 || liUrl) {
+    const runs = [];
+    if (textParts.length > 0) {
+      runs.push(new TextRun({ text: textParts.join('  |  '), size: 22, color: '4b5563', font: 'Calibri' }));
+    }
+    if (liUrl) {
+      if (textParts.length > 0) {
+        runs.push(new TextRun({ text: '  |  ', size: 22, color: '4b5563', font: 'Calibri' }));
+      }
+      if (LINKEDIN_LOGO) {
+        runs.push(new ImageRun({
+          data: LINKEDIN_LOGO,
+          transformation: { width: 12, height: 12 },
+        }));
+        runs.push(new TextRun({ text: ' ', size: 22, font: 'Calibri' }));
+      }
+      runs.push(new ExternalHyperlink({
+        link: liUrl,
+        children: [
+          new TextRun({
+            text: linkedInDisplayLabel(liUrl),
+            size: 22, color: '0A66C2', underline: {}, font: 'Calibri',
+          }),
+        ],
+      }));
+    }
     children.push(
-      new Paragraph({
-        children: [new TextRun({ text: contactLine, size: 22, color: '4b5563', font: 'Calibri' })],
-        alignment: AlignmentType.LEFT,
-        spacing: { after: 160 },
-      }),
+      new Paragraph({ children: runs, alignment: AlignmentType.LEFT, spacing: { after: 60 } }),
     );
   }
+
+  // Subtle "tailored for" subtitle — NOT replacing contact info
+  children.push(
+    new Paragraph({
+      children: [new TextRun({
+        text: `Tailored for: ${jobData.title} — ${jobData.company}`,
+        size: 18, color: '64748b', italics: true, font: 'Calibri',
+      })],
+      spacing: { after: 120 },
+    }),
+  );
   children.push(
     new Paragraph({
       border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: '4338ca' } },
@@ -556,16 +617,12 @@ export async function generateTailoredResume(resumeData, jobData, additionalText
     }),
   );
 
-  // Summary
-  if (summaryText) {
+  // Summary — body paragraph + optional supporting bullets
+  if (summaryText || summaryBulletLines.length) {
     children.push(sectionHead('Professional Summary'));
-    const bullets = splitSummaryBullets(summaryText);
-    if (bullets.length > 1) {
-      for (const bullet of bullets) {
-        children.push(bullet_para(`• ${bullet}`));
-      }
-    } else {
-      children.push(body_para(summaryText));
+    if (summaryText) children.push(body_para(summaryText));
+    for (const b of summaryBulletLines) {
+      children.push(bullet_para(`• ${b}`));
     }
     children.push(spacer());
   }
@@ -577,34 +634,33 @@ export async function generateTailoredResume(resumeData, jobData, additionalText
     children.push(spacer());
   }
 
-  // Experience
-  if (experienceLines.length > 0) {
+  // Experience — proper block structure
+  if (expBlocks.length > 0) {
     children.push(sectionHead('Professional Experience'));
-    for (const line of experienceLines) {
-      const trimmed = line.trim();
-      if (!trimmed) { children.push(spacer(60)); continue; }
-
-      const isBullet = /^[•\-\*]\s/.test(trimmed);
-      const isTitle = !isBullet && isExperienceTitleLine(trimmed);
-      const isSub = !isBullet && isSubheader(trimmed);
-
-      if (isBullet) {
-        const text = trimmed.replace(/^[•\-\*]\s*/, '').trim();
-        children.push(bullet_para(`• ${text}`));
-      } else if (isSub) {
+    for (const block of expBlocks) {
+      if (block.title) {
         children.push(new Paragraph({
-          children: [new TextRun({ text: trimmed, size: 20, font: 'Calibri', italics: true, color: '4b5563' })],
-          spacing: { before: 60, after: 40 },
-        }));
-      } else if (isTitle) {
-        children.push(new Paragraph({
-          children: [new TextRun({ text: trimmed, bold: true, size: 20, font: 'Calibri', color: '1e1b4b' })],
-          spacing: { before: 160, after: 40 },
-          keepWithNext: true,   // prevents orphaned company title at top of page 2
+          children: [new TextRun({
+            text: block.title, bold: true, size: 22, font: 'Calibri', color: '1e1b4b',
+          })],
+          spacing: { before: 160, after: 30 },
+          keepWithNext: true,
           keepLines: true,
         }));
-      } else {
-        children.push(body_para(trimmed));
+      }
+      if (block.meta) {
+        children.push(new Paragraph({
+          children: [new TextRun({
+            text: block.meta, size: 20, font: 'Calibri', italics: true, color: '4b5563',
+          })],
+          spacing: { after: 60 },
+          keepWithNext: true,
+        }));
+      }
+      for (const b of (block.bullets || [])) {
+        const text = b.replace(/^[•\-\*]\s*/, '').trim();
+        if (!text) continue;
+        children.push(bullet_para(`• ${text}`));
       }
     }
     children.push(spacer());
@@ -630,22 +686,91 @@ export async function generateTailoredResume(resumeData, jobData, additionalText
     children.push(spacer());
   }
 
-  // ABSOLUTELY NO WATERMARK, NO FOOTER, NO TIMESTAMP
-
   const doc = new Document({
     sections: [{
       properties: {
-        // 1440 twips = 1 inch — standard for all pages incl. page 2
         page: { margin: { top: 1440, bottom: 1440, left: 1080, right: 1080 } },
       },
       children,
     }],
   });
 
-  return { buffer: await Packer.toBuffer(doc), content };
+  // Build plain-text representation of the tailored resume — used by
+  // the ATS scorer so scores reflect what the employer actually sees.
+  const plainText = buildPlainText({
+    name: displayName,
+    email: displayEmail,
+    phone: displayPhone,
+    linkedIn: displayLinkedIn,
+    tailoredFor: jobData,
+    summary: summaryText,
+    summaryBullets: summaryBulletLines,
+    skills: enhancedSkills,
+    experience: expBlocks,
+    education: educationLines,
+    certs: sections.certs || [],
+  });
+
+  return { buffer: await Packer.toBuffer(doc), content, plainText };
 }
 
-// ─── Inject missing keywords into resume text (for ATS fix) ───
+function buildPlainText({ name, email, phone, linkedIn, tailoredFor, summary, summaryBullets, skills, experience, education, certs }) {
+  const out = [];
+  out.push(name);
+  const contact = [email, phone, linkedIn].filter(Boolean).join(' | ');
+  if (contact) out.push(contact);
+  if (tailoredFor?.title) out.push(`Target: ${tailoredFor.title} at ${tailoredFor.company}`);
+  out.push('');
+
+  if (summary || summaryBullets?.length) {
+    out.push('PROFESSIONAL SUMMARY');
+    if (summary) out.push(summary);
+    for (const b of (summaryBullets || [])) out.push(`• ${b}`);
+    out.push('');
+  }
+  if (skills?.length) {
+    out.push('TECHNICAL SKILLS');
+    out.push(skills.join(', '));
+    out.push('');
+  }
+  if (experience?.length) {
+    out.push('PROFESSIONAL EXPERIENCE');
+    for (const b of experience) {
+      if (b.title) out.push(b.title);
+      if (b.meta) out.push(b.meta);
+      for (const bullet of (b.bullets || [])) out.push(`• ${bullet.replace(/^[•\-\*]\s*/, '')}`);
+      out.push('');
+    }
+  }
+  if (education?.length) {
+    out.push('EDUCATION');
+    for (const e of education) if (e?.trim()) out.push(e.trim());
+    out.push('');
+  }
+  if (certs?.length) {
+    out.push('CERTIFICATIONS');
+    for (const c of certs) if (c?.trim()) out.push(c.trim());
+    out.push('');
+  }
+  return out.join('\n');
+}
+
+// Flatten blocks into legacy-format line array for the preview panel.
+function flattenBlocksToLines(blocks) {
+  const out = [];
+  for (const b of blocks) {
+    if (b.title) out.push(b.title);
+    if (b.meta) out.push(b.meta);
+    for (const bullet of (b.bullets || [])) {
+      const txt = bullet.replace(/^[•\-\*]\s*/, '');
+      out.push(`• ${txt}`);
+    }
+    out.push('');
+  }
+  return out;
+}
+
+// ─── Inject missing keywords into a plain resume text (ATS fix) ───
 export function injectKeywordsIntoResume(rawText, missingKeywords) {
   if (!missingKeywords?.length) return rawText;
   const lines = rawText.split('\n');
@@ -658,11 +783,10 @@ export function injectKeywordsIntoResume(rawText, missingKeywords) {
   } else {
     lines.push('', 'Skills', missingKeywords.join(', '));
   }
-
   return lines.join('\n');
 }
 
-// ─── Paragraph helpers ────────────────────────────────────────
+// ─── DOCX paragraph helpers ────────────────────────────────────
 
 function sectionHead(text) {
   return new Paragraph({

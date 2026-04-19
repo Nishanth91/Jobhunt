@@ -121,8 +121,8 @@ function ResumePreviewPanel({ content, documentId, onClose, onDownload, jobTitle
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-2 md:p-4">
-      <div className="bg-gray-900 border border-white/10 rounded-2xl md:rounded-3xl w-full max-w-3xl max-h-[95vh] md:max-h-[90vh] flex flex-col shadow-2xl">
+    <div className="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-2 md:p-4">
+      <div className="modal-panel border border-white/10 rounded-2xl md:rounded-3xl w-full max-w-3xl max-h-[95vh] md:max-h-[90vh] flex flex-col shadow-2xl">
         {/* Header — always dark */}
         <div className="flex items-center justify-between px-4 md:px-6 py-3 md:py-4 border-b border-white/10 gap-2">
           <div className="min-w-0">
@@ -211,21 +211,41 @@ function ResumePreviewPanel({ content, documentId, onClose, onDownload, jobTitle
           )}
 
           {/* Experience */}
-          {content.experience?.length > 0 && (
+          {(content.experienceBlocks?.length > 0 || content.experience?.length > 0) && (
             <div>
               <p className="section-head text-xs font-bold uppercase tracking-wider mb-2" style={{ color: '#1e1b4b', borderBottom: '1px solid #c7d2fe', paddingBottom: '3px' }}>Professional Experience</p>
-              <div className="space-y-0.5">
-                {content.experience.map((line, i) => {
-                  const t = line.trim();
-                  if (!t) return <div key={i} className="h-2" />;
-                  const isBullet = /^[•\-\*]\s/.test(t);
-                  return (
-                    <p key={i} className={`text-xs leading-relaxed ${isBullet ? 'ml-4' : 'font-semibold'}`} style={{ color: isBullet ? '#374151' : '#1e1b4b' }}>
-                      {t}
-                    </p>
-                  );
-                })}
-              </div>
+              {content.experienceBlocks?.length > 0 ? (
+                <div className="space-y-3">
+                  {content.experienceBlocks.map((block, bi) => (
+                    <div key={bi} className="space-y-0.5">
+                      {block.title && (
+                        <p className="text-xs font-semibold" style={{ color: '#1e1b4b' }}>{block.title}</p>
+                      )}
+                      {block.meta && (
+                        <p className="text-[11px] italic" style={{ color: '#6b7280' }}>{block.meta}</p>
+                      )}
+                      {block.bullets?.map((b, i) => (
+                        <p key={i} className="text-xs leading-relaxed ml-4" style={{ color: '#374151' }}>
+                          • {b.replace(/^[•\-\*]\s*/, '')}
+                        </p>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="space-y-0.5">
+                  {content.experience.map((line, i) => {
+                    const t = line.trim();
+                    if (!t) return <div key={i} className="h-2" />;
+                    const isBullet = /^[•\-\*]\s/.test(t);
+                    return (
+                      <p key={i} className={`text-xs leading-relaxed ${isBullet ? 'ml-4' : 'font-semibold'}`} style={{ color: isBullet ? '#374151' : '#1e1b4b' }}>
+                        {t}
+                      </p>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           )}
 

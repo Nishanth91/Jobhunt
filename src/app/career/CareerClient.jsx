@@ -1,12 +1,57 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import {
   BookOpen, Trophy, TrendingUp, ExternalLink, Play, GraduationCap,
   Sparkles, Target, ChevronDown, ChevronRight, Upload, Settings,
   CheckCircle, AlertCircle, Zap, ArrowRight, Star, Layers,
+  Quote, Megaphone, Hammer, Lightbulb, Clock, Repeat, Rocket,
+  Award, Flame, Globe,
 } from 'lucide-react';
+import {
+  LEARNING_PLATFORMS, PLATFORM_CATEGORIES,
+  pickDailyMotivation, pickDailyTip, pickNextSkill,
+} from '@/lib/learning-hub';
+
+const TIP_ICON = { Megaphone, Hammer, Lightbulb, Clock, Target, Repeat };
+
+// Provider strings that signal a free, high-quality resource — drives
+// the trust-badge shown next to each tutorial/course link.
+function resourceQualityBadge(provider = '') {
+  const p = provider.toLowerCase();
+  if (p.includes('freecodecamp')) return { label: 'Free • Top-rated', tone: 'emerald' };
+  if (p.includes('harvard') || p.includes('mit') || p.includes('stanford')) return { label: 'Ivy-level', tone: 'purple' };
+  if (p.includes('google')) return { label: 'Official Google', tone: 'blue' };
+  if (p.includes('microsoft')) return { label: 'Official Microsoft', tone: 'blue' };
+  if (p.includes('oracle')) return { label: 'Official Oracle', tone: 'amber' };
+  if (p.includes('aws') || p.includes('amazon')) return { label: 'Official AWS', tone: 'amber' };
+  if (p.includes('coursera')) return { label: 'Free Audit', tone: 'teal' };
+  if (p.includes('edx')) return { label: 'Free Audit', tone: 'teal' };
+  if (p.includes('techworld') || p.includes('nana')) return { label: 'Community Pick', tone: 'pink' };
+  if (p.includes('kaggle')) return { label: 'Kaggle Grandmaster', tone: 'cyan' };
+  if (p.includes('mdn') || p.includes('mozilla')) return { label: 'Web Canon', tone: 'orange' };
+  if (p.includes('sap')) return { label: 'Official SAP', tone: 'blue' };
+  if (p.includes('asq')) return { label: 'Industry Authority', tone: 'amber' };
+  if (p.includes('osha')) return { label: 'Official US Govt', tone: 'teal' };
+  if (p.includes('youtube search')) return { label: 'Curated Search', tone: 'slate' };
+  if (p.includes('youtube')) return { label: 'Free Video', tone: 'red' };
+  if (p.includes('docs')) return { label: 'Official Docs', tone: 'slate' };
+  return { label: 'Free', tone: 'emerald' };
+}
+
+const BADGE_TONES = {
+  emerald: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/20',
+  teal: 'bg-teal-500/15 text-teal-300 border-teal-500/20',
+  cyan: 'bg-cyan-500/15 text-cyan-300 border-cyan-500/20',
+  blue: 'bg-blue-500/15 text-blue-300 border-blue-500/20',
+  purple: 'bg-purple-500/15 text-purple-300 border-purple-500/20',
+  amber: 'bg-amber-500/15 text-amber-300 border-amber-500/20',
+  pink: 'bg-pink-500/15 text-pink-300 border-pink-500/20',
+  red: 'bg-red-500/15 text-red-300 border-red-500/20',
+  orange: 'bg-orange-500/15 text-orange-300 border-orange-500/20',
+  slate: 'bg-slate-500/15 text-slate-300 border-slate-500/20',
+};
 
 const CATEGORY_CONFIG = {
   highPriority: {
@@ -129,6 +174,7 @@ function SkillCard({ skill, category, resources, isExpanded, onToggle }) {
           {skillResources.map((resource, i) => {
             const ResIcon = RESOURCE_ICON[resource.type] || BookOpen;
             const colorClass = RESOURCE_COLOR[resource.type] || RESOURCE_COLOR.docs;
+            const badge = resourceQualityBadge(resource.provider);
 
             return (
               <a
@@ -145,7 +191,12 @@ function SkillCard({ skill, category, resources, isExpanded, onToggle }) {
                   <p className="text-xs font-medium text-white truncate group-hover:text-teal-200 transition-colors">
                     {resource.title}
                   </p>
-                  <p className="text-[10px] text-slate-500">{resource.provider}</p>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <p className="text-[10px] text-slate-500 truncate">{resource.provider}</p>
+                    <span className={`px-1.5 py-0.5 rounded text-[9px] font-medium border ${BADGE_TONES[badge.tone]}`}>
+                      {badge.label}
+                    </span>
+                  </div>
                 </div>
                 <ExternalLink size={12} className="text-slate-600 group-hover:text-slate-400 flex-shrink-0 transition-colors" />
               </a>
@@ -293,6 +344,11 @@ export default function CareerClient({
 }) {
   const [expandedSkills, setExpandedSkills] = useState({});
   const [activeTab, setActiveTab] = useState('skills');
+  const [hubCategory, setHubCategory] = useState('all');
+
+  const motivation = useMemo(() => pickDailyMotivation(), []);
+  const dailyTip = useMemo(() => pickDailyTip(), []);
+  const TipIcon = TIP_ICON[dailyTip.icon] || Lightbulb;
 
   const toggleSkill = (skill) => {
     setExpandedSkills((prev) => ({ ...prev, [skill]: !prev[skill] }));
@@ -349,6 +405,13 @@ export default function CareerClient({
     { key: 'emergingTrends', skills: emergingTrends },
   ];
 
+  const nextSkill = pickNextSkill(highPriority, goodToHave);
+  const nextSkillBump = totalRequired > 0 ? Math.round((1 / totalRequired) * 100) : 0;
+
+  const filteredPlatforms = hubCategory === 'all'
+    ? LEARNING_PLATFORMS
+    : LEARNING_PLATFORMS.filter((p) => p.category === hubCategory);
+
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -358,6 +421,61 @@ export default function CareerClient({
           Personalized skill analysis and learning roadmap based on your profile and target roles.
         </p>
       </div>
+
+      {/* Daily Motivation + Impact Banner */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="md:col-span-2 rounded-2xl bg-gradient-to-br from-indigo-500/10 via-purple-500/10 to-pink-500/10 border border-indigo-500/20 p-5 relative overflow-hidden">
+          <Quote size={80} className="absolute -top-4 -right-4 text-white/5" />
+          <div className="flex items-start gap-3 relative">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center flex-shrink-0 shadow-lg">
+              <Flame size={16} className="text-white" />
+            </div>
+            <div className="flex-1">
+              <p className="text-[10px] font-semibold text-indigo-300 uppercase tracking-wider mb-1">Today&apos;s Spark</p>
+              <p className="text-sm text-white leading-relaxed italic">&ldquo;{motivation.quote}&rdquo;</p>
+              <p className="text-[11px] text-slate-400 mt-1">— {motivation.author}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="rounded-2xl bg-gradient-to-br from-amber-500/10 to-orange-500/10 border border-amber-500/20 p-5">
+          <div className="flex items-start gap-3">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center flex-shrink-0 shadow-lg">
+              <TipIcon size={16} className="text-white" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] font-semibold text-amber-300 uppercase tracking-wider mb-1">Learning Tip</p>
+              <p className="text-sm font-medium text-white mb-1">{dailyTip.title}</p>
+              <p className="text-[11px] text-slate-400 leading-relaxed">{dailyTip.body}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Next-Skill Impact Banner */}
+      {nextSkill && (
+        <div className="rounded-2xl bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-cyan-500/10 border border-emerald-500/20 px-5 py-4">
+          <div className="flex items-center gap-4 flex-wrap">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center flex-shrink-0 shadow-lg">
+              <Rocket size={18} className="text-white" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] font-semibold text-emerald-300 uppercase tracking-wider mb-0.5">Your Next Win</p>
+              <p className="text-sm text-white">
+                Master <span className="font-semibold text-emerald-300">{nextSkill}</span> and lift your role match by roughly
+                <span className="font-semibold text-emerald-300"> +{nextSkillBump}%</span>
+                {coveragePercent < 100 && ` (→ ${Math.min(100, coveragePercent + nextSkillBump)}% coverage)`}.
+              </p>
+            </div>
+            <button
+              onClick={() => { setActiveTab('skills'); setExpandedSkills((s) => ({ ...s, [nextSkill]: true })); }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/20 text-emerald-300 text-xs font-medium hover:bg-emerald-500/30 border border-emerald-500/30 transition-all"
+            >
+              Start learning <ArrowRight size={12} />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Personalized Insight Banner */}
       {personalInsight && (
@@ -439,6 +557,7 @@ export default function CareerClient({
         {[
           { key: 'skills', label: 'Skill Gap Analysis', icon: Target },
           { key: 'path', label: 'Career Path', icon: ArrowRight },
+          { key: 'hub', label: 'Free Learning Hub', icon: GraduationCap },
           { key: 'current', label: 'Your Skills', icon: CheckCircle },
         ].map(({ key, label, icon: Icon }) => (
           <button
@@ -520,6 +639,117 @@ export default function CareerClient({
               <p className="text-sm text-slate-400">No career path data available for your target roles.</p>
             </div>
           )}
+        </div>
+      )}
+
+      {activeTab === 'hub' && (
+        <div className="space-y-5">
+          <div className="rounded-2xl bg-gradient-to-r from-teal-500/10 via-cyan-500/10 to-indigo-500/10 border border-teal-500/20 p-5">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center flex-shrink-0 shadow-lg">
+                <Globe size={18} className="text-white" />
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-white mb-1">Free Learning Hub — hand-picked, community-voted</h3>
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  Every platform below is <span className="text-emerald-300 font-medium">100% free</span> or has a meaningful free tier,
+                  and is either an <span className="text-white">official vendor</span> (Google, Microsoft, Oracle, AWS, SAP) or a{' '}
+                  <span className="text-white">top-voted community pick</span> (freeCodeCamp, NeetCode, Kaggle, The Odin Project, CS50).
+                  No paywalls. No fluff. Just the best the internet has to offer.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Category filter */}
+          <div className="flex flex-wrap gap-1.5">
+            {PLATFORM_CATEGORIES.map(({ key, label }) => (
+              <button
+                key={key}
+                onClick={() => setHubCategory(key)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
+                  hubCategory === key
+                    ? 'bg-teal-500/20 text-teal-300 border-teal-500/30'
+                    : 'bg-white/[0.03] text-slate-400 border-white/5 hover:bg-white/[0.06] hover:text-white'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
+          {/* Platform cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {filteredPlatforms.map((p) => (
+              <a
+                key={p.name}
+                href={p.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group rounded-2xl bg-white/[0.02] hover:bg-white/[0.04] border border-white/5 hover:border-teal-500/30 p-5 transition-all"
+              >
+                <div className="flex items-start justify-between gap-3 mb-2">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h4 className="text-sm font-semibold text-white group-hover:text-teal-200 transition-colors truncate">
+                        {p.name}
+                      </h4>
+                      <span className="px-2 py-0.5 rounded-md text-[9px] font-semibold bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-300 border border-amber-500/30 uppercase tracking-wider flex-shrink-0">
+                        <Award size={9} className="inline mr-0.5" />
+                        {p.badge}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-400 mt-0.5">{p.tagline}</p>
+                  </div>
+                  <ExternalLink size={14} className="text-slate-600 group-hover:text-teal-400 flex-shrink-0 transition-colors" />
+                </div>
+
+                <p className="text-xs text-slate-300 leading-relaxed mb-3">{p.description}</p>
+
+                <div className="flex items-center gap-3 flex-wrap text-[10px]">
+                  <span className="flex items-center gap-1 text-amber-300">
+                    <Star size={10} className="fill-amber-400 text-amber-400" />
+                    <span className="font-semibold">{p.rating}</span>
+                  </span>
+                  {p.learners && p.learners !== '—' && (
+                    <span className="flex items-center gap-1 text-slate-400">
+                      <GraduationCap size={10} />
+                      {p.learners} learners
+                    </span>
+                  )}
+                  <span className="text-emerald-400 font-semibold">FREE</span>
+                </div>
+
+                <div className="flex flex-wrap gap-1 mt-3">
+                  {p.highlights.map((h) => (
+                    <span key={h} className="px-2 py-0.5 rounded-md text-[10px] bg-white/[0.04] text-slate-400 border border-white/5">
+                      {h}
+                    </span>
+                  ))}
+                </div>
+              </a>
+            ))}
+          </div>
+
+          {filteredPlatforms.length === 0 && (
+            <div className="rounded-2xl bg-white/[0.02] border border-white/5 p-8 text-center">
+              <p className="text-sm text-slate-500">No platforms in this category yet.</p>
+            </div>
+          )}
+
+          {/* Learning philosophy footer */}
+          <div className="rounded-2xl bg-white/[0.02] border border-white/5 p-5">
+            <div className="flex items-start gap-3">
+              <Lightbulb size={16} className="text-amber-400 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-xs font-semibold text-white mb-1">How to use these</p>
+                <p className="text-[11px] text-slate-400 leading-relaxed">
+                  Pick <span className="text-white">one</span> platform and one skill this week. Commit 45 minutes a day for 30 days.
+                  Ship something small using what you learned, post it publicly, and move on. Compounding beats perfection.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 

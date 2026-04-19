@@ -35,10 +35,11 @@ export async function POST(request) {
       education: JSON.parse(resume.education || '[]'),
     };
 
-    const { buffer, content } = await generateTailoredResume(resumeData, job, additionalText, resolvedLinkedIn, resolvedPhone, resolvedEmail);
+    const { buffer, content, plainText } = await generateTailoredResume(resumeData, job, additionalText, resolvedLinkedIn, resolvedPhone, resolvedEmail);
 
-    // Calculate ATS score
-    const atsResult = calculateATSScore(resume.rawText, job.description || '');
+    // Calculate ATS score against the TAILORED resume text — this is what an ATS
+    // would parse, so it reflects the improvement from tailoring.
+    const atsResult = calculateATSScore(plainText || resume.rawText, job.description || '', { jobTitle: job.title });
 
     // Save document record
     const doc = await prisma.tailoredDocument.create({

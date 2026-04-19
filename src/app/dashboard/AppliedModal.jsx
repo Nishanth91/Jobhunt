@@ -33,11 +33,10 @@ export default function AppliedModal({ appliedJobs }) {
       {/* Modal */}
       {open && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)' }}
+          className="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4"
           onClick={(e) => e.target === e.currentTarget && setOpen(false)}
         >
-          <div className="bg-[#0d0d1a] border border-white/10 rounded-3xl w-full max-w-md shadow-2xl overflow-hidden">
+          <div className="modal-panel border border-white/10 rounded-3xl w-full max-w-md shadow-2xl overflow-hidden">
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-5 border-b border-white/5">
               <div>

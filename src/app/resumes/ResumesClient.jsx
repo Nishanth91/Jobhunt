@@ -108,11 +108,10 @@ export default function ResumesClient({ resumes, documents }) {
       {/* Confirmation modal */}
       {showConfirm && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)' }}
+          className="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4"
           onClick={(e) => e.target === e.currentTarget && setShowConfirm(false)}
         >
-          <div className="bg-[#0d0d1a] border border-white/10 rounded-2xl w-full max-w-sm p-6 shadow-2xl space-y-4">
+          <div className="modal-panel border border-white/10 rounded-2xl w-full max-w-sm p-6 shadow-2xl space-y-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-red-500/20 flex items-center justify-center flex-shrink-0">
                 <AlertTriangle size={18} className="text-red-400" />

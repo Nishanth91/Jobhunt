@@ -335,36 +335,172 @@ export async function searchTheMuse({ query, location, page = 0 }) {
 }
 
 /**
+ * ADDITIONAL: RemoteOK — completely free, no auth, huge remote-job feed.
+ */
+export async function searchRemoteOK({ query, count = 25 }) {
+  try {
+    const url = 'https://remoteok.com/api';
+    console.log(`[RemoteOK] Searching: ${query}`);
+    const response = await axios.get(url, {
+      timeout: 12000,
+      headers: { 'User-Agent': 'JobHunt-App/5.0 (+https://jobhunt.app)' },
+    });
+    // First element is metadata
+    const rows = Array.isArray(response.data) ? response.data.slice(1) : [];
+    const q = (query || '').toLowerCase();
+    const qWords = q.split(/\s+/).filter((w) => w.length > 2);
+
+    const jobs = rows
+      .filter((job) => {
+        if (!qWords.length) return true;
+        const text = `${job.position || ''} ${job.company || ''} ${(job.tags || []).join(' ')} ${(job.description || '').slice(0, 400)}`.toLowerCase();
+        return qWords.some((w) => text.includes(w));
+      })
+      .slice(0, count)
+      .map((job) => ({
+        externalId: `remoteok_${job.id || job.slug}`,
+        title: job.position || job.title || 'Untitled',
+        company: job.company || 'Unknown Company',
+        location: job.location || 'Remote',
+        description: stripHtml(job.description || ''),
+        url: job.url || job.apply_url || `https://remoteok.com/remote-jobs/${job.slug || job.id}`,
+        salary: (job.salary_min && job.salary_max)
+          ? `$${Number(job.salary_min).toLocaleString()} – $${Number(job.salary_max).toLocaleString()}`
+          : null,
+        postedAt: job.date ? new Date(job.date) : null,
+        source: 'remoteok',
+        companyWebsite: job.company_url || null,
+        hrEmail: null,
+      }));
+
+    console.log(`[RemoteOK] Found ${jobs.length} matching results`);
+    return { jobs, total: jobs.length };
+  } catch (err) {
+    console.error('[RemoteOK] Error:', err.message);
+    return { jobs: [], total: 0, error: err.message };
+  }
+}
+
+/**
+ * ADDITIONAL: Arbeitnow — free, no auth. Remote & European jobs.
+ */
+export async function searchArbeitnow({ query, count = 25 }) {
+  try {
+    const url = 'https://www.arbeitnow.com/api/job-board-api';
+    console.log(`[Arbeitnow] Searching: ${query}`);
+    const response = await axios.get(url, { timeout: 12000 });
+    const rows = response.data?.data || [];
+
+    const q = (query || '').toLowerCase();
+    const qWords = q.split(/\s+/).filter((w) => w.length > 2);
+
+    const jobs = rows
+      .filter((job) => {
+        if (!qWords.length) return true;
+        const text = `${job.title || ''} ${job.company_name || ''} ${(job.tags || []).join(' ')}`.toLowerCase();
+        return qWords.some((w) => text.includes(w));
+      })
+      .slice(0, count)
+      .map((job) => ({
+        externalId: `arbeitnow_${job.slug}`,
+        title: job.title,
+        company: job.company_name || 'Unknown Company',
+        location: job.location || (job.remote ? 'Remote' : 'Not specified'),
+        description: stripHtml(job.description || ''),
+        url: job.url || `https://www.arbeitnow.com/jobs/${job.slug}`,
+        salary: null,
+        postedAt: job.created_at ? new Date(job.created_at * 1000) : null,
+        source: 'arbeitnow',
+        companyWebsite: null,
+        hrEmail: null,
+      }));
+
+    console.log(`[Arbeitnow] Found ${jobs.length} matching results`);
+    return { jobs, total: jobs.length };
+  } catch (err) {
+    console.error('[Arbeitnow] Error:', err.message);
+    return { jobs: [], total: 0, error: err.message };
+  }
+}
+
+/**
+ * ADDITIONAL: USAJobs (US federal jobs — free, requires User-Agent email).
+ */
+export async function searchUSAJobs({ query, location, count = 25 }) {
+  try {
+    const email = process.env.USAJOBS_EMAIL || 'contact@jobhunt.app';
+    const apiKey = process.env.USAJOBS_API_KEY;
+    const params = new URLSearchParams({
+      Keyword: query || '',
+      ResultsPerPage: String(count),
+    });
+    if (location) params.append('LocationName', location);
+
+    const url = `https://data.usajobs.gov/api/search?${params}`;
+    console.log(`[USAJobs] Searching: ${query}`);
+
+    const response = await axios.get(url, {
+      timeout: 12000,
+      headers: {
+        'Host': 'data.usajobs.gov',
+        'User-Agent': email,
+        ...(apiKey ? { 'Authorization-Key': apiKey } : {}),
+      },
+    });
+
+    const items = response.data?.SearchResult?.SearchResultItems || [];
+    const jobs = items.map((item) => {
+      const d = item.MatchedObjectDescriptor || {};
+      const pay = d.PositionRemuneration?.[0];
+      return {
+        externalId: `usajobs_${d.PositionID || item.MatchedObjectId}`,
+        title: d.PositionTitle || 'Federal Position',
+        company: d.OrganizationName || d.DepartmentName || 'U.S. Federal Government',
+        location: (d.PositionLocationDisplay || (d.PositionLocation?.[0]?.LocationName) || 'United States'),
+        description: stripHtml(d.QualificationSummary || d.UserArea?.Details?.JobSummary || ''),
+        url: d.PositionURI || '',
+        salary: pay ? `${pay.MinimumRange ? '$' + Number(pay.MinimumRange).toLocaleString() : ''}${pay.MaximumRange ? ' – $' + Number(pay.MaximumRange).toLocaleString() : ''}${pay.RateIntervalCode ? ' ' + pay.RateIntervalCode : ''}`.trim() : null,
+        postedAt: d.PublicationStartDate ? new Date(d.PublicationStartDate) : null,
+        source: 'usajobs',
+        companyWebsite: null,
+        hrEmail: null,
+      };
+    });
+
+    console.log(`[USAJobs] Found ${jobs.length} results`);
+    return { jobs, total: jobs.length };
+  } catch (err) {
+    console.error('[USAJobs] Error:', err.message);
+    return { jobs: [], total: 0, error: err.message };
+  }
+}
+
+/**
  * Combined job search from all available sources
- * Priority: JSearch > SerpAPI > Adzuna (fallback) + Remotive + Jobicy + TheMuse (always)
+ * Priority: JSearch > SerpAPI > Adzuna + Remotive + Jobicy + TheMuse + RemoteOK + Arbeitnow + USAJobs
  */
 export async function searchAllSources({ query, location, page = 1 }) {
   const { jsearchKey, serpApiKey, adzunaAppId } = getKeys();
 
-  // Run all sources in parallel
-  const [jsearchResult, serpResult, adzunaResult, remotiveResult, jobicyResult, theMuseResult] =
-    await Promise.allSettled([
-      jsearchKey ? searchJSearch({ query, location, page }) : Promise.resolve({ jobs: [], total: 0 }),
-      serpApiKey ? searchSerpAPI({ query, location, page }) : Promise.resolve({ jobs: [], total: 0 }),
-      adzunaAppId ? searchAdzuna({ query, location, page }) : Promise.resolve({ jobs: [], total: 0, error: 'Adzuna keys not set' }),
-      searchRemotive({ query }),
-      searchJobicy({ query }),
-      searchTheMuse({ query, location }),
-    ]);
+  const results = await Promise.allSettled([
+    jsearchKey ? searchJSearch({ query, location, page }) : Promise.resolve({ jobs: [], total: 0 }),
+    serpApiKey ? searchSerpAPI({ query, location, page }) : Promise.resolve({ jobs: [], total: 0 }),
+    adzunaAppId ? searchAdzuna({ query, location, page }) : Promise.resolve({ jobs: [], total: 0, error: 'Adzuna keys not set' }),
+    searchRemotive({ query }),
+    searchJobicy({ query }),
+    searchTheMuse({ query, location }),
+    searchRemoteOK({ query }),
+    searchArbeitnow({ query }),
+    searchUSAJobs({ query, location }),
+  ]);
 
-  const jsearchJobs = jsearchResult.status === 'fulfilled' ? jsearchResult.value.jobs : [];
-  const serpJobs = serpResult.status === 'fulfilled' ? serpResult.value.jobs : [];
-  const adzunaJobs = adzunaResult.status === 'fulfilled' ? adzunaResult.value.jobs : [];
-  const remotiveJobs = remotiveResult.status === 'fulfilled' ? remotiveResult.value.jobs : [];
-  const jobicyJobs = jobicyResult.status === 'fulfilled' ? jobicyResult.value.jobs : [];
-  const theMuseJobs = theMuseResult.status === 'fulfilled' ? theMuseResult.value.jobs : [];
+  const pick = (r) => r.status === 'fulfilled' ? r.value.jobs : [];
+  const [jsearch, serp, adzuna, remotive, jobicy, muse, remoteok, arbeitnow, usajobs] = results.map(pick);
+  const adzunaError = results[2].status === 'fulfilled' ? results[2].value.error : null;
 
-  const adzunaError = adzunaResult.status === 'fulfilled' ? adzunaResult.value.error : null;
+  const all = [...jsearch, ...serp, ...adzuna, ...remotive, ...jobicy, ...muse, ...remoteok, ...arbeitnow, ...usajobs];
 
-  // Merge: prioritise JSearch (richest data), then SerpAPI, then others
-  const all = [...jsearchJobs, ...serpJobs, ...adzunaJobs, ...remotiveJobs, ...jobicyJobs, ...theMuseJobs];
-
-  // Deduplicate by normalised title + company
+  // Dedupe by normalised (title + company)
   const seen = new Set();
   const unique = all.filter((job) => {
     const key = normaliseKey(`${job.title}-${job.company}`);
@@ -374,12 +510,15 @@ export async function searchAllSources({ query, location, page = 1 }) {
   });
 
   const sources = {
-    jsearch: jsearchJobs.length,
-    google: serpJobs.length,
-    adzuna: adzunaJobs.length,
-    remotive: remotiveJobs.length,
-    jobicy: jobicyJobs.length,
-    themuse: theMuseJobs.length,
+    jsearch: jsearch.length,
+    google: serp.length,
+    adzuna: adzuna.length,
+    remotive: remotive.length,
+    jobicy: jobicy.length,
+    themuse: muse.length,
+    remoteok: remoteok.length,
+    arbeitnow: arbeitnow.length,
+    usajobs: usajobs.length,
   };
 
   console.log(`[JobSearch] Total unique: ${unique.length} from`, sources);

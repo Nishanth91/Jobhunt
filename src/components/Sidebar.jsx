@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
 import {
-  LayoutDashboard, Briefcase, Settings, FileText,
+  LayoutDashboard, Briefcase, Settings, FileText, Sparkles,
   LogOut, Users, ChevronRight, UserCog, GraduationCap, DollarSign
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
@@ -15,6 +15,7 @@ const navItems = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { href: '/jobs', icon: Briefcase, label: 'Jobs' },
   { href: '/resumes', icon: FileText, label: 'Resumes' },
+  { href: '/tailor', icon: Sparkles, label: 'Tailor Resume' },
   { href: '/preferences', icon: Settings, label: 'Preferences' },
   { href: '/career', icon: GraduationCap, label: 'Career Guidance' },
   { href: '/salary', icon: DollarSign, label: 'Salary Insights' },
